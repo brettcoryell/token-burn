@@ -10,14 +10,14 @@
     "output": 34819
   },
   "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell-Code-AI-open-brain/b11e40c0-5041-425d-9668-91bcf17fbeb0.jsonl": {
-    "api_requests": 131,
-    "cache_create": 638092,
-    "cache_read": 13321399,
+    "api_requests": 262,
+    "cache_create": 1249183,
+    "cache_read": 23183708,
     "date": "2026-06-09",
-    "hash": "ed3c5963dd90ad6d33cc1aec31d640a112b531f2fe054764fec50ea3354a6ad5",
-    "input": 197,
+    "hash": "a66391c69734adf2ff4ee99d8fd5e830a2bc2ba1fe4520a6bfef3638ef14f9e2",
+    "input": 358,
     "machine": "cadence",
-    "output": 110160
+    "output": 208745
   },
   "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell-Code-AI-open-brain/b11e40c0-5041-425d-9668-91bcf17fbeb0/subagents/agent-a73820ed98bb433a6.jsonl": {
     "api_requests": 7,
@@ -40,14 +40,14 @@
     "output": 3262
   },
   "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell-Code-AI-open-brain/b11e40c0-5041-425d-9668-91bcf17fbeb0/subagents/agent-aca3203edf104ae8a.jsonl": {
-    "api_requests": 18,
-    "cache_create": 65429,
-    "cache_read": 499787,
+    "api_requests": 24,
+    "cache_create": 86114,
+    "cache_read": 789095,
     "date": "2026-06-09",
-    "hash": "1673f6f9afe93cb44acb3eed37b1a27ac44198513fe7f34025225918ee27c584",
-    "input": 22,
+    "hash": "3c3fe990c5c94f1a0476100e69beb67055f8c0c3963b272d0cd0c6fbcc7a1a97",
+    "input": 28,
     "machine": "cadence",
-    "output": 13727
+    "output": 24538
   },
   "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell/0b4041d0-5cf2-44f0-8a82-fcfce1d623d2.jsonl": {
     "api_requests": 28,
