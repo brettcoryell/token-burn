@@ -36,6 +36,6 @@ test-collector: ## Run Python collector unit tests
 	python3 -m pytest tests/collector/ -v
 
 test-ui:        ## Run Playwright UI tests
-	npx playwright test
+	npx playwright test --config tests/ui/playwright.config.ts
 
 test: test-collector test-ui  ## Run all tests

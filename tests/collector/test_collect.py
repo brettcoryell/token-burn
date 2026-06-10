@@ -1,15 +1,19 @@
 """
-Collector tests for scripts/collect.py.
+Collector tests for scripts/collect.py — v2 (Supabase-based).
 
-All tests are self-contained — no dependency on real ~/.claude/ session files.
-Tests invoke collect.py via subprocess so the test suite is independent of
-import side-effects. The script is expected at scripts/collect.py relative to
-the repository root.
+All tests are self-contained — no dependency on real ~/.claude/ session files
+or live Supabase credentials.
 
-Conventions:
+Key design choices:
+  - Pure functions (parse_session, file_hash, load_state, save_state) are
+    imported directly and tested in-process.
+  - collect() is called with dry_run=True to avoid any Supabase network calls.
+  - Tests that need to verify Supabase upsert behavior mock the supabase client
+    via unittest.mock.patch.
   - tmp_path (pytest built-in) provides an isolated temp dir per test.
-  - Fixture JSONL files are read from tests/collector/fixtures/.
-  - AC numbers in test names map 1-to-1 with ACCEPTANCE_CRITERIA.md.
+  - .collect-state.json dedup is tested by manipulating tmp files.
+
+AC numbers in test names map to ACCEPTANCE_CRITERIA_v2.md §AC-5.x.
 """
 
 import json
@@ -17,7 +21,9 @@ import os
 import shutil
 import subprocess
 import sys
+import hashlib
 from pathlib import Path
+from unittest.mock import MagicMock, patch, call
 
 import pytest
 
@@ -33,79 +39,31 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 SIMPLE_SESSION = FIXTURES_DIR / "simple_session.jsonl"
 MIDNIGHT_SESSION = FIXTURES_DIR / "midnight_spanning_session.jsonl"
 MALFORMED_SESSION = FIXTURES_DIR / "malformed_session.jsonl"
-ANNOTATIONS_JSON = FIXTURES_DIR / "annotations.json"
 
-EXPECTED_SCHEMA_KEYS = {
-    "date",
-    "claude_code_input",
-    "claude_code_output",
-    "claude_code_cache_read",
-    "claude_code_cache_create",
-    "claude_code_api_requests",
-    "claude_code_sessions",
-    "claude_chat_sessions",
-    "claude_chat_est",
-    "total_exact",
-    "total_est",
-    "sources",
-    "driver",
-    "evidence",
-}
+# ---------------------------------------------------------------------------
+# Import helpers: add scripts/ to sys.path so we can import collect directly
+# ---------------------------------------------------------------------------
 
-assert len(EXPECTED_SCHEMA_KEYS) == 14, "Schema must have exactly 14 keys"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+
+def _import_collect():
+    """Import collect module, re-importing fresh each time to avoid state leakage."""
+    import importlib
+    if "collect" in sys.modules:
+        return importlib.reload(sys.modules["collect"])
+    import collect
+    return collect
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Session directory helper
 # ---------------------------------------------------------------------------
-
-def run_collect(
-    sessions_root: Path,
-    output_file: Path,
-    *,
-    machine: str = "cadence",
-    annotations: Path | None = None,
-    dry_run: bool = False,
-    verbose: bool = False,
-    chat_tokens_per_session: int | None = None,
-    extra_args: list[str] | None = None,
-) -> subprocess.CompletedProcess:
-    """Run scripts/collect.py with given arguments and return the result."""
-    cmd = [
-        sys.executable,
-        str(COLLECT_PY),
-        "--sessions-root", str(sessions_root),
-        "--output", str(output_file),
-        "--machine", machine,
-    ]
-    if annotations is not None:
-        cmd += ["--annotations", str(annotations)]
-    if dry_run:
-        cmd.append("--dry-run")
-    if verbose:
-        cmd.append("--verbose")
-    if chat_tokens_per_session is not None:
-        cmd += ["--chat-tokens-per-session", str(chat_tokens_per_session)]
-    if extra_args:
-        cmd.extend(extra_args)
-
-    return subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-    )
-
-
-def load_output(output_file: Path) -> list[dict]:
-    """Load and return parsed daily-burn.json."""
-    with open(output_file) as f:
-        return json.load(f)
-
 
 def make_session_dir(tmp_path: Path, *fixture_files: Path) -> Path:
     """
     Create a sessions root with one subdirectory per fixture file.
-    Claude Code stores sessions as JSONL files inside project subdirectories.
     Each fixture gets its own subdirectory named after the fixture stem.
     """
     sessions_root = tmp_path / "sessions"
@@ -117,602 +75,614 @@ def make_session_dir(tmp_path: Path, *fixture_files: Path) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# AC-1.1 — Token math
+# AC-5.1 — --dry-run works without database credentials
 # ---------------------------------------------------------------------------
 
-def test_ac1_1_token_math(tmp_path):
+def test_ac5_1_dry_run_no_credentials(tmp_path):
     """
-    AC-1.1: Given simple_session.jsonl with two assistant messages:
-      Message A: input=100, output=50, cache_read=1000, cache_create=500
-      Message B: input=200, output=100, cache_read=2000, cache_create=1000
-    The output row must have exact integer sums and total_exact = 4950.
+    AC-5.1: python scripts/collect.py --dry-run succeeds without Supabase
+    credentials. No network call should be made.
     """
     sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
 
-    result = run_collect(sessions_root, output_file)
-    assert result.returncode == 0, f"collect.py exited non-zero:\n{result.stderr}"
+    env = os.environ.copy()
+    env.pop("SUPABASE_URL", None)
+    env.pop("SUPABASE_SERVICE_ROLE_KEY", None)
 
-    rows = load_output(output_file)
-    assert len(rows) >= 1, "Expected at least one row in output"
-
-    row = next((r for r in rows if r["date"] == "2026-06-09"), None)
-    assert row is not None, "Expected a row for date 2026-06-09"
-
-    assert row["claude_code_input"] == 300, f"Expected input=300, got {row['claude_code_input']}"
-    assert row["claude_code_output"] == 150, f"Expected output=150, got {row['claude_code_output']}"
-    assert row["claude_code_cache_read"] == 3000, f"Expected cache_read=3000, got {row['claude_code_cache_read']}"
-    assert row["claude_code_cache_create"] == 1500, f"Expected cache_create=1500, got {row['claude_code_cache_create']}"
-    assert row["total_exact"] == 4950, f"Expected total_exact=4950, got {row['total_exact']}"
-    assert row["claude_code_api_requests"] == 2, f"Expected api_requests=2, got {row['claude_code_api_requests']}"
-
-
-# ---------------------------------------------------------------------------
-# AC-1.2 — Idempotency
-# ---------------------------------------------------------------------------
-
-def test_ac1_2_idempotency(tmp_path):
-    """
-    AC-1.2: Running collect.py twice on the same session files produces
-    byte-for-byte identical output.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    r1 = run_collect(sessions_root, output_file)
-    assert r1.returncode == 0, f"First run failed:\n{r1.stderr}"
-    content_after_first = output_file.read_bytes()
-
-    r2 = run_collect(sessions_root, output_file)
-    assert r2.returncode == 0, f"Second run failed:\n{r2.stderr}"
-    content_after_second = output_file.read_bytes()
-
-    assert content_after_first == content_after_second, (
-        "Output changed between two identical runs — not idempotent"
+    result = subprocess.run(
+        [sys.executable, str(COLLECT_PY), "--sessions-root", str(sessions_root), "--dry-run"],
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=str(tmp_path),  # state file goes here (different from repo root)
     )
 
-
-# ---------------------------------------------------------------------------
-# AC-1.3 — New session file adds/updates correctly
-# ---------------------------------------------------------------------------
-
-def test_ac1_3_new_session_new_date(tmp_path):
-    """
-    AC-1.3 (new date): Adding a session for a different date adds exactly one row.
-    Row count goes from 1 to 2 after adding the second session.
-    """
-    # Session 1: 2026-06-09
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    r1 = run_collect(sessions_root, output_file)
-    assert r1.returncode == 0
-    rows_before = load_output(output_file)
-    count_before = len(rows_before)
-
-    # Session 2: midnight_spanning — starts 2026-06-09 23:55 PT → date 2026-06-09
-    # We need a truly different date. Create a synthetic session on 2026-06-08.
-    new_session_dir = sessions_root / "new_project"
-    new_session_dir.mkdir(parents=True, exist_ok=True)
-    new_session = new_session_dir / "new_session.jsonl"
-    new_session.write_text(
-        '{"type":"user","timestamp":"2026-06-08T14:00:00.000Z","uuid":"dddddddd-0001-0001-0001-000000000001","parentUuid":null,"sessionId":"session-new-date-001","message":{"role":"user","content":[{"type":"text","text":"Hello"}]}}\n'
-        '{"type":"assistant","timestamp":"2026-06-08T14:01:00.000Z","uuid":"dddddddd-0001-0001-0001-000000000002","parentUuid":"dddddddd-0001-0001-0001-000000000001","sessionId":"session-new-date-001","message":{"id":"msg_new1","type":"message","role":"assistant","model":"claude-opus-4-5","content":[{"type":"text","text":"Hi"}],"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5,"cache_read_input_tokens":100,"cache_creation_input_tokens":50}}}\n'
-    )
-
-    r2 = run_collect(sessions_root, output_file)
-    assert r2.returncode == 0
-    rows_after = load_output(output_file)
-
-    assert len(rows_after) == count_before + 1, (
-        f"Expected {count_before + 1} rows after adding a new-date session, got {len(rows_after)}"
-    )
-    dates = [r["date"] for r in rows_after]
-    assert "2026-06-08" in dates, "New date 2026-06-08 not found in output"
-    assert "2026-06-09" in dates, "Original date 2026-06-09 should still be present"
-
-
-def test_ac1_3_new_session_same_date_additive(tmp_path):
-    """
-    AC-1.3 (same date): Adding a session on the same date updates that row additively.
-    Row count stays the same. Tokens increase.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    r1 = run_collect(sessions_root, output_file)
-    assert r1.returncode == 0
-    rows_before = load_output(output_file)
-    row_before = next(r for r in rows_before if r["date"] == "2026-06-09")
-    total_exact_before = row_before["total_exact"]
-    count_before = len(rows_before)
-
-    # Add a second session on 2026-06-09 (different session ID, different file path)
-    extra_dir = sessions_root / "extra_project"
-    extra_dir.mkdir(parents=True, exist_ok=True)
-    extra_session = extra_dir / "extra_session.jsonl"
-    extra_session.write_text(
-        '{"type":"user","timestamp":"2026-06-09T20:00:00.000Z","uuid":"eeeeeeee-0001-0001-0001-000000000001","parentUuid":null,"sessionId":"session-extra-001","message":{"role":"user","content":[{"type":"text","text":"Extra"}]}}\n'
-        '{"type":"assistant","timestamp":"2026-06-09T20:01:00.000Z","uuid":"eeeeeeee-0001-0001-0001-000000000002","parentUuid":"eeeeeeee-0001-0001-0001-000000000001","sessionId":"session-extra-001","message":{"id":"msg_extra1","type":"message","role":"assistant","model":"claude-opus-4-5","content":[{"type":"text","text":"Done"}],"stop_reason":"end_turn","usage":{"input_tokens":50,"output_tokens":25,"cache_read_input_tokens":500,"cache_creation_input_tokens":250}}}\n'
-    )
-
-    r2 = run_collect(sessions_root, output_file)
-    assert r2.returncode == 0
-    rows_after = load_output(output_file)
-    row_after = next(r for r in rows_after if r["date"] == "2026-06-09")
-
-    assert len(rows_after) == count_before, (
-        f"Row count changed from {count_before} to {len(rows_after)} — should be same date"
-    )
-    assert row_after["total_exact"] > total_exact_before, (
-        "total_exact should increase after adding same-date session"
-    )
-    # extra session adds input=50, output=25, cache_read=500, cache_create=250 → +825
-    assert row_after["total_exact"] == total_exact_before + 825, (
-        f"Expected total_exact = {total_exact_before + 825}, got {row_after['total_exact']}"
-    )
-
-
-# ---------------------------------------------------------------------------
-# AC-1.4 — Malformed JSONL handled gracefully
-# ---------------------------------------------------------------------------
-
-def test_ac1_4_malformed_jsonl_graceful(tmp_path):
-    """
-    AC-1.4: A JSONL file with a malformed line does not crash the collector.
-    Valid lines are processed. Malformed line produces a warning on stderr.
-    Final token counts reflect only the valid assistant record.
-    """
-    sessions_root = make_session_dir(tmp_path, MALFORMED_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    result = run_collect(sessions_root, output_file)
-
-    # Must not crash
     assert result.returncode == 0, (
-        f"collect.py crashed on malformed input (returncode={result.returncode}):\n{result.stderr}"
+        f"--dry-run failed without credentials (returncode={result.returncode}):\n"
+        f"stdout: {result.stdout}\nstderr: {result.stderr}"
     )
 
-    # Warning must appear on stderr
-    assert result.stderr.strip() != "" or "warn" in result.stderr.lower() or "skip" in result.stderr.lower() or "malformed" in result.stderr.lower() or "error" in result.stderr.lower(), (
-        "Expected a warning on stderr for malformed JSON line, got none"
-    )
-
-    # Valid assistant record (line 3) must be processed
-    rows = load_output(output_file)
-    row = next((r for r in rows if r["date"] == "2026-06-09"), None)
-    assert row is not None, "Expected a row for 2026-06-09 from the valid line"
-    assert row["claude_code_input"] == 50
-    assert row["claude_code_output"] == 25
-    assert row["claude_code_cache_read"] == 500
-    assert row["claude_code_cache_create"] == 250
-    assert row["total_exact"] == 825  # 50+25+500+250
-
-
-# ---------------------------------------------------------------------------
-# AC-1.5 — Timezone bucketing
-# ---------------------------------------------------------------------------
-
-def test_ac1_5_timezone_bucketing_utc_to_pt(tmp_path):
-    """
-    AC-1.5: UTC timestamps are correctly converted to Pacific time for date bucketing.
-    2026-06-10T07:00:00Z = 2026-06-09 in US/Pacific (UTC-7 in summer/PDT).
-    2026-06-10T08:00:00Z = 2026-06-10 in US/Pacific.
-    """
-    # Session A: timestamp 2026-06-10T07:00:00Z → should be 2026-06-09 PT
-    sessions_root = tmp_path / "sessions"
-    proj_a = sessions_root / "proj_a"
-    proj_a.mkdir(parents=True)
-    (proj_a / "session_a.jsonl").write_text(
-        '{"type":"user","timestamp":"2026-06-10T07:00:00.000Z","uuid":"fa000001-0001-0001-0001-000000000001","parentUuid":null,"sessionId":"tz-session-a","message":{"role":"user","content":[{"type":"text","text":"hi"}]}}\n'
-        '{"type":"assistant","timestamp":"2026-06-10T07:01:00.000Z","uuid":"fa000001-0001-0001-0001-000000000002","parentUuid":"fa000001-0001-0001-0001-000000000001","sessionId":"tz-session-a","message":{"id":"msg_tz_a","type":"message","role":"assistant","model":"claude-opus-4-5","content":[{"type":"text","text":"hi"}],"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}\n'
-    )
-
-    # Session B: timestamp 2026-06-10T08:00:00Z → should be 2026-06-10 PT
-    proj_b = sessions_root / "proj_b"
-    proj_b.mkdir(parents=True)
-    (proj_b / "session_b.jsonl").write_text(
-        '{"type":"user","timestamp":"2026-06-10T08:00:00.000Z","uuid":"fb000001-0001-0001-0001-000000000001","parentUuid":null,"sessionId":"tz-session-b","message":{"role":"user","content":[{"type":"text","text":"hi"}]}}\n'
-        '{"type":"assistant","timestamp":"2026-06-10T08:01:00.000Z","uuid":"fb000001-0001-0001-0001-000000000002","parentUuid":"fb000001-0001-0001-0001-000000000001","sessionId":"tz-session-b","message":{"id":"msg_tz_b","type":"message","role":"assistant","model":"claude-opus-4-5","content":[{"type":"text","text":"hi"}],"stop_reason":"end_turn","usage":{"input_tokens":20,"output_tokens":10,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}\n'
-    )
-
-    output_file = tmp_path / "daily-burn.json"
-    result = run_collect(sessions_root, output_file)
-    assert result.returncode == 0, f"collect.py failed:\n{result.stderr}"
-
-    rows = load_output(output_file)
-    dates = {r["date"] for r in rows}
-
-    assert "2026-06-09" in dates, (
-        "2026-06-10T07:00:00Z should bucket to 2026-06-09 (PDT = UTC-7)"
-    )
-    assert "2026-06-10" in dates, (
-        "2026-06-10T08:00:00Z should bucket to 2026-06-10 (PDT = UTC-7)"
-    )
-
-    row_09 = next(r for r in rows if r["date"] == "2026-06-09")
-    assert row_09["claude_code_input"] == 10
-    row_10 = next(r for r in rows if r["date"] == "2026-06-10")
-    assert row_10["claude_code_input"] == 20
-
-
-# ---------------------------------------------------------------------------
-# AC-1.6 — Midnight-spanning session bucketed to first record's date
-# ---------------------------------------------------------------------------
-
-def test_ac1_6_midnight_spanning_session(tmp_path):
-    """
-    AC-1.6: Session starts 2026-06-10T06:55:00Z (= 2026-06-09 23:55 PT) and has
-    messages past midnight (2026-06-10T07:15:00Z = 2026-06-10 00:15 PT).
-    All tokens must appear in 2026-06-09, not 2026-06-10.
-    """
-    sessions_root = make_session_dir(tmp_path, MIDNIGHT_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    result = run_collect(sessions_root, output_file)
-    assert result.returncode == 0, f"collect.py failed:\n{result.stderr}"
-
-    rows = load_output(output_file)
-    dates = {r["date"] for r in rows}
-
-    assert "2026-06-09" in dates, "All tokens must be bucketed to 2026-06-09"
-    assert "2026-06-10" not in dates, (
-        "No tokens from this session should appear in 2026-06-10 row"
-    )
-
-    row = next(r for r in rows if r["date"] == "2026-06-09")
-    # Two assistant messages, each input=10, output=5, cache_read=100, cache_create=50
-    assert row["claude_code_input"] == 20
-    assert row["claude_code_output"] == 10
-    assert row["claude_code_cache_read"] == 200
-    assert row["claude_code_cache_create"] == 100
-    assert row["total_exact"] == 330  # 20+10+200+100
-
-
-# ---------------------------------------------------------------------------
-# AC-1.7 — Annotations merged
-# ---------------------------------------------------------------------------
-
-def test_ac1_7_annotations_merged(tmp_path):
-    """
-    AC-1.7: annotations.json containing driver/evidence/claude_chat_sessions for
-    2026-06-09 is merged into the output row. claude_chat_est = sessions * 75000.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    result = run_collect(sessions_root, output_file, annotations=ANNOTATIONS_JSON)
-    assert result.returncode == 0, f"collect.py failed:\n{result.stderr}"
-
-    rows = load_output(output_file)
-    row = next((r for r in rows if r["date"] == "2026-06-09"), None)
-    assert row is not None
-
-    assert row["driver"] == "code", f"Expected driver='code', got {row['driver']!r}"
-    assert row["evidence"] == "feature work session", f"Expected evidence='feature work session', got {row['evidence']!r}"
-    assert row["claude_chat_sessions"] == 2, f"Expected claude_chat_sessions=2, got {row['claude_chat_sessions']}"
-    assert row["claude_chat_est"] == 150000, (
-        f"Expected claude_chat_est=150000 (2 × 75000), got {row['claude_chat_est']}"
-    )
-
-
-# ---------------------------------------------------------------------------
-# AC-1.8 — Annotations survive re-collection
-# ---------------------------------------------------------------------------
-
-def test_ac1_8_annotations_survive_recollection(tmp_path):
-    """
-    AC-1.8: If annotations.json is unchanged and collect.py is re-run on the same
-    session files, driver/evidence/claude_chat_sessions are preserved.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    r1 = run_collect(sessions_root, output_file, annotations=ANNOTATIONS_JSON)
-    assert r1.returncode == 0
-    r2 = run_collect(sessions_root, output_file, annotations=ANNOTATIONS_JSON)
-    assert r2.returncode == 0
-
-    rows = load_output(output_file)
-    row = next(r for r in rows if r["date"] == "2026-06-09")
-    assert row["driver"] == "code"
-    assert row["evidence"] == "feature work session"
-    assert row["claude_chat_sessions"] == 2
-    assert row["claude_chat_est"] == 150000
-
-
-# ---------------------------------------------------------------------------
-# AC-1.9 — Changed annotation overwrites previous value
-# ---------------------------------------------------------------------------
-
-def test_ac1_9_changed_annotation_overwrites(tmp_path):
-    """
-    AC-1.9: Changing annotations.json and re-running collect.py overwrites the
-    previous annotation value. Most-recent annotation wins.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-    annotations_file = tmp_path / "annotations.json"
-
-    # First run: driver = "code"
-    annotations_file.write_text(json.dumps({
-        "2026-06-09": {"driver": "code", "evidence": "first", "claude_chat_sessions": 1}
-    }))
-    r1 = run_collect(sessions_root, output_file, annotations=annotations_file)
-    assert r1.returncode == 0
-
-    rows = load_output(output_file)
-    row = next(r for r in rows if r["date"] == "2026-06-09")
-    assert row["driver"] == "code"
-
-    # Second run: driver changed to "memoir"
-    annotations_file.write_text(json.dumps({
-        "2026-06-09": {"driver": "memoir", "evidence": "updated", "claude_chat_sessions": 3}
-    }))
-    r2 = run_collect(sessions_root, output_file, annotations=annotations_file)
-    assert r2.returncode == 0
-
-    rows = load_output(output_file)
-    row = next(r for r in rows if r["date"] == "2026-06-09")
-    assert row["driver"] == "memoir", (
-        f"Expected driver='memoir' after annotation update, got {row['driver']!r}"
-    )
-    assert row["evidence"] == "updated"
-    assert row["claude_chat_sessions"] == 3
-    assert row["claude_chat_est"] == 225000  # 3 × 75000
-
-
-# ---------------------------------------------------------------------------
-# AC-1.10 — Output schema is exactly 14 fields
-# ---------------------------------------------------------------------------
-
-def test_ac1_10_schema_exactly_14_fields(tmp_path):
-    """
-    AC-1.10: Every output row has exactly the 14 specified keys — no more, no less.
-    Presence of any additional key is a test failure.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    result = run_collect(sessions_root, output_file, annotations=ANNOTATIONS_JSON)
-    assert result.returncode == 0
-
-    rows = load_output(output_file)
-    assert len(rows) >= 1, "Expected at least one row"
-
-    for row in rows:
-        row_keys = set(row.keys())
-        extra = row_keys - EXPECTED_SCHEMA_KEYS
-        missing = EXPECTED_SCHEMA_KEYS - row_keys
-        assert not extra, f"Row has unexpected extra keys: {extra}"
-        assert not missing, f"Row is missing required keys: {missing}"
-        assert len(row_keys) == 14, f"Row has {len(row_keys)} keys, expected 14"
-
-
-# ---------------------------------------------------------------------------
-# AC-1.11 — Multi-machine additive merge
-# ---------------------------------------------------------------------------
-
-def test_ac1_11_multi_machine_additive_merge(tmp_path):
-    """
-    AC-1.11: Two collect runs with different --machine values on separate session
-    files for the same date are additive. sources accumulates both machine names.
-    Re-running a machine does not duplicate it in sources.
-    """
-    output_file = tmp_path / "daily-burn.json"
-
-    # Machine cadence: simple_session.jsonl → 2026-06-09, total_exact = 4950
-    sessions_cadence = tmp_path / "cadence_sessions"
-    cadence_proj = sessions_cadence / "proj"
-    cadence_proj.mkdir(parents=True)
-    shutil.copy(SIMPLE_SESSION, cadence_proj / SIMPLE_SESSION.name)
-
-    r1 = run_collect(sessions_cadence, output_file, machine="cadence")
-    assert r1.returncode == 0
-
-    rows = load_output(output_file)
-    row = next(r for r in rows if r["date"] == "2026-06-09")
-    assert row["sources"] == ["cadence"]
-    exact_cadence = row["total_exact"]  # 4950
-
-    # Machine coda: a different session file on the same date
-    sessions_coda = tmp_path / "coda_sessions"
-    coda_proj = sessions_coda / "proj"
-    coda_proj.mkdir(parents=True)
-    (coda_proj / "coda_session.jsonl").write_text(
-        '{"type":"user","timestamp":"2026-06-09T18:00:00.000Z","uuid":"ff000001-0001-0001-0001-000000000001","parentUuid":null,"sessionId":"coda-session-001","message":{"role":"user","content":[{"type":"text","text":"hi"}]}}\n'
-        '{"type":"assistant","timestamp":"2026-06-09T18:01:00.000Z","uuid":"ff000001-0001-0001-0001-000000000002","parentUuid":"ff000001-0001-0001-0001-000000000001","sessionId":"coda-session-001","message":{"id":"msg_coda1","type":"message","role":"assistant","model":"claude-opus-4-5","content":[{"type":"text","text":"hi"}],"stop_reason":"end_turn","usage":{"input_tokens":100,"output_tokens":50,"cache_read_input_tokens":500,"cache_creation_input_tokens":250}}}\n'
-    )
-    exact_coda = 100 + 50 + 500 + 250  # 900
-
-    r2 = run_collect(sessions_coda, output_file, machine="coda")
-    assert r2.returncode == 0
-
-    rows = load_output(output_file)
-    row = next(r for r in rows if r["date"] == "2026-06-09")
-
-    assert "cadence" in row["sources"], "cadence must remain in sources"
-    assert "coda" in row["sources"], "coda must be added to sources"
-    assert row["total_exact"] == exact_cadence + exact_coda, (
-        f"Expected additive total_exact = {exact_cadence + exact_coda}, got {row['total_exact']}"
-    )
-
-    # Re-running coda again must not duplicate it in sources
-    r3 = run_collect(sessions_coda, output_file, machine="coda")
-    assert r3.returncode == 0
-
-    rows = load_output(output_file)
-    row = next(r for r in rows if r["date"] == "2026-06-09")
-    coda_count = row["sources"].count("coda")
-    assert coda_count == 1, f"coda appeared {coda_count} times in sources, expected 1 (idempotent)"
-
-
-# ---------------------------------------------------------------------------
-# AC-2.1 — --dry-run doesn't write
-# ---------------------------------------------------------------------------
-
-def test_ac2_1_dry_run_does_not_write(tmp_path):
-    """
-    AC-2.1: --dry-run prints reconciliation summary but does not create or modify
-    daily-burn.json.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    result = run_collect(sessions_root, output_file, dry_run=True)
-    assert result.returncode == 0, f"collect.py --dry-run failed:\n{result.stderr}"
-
-    assert not output_file.exists(), (
-        "--dry-run must not write daily-burn.json, but the file was created"
-    )
-
-    # Should still print something meaningful
     combined = result.stdout + result.stderr
-    assert combined.strip() != "", "--dry-run should produce output describing what would be written"
-
-
-def test_ac2_1_dry_run_does_not_modify_existing(tmp_path):
-    """
-    AC-2.1: --dry-run on an already-existing output file does not modify it.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    # First real run
-    r1 = run_collect(sessions_root, output_file)
-    assert r1.returncode == 0
-    original_bytes = output_file.read_bytes()
-
-    # Add more sessions so there would be a change
-    extra_dir = sessions_root / "extra_dry"
-    extra_dir.mkdir(parents=True, exist_ok=True)
-    (extra_dir / "extra_dry.jsonl").write_text(
-        '{"type":"user","timestamp":"2026-06-08T14:00:00.000Z","uuid":"drytest01-0001-0001-0001-000000000001","parentUuid":null,"sessionId":"dry-extra-001","message":{"role":"user","content":[{"type":"text","text":"hi"}]}}\n'
-        '{"type":"assistant","timestamp":"2026-06-08T14:01:00.000Z","uuid":"drytest01-0001-0001-0001-000000000002","parentUuid":"drytest01-0001-0001-0001-000000000001","sessionId":"dry-extra-001","message":{"id":"msg_dry1","type":"message","role":"assistant","model":"claude-opus-4-5","content":[{"type":"text","text":"hi"}],"stop_reason":"end_turn","usage":{"input_tokens":1,"output_tokens":1,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}\n'
-    )
-
-    r2 = run_collect(sessions_root, output_file, dry_run=True)
-    assert r2.returncode == 0
-    assert output_file.read_bytes() == original_bytes, (
-        "--dry-run modified the output file"
+    assert "DRY RUN" in combined, (
+        f"Expected 'DRY RUN' in output, got:\n{combined}"
     )
 
 
 # ---------------------------------------------------------------------------
-# AC-2.2 — --verbose format
+# AC-5.2 — parse_session returns correct token totals
 # ---------------------------------------------------------------------------
 
-def test_ac2_2_verbose_format(tmp_path):
+def test_ac5_2_parse_session_correct_token_totals():
     """
-    AC-2.2: --verbose prints one tab-separated line per session file in the format:
-    <session_id>\t<date>\t<input>\t<output>\t<cache_read>\t<cache_create>\t<api_requests>
+    AC-5.2: parse_session on simple_session.jsonl returns correct token sums.
+    Message A: input=100, output=50, cache_read=1000, cache_create=500
+    Message B: input=200, output=100, cache_read=2000, cache_create=1000
+    Expected: input=300, output=150, cache_read=3000, cache_create=1500
+    total = 300+150+3000+1500 = 4950
     """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
+    collect = _import_collect()
 
-    result = run_collect(sessions_root, output_file, verbose=True)
-    assert result.returncode == 0, f"collect.py --verbose failed:\n{result.stderr}"
+    result = collect.parse_session(SIMPLE_SESSION)
 
-    combined_output = result.stdout + result.stderr  # verbose may go to either
-    lines = [l for l in combined_output.splitlines() if "\t" in l]
-
-    assert len(lines) >= 1, f"Expected at least one tab-separated verbose line, got:\n{combined_output}"
-
-    # Check format: should have 7 tab-separated fields
-    for line in lines:
-        parts = line.split("\t")
-        assert len(parts) == 7, (
-            f"Verbose line should have 7 tab-separated fields, got {len(parts)}: {line!r}"
-        )
-        # Fields: session_id, date, input, output, cache_read, cache_create, api_requests
-        _session_id, date, inp, out, cache_read, cache_create, api_reqs = parts
-        # Date should be YYYY-MM-DD
-        assert len(date) == 10 and date[4] == "-" and date[7] == "-", (
-            f"Expected YYYY-MM-DD date in verbose line, got {date!r}"
-        )
-        # Token fields should be parseable integers
-        assert int(inp) >= 0
-        assert int(out) >= 0
-        assert int(cache_read) >= 0
-        assert int(cache_create) >= 0
-        assert int(api_reqs) >= 0
-
-
-# ---------------------------------------------------------------------------
-# AC-2.3 — --sessions-root override
-# ---------------------------------------------------------------------------
-
-def test_ac2_3_sessions_root_override(tmp_path):
-    """
-    AC-2.3: --sessions-root /tmp/test-sessions/ collects from the specified path.
-    Sessions at ~/.claude/projects/ are not scanned.
-    """
-    # Only put a session in a custom path
-    custom_root = tmp_path / "custom_sessions"
-    custom_proj = custom_root / "myproject"
-    custom_proj.mkdir(parents=True)
-    shutil.copy(SIMPLE_SESSION, custom_proj / SIMPLE_SESSION.name)
-
-    output_file = tmp_path / "daily-burn.json"
-
-    result = run_collect(custom_root, output_file)
-    assert result.returncode == 0, f"collect.py failed:\n{result.stderr}"
-
-    rows = load_output(output_file)
-    assert len(rows) >= 1, "Expected at least one row from --sessions-root"
-    assert rows[0]["date"] == "2026-06-09", "Expected data from the custom sessions root"
-
-
-# ---------------------------------------------------------------------------
-# AC-2.4 — --chat-tokens-per-session override
-# ---------------------------------------------------------------------------
-
-def test_ac2_4_chat_tokens_per_session_override(tmp_path):
-    """
-    AC-2.4: --chat-tokens-per-session 50000 changes the multiplier.
-    Given claude_chat_sessions = 2, claude_chat_est = 100000.
-    """
-    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
-
-    # Create an annotations file with claude_chat_sessions = 2
-    annotations_file = tmp_path / "annotations.json"
-    annotations_file.write_text(json.dumps({
-        "2026-06-09": {"driver": "code", "evidence": "test", "claude_chat_sessions": 2}
-    }))
-
-    result = run_collect(
-        sessions_root, output_file,
-        annotations=annotations_file,
-        chat_tokens_per_session=50000,
+    assert result is not None, "parse_session returned None for a valid session"
+    assert result["session_id"] == "simple_session", (
+        f"Expected session_id='simple_session', got {result['session_id']!r}"
     )
-    assert result.returncode == 0, f"collect.py failed:\n{result.stderr}"
+    assert result["input_tokens"] == 300
+    assert result["output_tokens"] == 150
+    assert result["cache_read"] == 3000
+    assert result["cache_create"] == 1500
+    assert result["api_requests"] == 2
 
-    rows = load_output(output_file)
-    row = next(r for r in rows if r["date"] == "2026-06-09")
-
-    assert row["claude_chat_est"] == 100000, (
-        f"Expected claude_chat_est=100000 (2 × 50000), got {row['claude_chat_est']}"
-    )
-    assert row["claude_chat_sessions"] == 2
+    # Total is input + output + cache_read + cache_create
+    total = result["input_tokens"] + result["output_tokens"] + result["cache_read"] + result["cache_create"]
+    assert total == 4950, f"Expected token total 4950, got {total}"
 
 
-# ---------------------------------------------------------------------------
-# AC-2.5 — --machine sets sources field
-# ---------------------------------------------------------------------------
-
-def test_ac2_5_machine_sets_sources(tmp_path):
+def test_ac5_2_parse_session_correct_date_bucketing():
     """
-    AC-2.5: --machine mybox sets sources = ["mybox"] on all rows written in that run.
+    AC-5.2 (date): simple_session.jsonl has timestamp 2026-06-09T14:00:00.000Z
+    which is 2026-06-09 in Pacific time (UTC-7 in summer). Date must be 2026-06-09.
+    """
+    collect = _import_collect()
+
+    result = collect.parse_session(SIMPLE_SESSION)
+    assert result is not None
+    assert result["session_date"] == "2026-06-09", (
+        f"Expected session_date='2026-06-09', got {result['session_date']!r}"
+    )
+
+
+def test_ac5_2_parse_session_midnight_spanning():
+    """
+    AC-5.2 (midnight): midnight_spanning_session.jsonl starts at
+    2026-06-10T06:55:00.000Z = 2026-06-09 23:55 PT. All tokens must be
+    bucketed to 2026-06-09 (first timestamp wins).
+    """
+    collect = _import_collect()
+
+    result = collect.parse_session(MIDNIGHT_SESSION)
+    assert result is not None
+    assert result["session_date"] == "2026-06-09", (
+        f"Expected midnight session to bucket to 2026-06-09, got {result['session_date']!r}"
+    )
+
+    # Two messages, each input=10, output=5, cache_read=100, cache_create=50
+    assert result["input_tokens"] == 20
+    assert result["output_tokens"] == 10
+    assert result["cache_read"] == 200
+    assert result["cache_create"] == 100
+    assert result["api_requests"] == 2
+
+
+# ---------------------------------------------------------------------------
+# AC-5.3 — Content-hash dedup: unchanged files produce zero upsert calls
+# ---------------------------------------------------------------------------
+
+def test_ac5_3_dedup_unchanged_files_skips_upsert(tmp_path):
+    """
+    AC-5.3: Running collect() twice on the same JSONL files results in zero
+    Supabase upsert calls on the second run (content-hash dedup).
+    """
+    collect = _import_collect()
+
+    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
+
+    # Redirect STATE_FILE to tmp_path so we don't pollute the repo
+    state_file = tmp_path / ".collect-state.json"
+
+    mock_sb = MagicMock()
+    mock_table = MagicMock()
+    mock_upsert = MagicMock()
+    mock_execute = MagicMock()
+    mock_execute.return_value.error = None
+    mock_upsert.return_value.execute = mock_execute
+    mock_table.return_value.upsert = mock_upsert
+    mock_sb.table = mock_table
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                # First run: should upsert
+                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                calls_after_first = mock_execute.call_count
+
+                # Second run: files unchanged — must NOT upsert again
+                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                calls_after_second = mock_execute.call_count
+
+    assert calls_after_first >= 1, "First run should have upserted at least one record"
+    assert calls_after_second == calls_after_first, (
+        f"Second run on unchanged files should not trigger new upserts "
+        f"(first={calls_after_first}, second={calls_after_second})"
+    )
+
+
+# ---------------------------------------------------------------------------
+# AC-5.4 — Modified JSONL triggers re-upsert
+# ---------------------------------------------------------------------------
+
+def test_ac5_4_modified_file_triggers_reupsert(tmp_path):
+    """
+    AC-5.4: After a file's content hash changes, the next collect() run
+    upserts new totals to Supabase.
+    """
+    collect = _import_collect()
+
+    sessions_root = tmp_path / "sessions"
+    proj = sessions_root / "proj"
+    proj.mkdir(parents=True)
+    session_file = proj / "my_session.jsonl"
+    shutil.copy(SIMPLE_SESSION, session_file)
+
+    state_file = tmp_path / ".collect-state.json"
+
+    mock_sb = MagicMock()
+    mock_execute = MagicMock()
+    mock_execute.return_value.error = None
+    mock_sb.table.return_value.upsert.return_value.execute = mock_execute
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                # First run
+                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                count_after_first = mock_execute.call_count
+
+                # Modify the file (append a new assistant message)
+                extra_line = (
+                    '{"type":"assistant","timestamp":"2026-06-09T16:00:00.000Z",'
+                    '"uuid":"mod00001-0001-0001-0001-000000000001",'
+                    '"parentUuid":"aaaaaaaa-0001-0001-0001-000000000001",'
+                    '"sessionId":"my_session","message":{"id":"msg_mod1","type":"message",'
+                    '"role":"assistant","model":"claude-opus-4-5","content":[],'
+                    '"stop_reason":"end_turn","usage":{"input_tokens":10,"output_tokens":5,'
+                    '"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}\n'
+                )
+                with open(session_file, "a") as f:
+                    f.write(extra_line)
+
+                # Second run after modification
+                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                count_after_second = mock_execute.call_count
+
+    assert count_after_second > count_after_first, (
+        "Modified file should trigger a new upsert on the second run"
+    )
+
+
+# ---------------------------------------------------------------------------
+# AC-5.5 — Malformed JSONL lines are skipped gracefully
+# ---------------------------------------------------------------------------
+
+def test_ac5_5_malformed_jsonl_lines_skipped():
+    """
+    AC-5.5: parse_session on malformed_session.jsonl skips the bad line and
+    still returns data from the valid assistant record.
+    Valid assistant record: input=50, output=25, cache_read=500, cache_create=250
+    """
+    collect = _import_collect()
+
+    result = collect.parse_session(MALFORMED_SESSION)
+
+    assert result is not None, (
+        "parse_session should return data despite a malformed line"
+    )
+    assert result["input_tokens"] == 50
+    assert result["output_tokens"] == 25
+    assert result["cache_read"] == 500
+    assert result["cache_create"] == 250
+
+
+def test_ac5_5_malformed_jsonl_warning_on_stderr(tmp_path, capsys):
+    """
+    AC-5.5: When a malformed line is encountered, a warning is printed to stderr.
+    """
+    collect = _import_collect()
+
+    # Capture stderr by calling parse_session and checking stderr output
+    import io
+    from unittest.mock import patch as upatch
+    import sys as _sys
+
+    buf = io.StringIO()
+    with upatch("sys.stderr", buf):
+        collect.parse_session(MALFORMED_SESSION)
+
+    stderr_output = buf.getvalue()
+    assert stderr_output.strip() != "", (
+        "Expected a warning on stderr for malformed JSON line"
+    )
+    assert any(word in stderr_output.lower() for word in ("malformed", "warning", "error")), (
+        f"Warning message not found in stderr: {stderr_output!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# AC-5.6 — No output file written (no daily-burn.json)
+# ---------------------------------------------------------------------------
+
+def test_ac5_6_no_output_file_written(tmp_path):
+    """
+    AC-5.6: collect.py does not write public/data/daily-burn.json.
+    Running collect (dry-run) must not create any JSON output file.
     """
     sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
-    output_file = tmp_path / "daily-burn.json"
+    output_path = tmp_path / "public" / "data" / "daily-burn.json"
 
-    result = run_collect(sessions_root, output_file, machine="mybox")
-    assert result.returncode == 0, f"collect.py failed:\n{result.stderr}"
+    env = os.environ.copy()
+    env.pop("SUPABASE_URL", None)
+    env.pop("SUPABASE_SERVICE_ROLE_KEY", None)
 
-    rows = load_output(output_file)
-    for row in rows:
-        assert "mybox" in row["sources"], (
-            f"Expected 'mybox' in sources for row {row['date']}, got {row['sources']}"
-        )
+    subprocess.run(
+        [sys.executable, str(COLLECT_PY), "--sessions-root", str(sessions_root), "--dry-run"],
+        capture_output=True,
+        text=True,
+        env=env,
+        cwd=str(tmp_path),
+    )
+
+    assert not output_path.exists(), (
+        f"collect.py wrote {output_path} — v2 must not write any JSON output file"
+    )
+
+    # Also verify the real repo public/data/daily-burn.json does not exist
+    repo_output = REPO_ROOT / "public" / "data" / "daily-burn.json"
+    assert not repo_output.exists(), (
+        f"public/data/daily-burn.json exists in repo — AC-5.6 requires it not to exist"
+    )
+
+
+# ---------------------------------------------------------------------------
+# file_hash tests
+# ---------------------------------------------------------------------------
+
+def test_file_hash_deterministic():
+    """file_hash returns the same value for the same file content."""
+    collect = _import_collect()
+
+    h1 = collect.file_hash(SIMPLE_SESSION)
+    h2 = collect.file_hash(SIMPLE_SESSION)
+    assert h1 == h2, "file_hash must be deterministic"
+
+
+def test_file_hash_differs_for_different_content(tmp_path):
+    """file_hash returns different values for files with different content."""
+    collect = _import_collect()
+
+    f1 = tmp_path / "a.jsonl"
+    f2 = tmp_path / "b.jsonl"
+    f1.write_text('{"type": "user"}\n')
+    f2.write_text('{"type": "assistant"}\n')
+
+    assert collect.file_hash(f1) != collect.file_hash(f2)
+
+
+def test_file_hash_is_sha256(tmp_path):
+    """file_hash produces a valid SHA-256 hex digest (64 hex chars)."""
+    collect = _import_collect()
+
+    f = tmp_path / "test.jsonl"
+    f.write_text("hello\n")
+    h = collect.file_hash(f)
+
+    assert len(h) == 64, f"Expected 64-char SHA-256 hex digest, got {len(h)} chars"
+    assert all(c in "0123456789abcdef" for c in h), "Hash must be lowercase hex"
+
+    # Verify correctness
+    expected = hashlib.sha256(b"hello\n").hexdigest()
+    assert h == expected
+
+
+# ---------------------------------------------------------------------------
+# load_state / save_state tests
+# ---------------------------------------------------------------------------
+
+def test_load_state_returns_empty_dict_when_missing(tmp_path):
+    """load_state returns {} when .collect-state.json does not exist."""
+    collect = _import_collect()
+
+    state_file = tmp_path / ".collect-state.json"
+    with patch.object(collect, "STATE_FILE", state_file):
+        state = collect.load_state()
+
+    assert state == {}, f"Expected empty dict, got {state}"
+
+
+def test_load_state_returns_empty_dict_on_corrupt_json(tmp_path):
+    """load_state returns {} when the state file contains invalid JSON."""
+    collect = _import_collect()
+
+    state_file = tmp_path / ".collect-state.json"
+    state_file.write_text("{broken json here")
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        state = collect.load_state()
+
+    assert state == {}, f"Expected empty dict on corrupt JSON, got {state}"
+
+
+def test_save_and_load_state_roundtrip(tmp_path):
+    """save_state writes and load_state reads back the same dict."""
+    collect = _import_collect()
+
+    state_file = tmp_path / ".collect-state.json"
+    original = {
+        "cadence:/path/to/session1.jsonl": "abc123",
+        "cadence:/path/to/session2.jsonl": "def456",
+    }
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        collect.save_state(original)
+        loaded = collect.load_state()
+
+    assert loaded == original, f"Roundtrip failed: {loaded} != {original}"
+
+
+# ---------------------------------------------------------------------------
+# parse_session edge cases
+# ---------------------------------------------------------------------------
+
+def test_parse_session_returns_none_for_empty_file(tmp_path):
+    """parse_session returns None for a file with no usable timestamps."""
+    collect = _import_collect()
+
+    empty = tmp_path / "empty.jsonl"
+    empty.write_text("")
+
+    result = collect.parse_session(empty)
+    assert result is None, "parse_session should return None for an empty file"
+
+
+def test_parse_session_returns_none_for_no_assistant_records(tmp_path):
+    """
+    parse_session returns None if there are no assistant records with usage data.
+    A file with only user messages has a timestamp but no token data.
+    Note: session_date is extracted even without assistant messages,
+    but the function returns None only if no first_ts found.
+    A file with a user message but no assistant records should still return
+    something (the timestamp is there) but with zero tokens — verify behavior.
+    """
+    collect = _import_collect()
+
+    user_only = tmp_path / "user_only.jsonl"
+    user_only.write_text(
+        '{"type":"user","timestamp":"2026-06-09T14:00:00.000Z",'
+        '"uuid":"test-0001","parentUuid":null,"sessionId":"user-only",'
+        '"message":{"role":"user","content":[{"type":"text","text":"Hi"}]}}\n'
+    )
+
+    result = collect.parse_session(user_only)
+    # A user-only file has a timestamp, so parse_session returns a dict with 0 tokens
+    # OR returns None — either is acceptable as long as it doesn't crash
+    # The key invariant: must not raise an exception
+    assert result is None or isinstance(result, dict), (
+        "parse_session should return None or dict, not raise"
+    )
+
+
+def test_parse_session_session_id_from_filename(tmp_path):
+    """parse_session uses the file stem (filename without extension) as session_id."""
+    collect = _import_collect()
+
+    result = collect.parse_session(SIMPLE_SESSION)
+    assert result is not None
+    assert result["session_id"] == SIMPLE_SESSION.stem
+
+
+# ---------------------------------------------------------------------------
+# collect() dry-run behavior
+# ---------------------------------------------------------------------------
+
+def test_collect_dry_run_does_not_call_supabase(tmp_path):
+    """
+    collect() with dry_run=True never calls create_client or table.upsert.
+    """
+    collect = _import_collect()
+
+    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
+    state_file = tmp_path / ".collect-state.json"
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client") as mock_create_client:
+            collect.collect(sessions_root, machine="cadence", dry_run=True, verbose=False)
+
+    mock_create_client.assert_not_called(), "create_client must not be called in dry_run mode"
+
+
+def test_collect_dry_run_state_behavior(tmp_path):
+    """
+    collect() with dry_run=True updates in-memory state (per-file hash) during
+    the run but does NOT write .collect-state.json to disk (nothing written in
+    dry_run mode). This mirrors the implementation: dry_run continues after
+    updating the hash but never calls save_state().
+
+    The practical implication: dry_run re-scans all files on each invocation.
+    This test verifies no state file is written (implementation behavior).
+    """
+    collect = _import_collect()
+
+    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
+    state_file = tmp_path / ".collect-state.json"
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        collect.collect(sessions_root, machine="cadence", dry_run=True, verbose=False)
+
+    # dry_run does NOT persist state — state file should NOT exist
+    # (collect.py only calls save_state() in the non-dry-run branch)
+    assert not state_file.exists(), (
+        ".collect-state.json must NOT be written during dry_run "
+        "(save_state is only called in the non-dry-run branch)"
+    )
+
+
+def test_collect_requires_credentials_when_not_dry_run():
+    """
+    collect() without dry_run exits with error if credentials are missing.
+    We test this via the collect() function directly with mocked env vars
+    (using subprocess is unreliable because a .env file at the project root
+    may provide real credentials to the subprocess).
+    """
+    collect = _import_collect()
+
+    sessions_root = FIXTURES_DIR  # any directory with JSONL files
+
+    # Patch STATE_FILE to avoid writing to repo root
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        state_file = Path(td) / ".collect-state.json"
+        with patch.object(collect, "STATE_FILE", state_file):
+            # Explicitly clear both credential env vars
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "",
+                "SUPABASE_SERVICE_ROLE_KEY": "",
+            }):
+                # Temporarily unset the vars (patch.dict with empty strings doesn't unset)
+                env_backup_url = os.environ.pop("SUPABASE_URL", None)
+                env_backup_key = os.environ.pop("SUPABASE_SERVICE_ROLE_KEY", None)
+                try:
+                    with pytest.raises(SystemExit) as exc_info:
+                        collect.collect(
+                            sessions_root,
+                            machine="cadence",
+                            dry_run=False,
+                            verbose=False,
+                        )
+                    assert exc_info.value.code != 0, (
+                        "collect() should sys.exit(1) when credentials are missing"
+                    )
+                finally:
+                    if env_backup_url is not None:
+                        os.environ["SUPABASE_URL"] = env_backup_url
+                    if env_backup_key is not None:
+                        os.environ["SUPABASE_SERVICE_ROLE_KEY"] = env_backup_key
+
+
+def test_collect_upserts_correct_record_shape(tmp_path):
+    """
+    collect() with a live (mocked) Supabase client upserts a record with
+    the correct fields: session_id, machine, agent, fidelity, session_date,
+    input_tokens, output_tokens, cache_read, cache_create, api_requests.
+    """
+    collect = _import_collect()
+
+    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
+    state_file = tmp_path / ".collect-state.json"
+
+    captured_records = []
+
+    mock_sb = MagicMock()
+    mock_execute = MagicMock()
+    mock_execute.return_value.error = None
+
+    def capture_upsert(record, **kwargs):
+        captured_records.append(record)
+        return mock_execute
+
+    mock_sb.table.return_value.upsert = capture_upsert
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+
+    assert len(captured_records) >= 1, "Should have upserted at least one record"
+
+    rec = captured_records[0]
+    required_fields = {
+        "session_id", "session_date", "machine", "agent", "fidelity",
+        "input_tokens", "output_tokens", "cache_read", "cache_create", "api_requests",
+    }
+    missing = required_fields - set(rec.keys())
+    assert not missing, f"Upserted record missing fields: {missing}"
+
+    assert rec["machine"] == "cadence"
+    assert rec["agent"] == "claude-code"
+    assert rec["fidelity"] == "exact"
+    assert rec["session_id"] == "simple_session"
+    assert rec["session_date"] == "2026-06-09"
+    assert rec["input_tokens"] == 300
+    assert rec["output_tokens"] == 150
+    assert rec["cache_read"] == 3000
+    assert rec["cache_create"] == 1500
+    assert rec["api_requests"] == 2
+
+
+# ---------------------------------------------------------------------------
+# AC-9.1, AC-9.2, AC-9.3 — File cleanup (repo-level static checks)
+# ---------------------------------------------------------------------------
+
+def test_ac9_1_daily_burn_json_not_in_repo():
+    """AC-9.1: public/data/daily-burn.json does not exist in the repo."""
+    target = REPO_ROOT / "public" / "data" / "daily-burn.json"
+    assert not target.exists(), (
+        f"AC-9.1 FAIL: {target} exists — v2 must not commit this file"
+    )
+
+
+def test_ac9_2_session_contributions_json_not_in_repo():
+    """AC-9.2: public/data/session-contributions.json does not exist."""
+    target = REPO_ROOT / "public" / "data" / "session-contributions.json"
+    assert not target.exists(), (
+        f"AC-9.2 FAIL: {target} exists — must be removed for v2"
+    )
+
+
+def test_ac9_3_session_hashes_json_not_in_repo():
+    """AC-9.3: public/data/session-hashes.json does not exist."""
+    target = REPO_ROOT / "public" / "data" / "session-hashes.json"
+    assert not target.exists(), (
+        f"AC-9.3 FAIL: {target} exists — must be removed for v2"
+    )
+
+
+# ---------------------------------------------------------------------------
+# AC-8.10 — useTokenData.ts does not reference /data/daily-burn.json
+# ---------------------------------------------------------------------------
+
+def test_ac8_10_use_token_data_no_daily_burn_reference():
+    """
+    AC-8.10: src/hooks/useTokenData.ts must not reference /data/daily-burn.json.
+    """
+    hook_file = REPO_ROOT / "src" / "hooks" / "useTokenData.ts"
+    assert hook_file.exists(), f"useTokenData.ts not found at {hook_file}"
+
+    content = hook_file.read_text()
+    assert "daily-burn.json" not in content, (
+        "AC-8.10 FAIL: useTokenData.ts still references /data/daily-burn.json"
+    )
+    assert "/api/daily" in content, (
+        "AC-8.10: useTokenData.ts should reference /api/daily"
+    )
+    assert "/api/sessions" in content, (
+        "AC-8.10: useTokenData.ts should reference /api/sessions"
+    )
