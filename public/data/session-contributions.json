@@ -1,0 +1,62 @@
+{
+  "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell-Code-AI-open-brain/139070b4-3b32-4de8-bdbc-e4e13631ec86.jsonl": {
+    "api_requests": 61,
+    "cache_create": 181696,
+    "cache_read": 2928709,
+    "date": "2026-06-09",
+    "hash": "41f78d7aeed12a52a1b1219e2be07cd132932654a69c9976b415900f94c0e1ed",
+    "input": 139,
+    "machine": "cadence",
+    "output": 34819
+  },
+  "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell-Code-AI-open-brain/b11e40c0-5041-425d-9668-91bcf17fbeb0.jsonl": {
+    "api_requests": 131,
+    "cache_create": 638092,
+    "cache_read": 13321399,
+    "date": "2026-06-09",
+    "hash": "ed3c5963dd90ad6d33cc1aec31d640a112b531f2fe054764fec50ea3354a6ad5",
+    "input": 197,
+    "machine": "cadence",
+    "output": 110160
+  },
+  "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell-Code-AI-open-brain/b11e40c0-5041-425d-9668-91bcf17fbeb0/subagents/agent-a73820ed98bb433a6.jsonl": {
+    "api_requests": 7,
+    "cache_create": 71608,
+    "cache_read": 82905,
+    "date": "2026-06-09",
+    "hash": "bc8643901b67938d1ce2ae5922affc976240df84236a7dc77f9d7683e04246d6",
+    "input": 13,
+    "machine": "cadence",
+    "output": 917
+  },
+  "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell-Code-AI-open-brain/b11e40c0-5041-425d-9668-91bcf17fbeb0/subagents/agent-ac5659d55abaa30c6.jsonl": {
+    "api_requests": 7,
+    "cache_create": 58376,
+    "cache_read": 124664,
+    "date": "2026-06-09",
+    "hash": "56dc5f5d089f33d1fb74e08349cabad5c9afbfad2622308bd6192d60753c8fcf",
+    "input": 13,
+    "machine": "cadence",
+    "output": 3262
+  },
+  "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell-Code-AI-open-brain/b11e40c0-5041-425d-9668-91bcf17fbeb0/subagents/agent-aca3203edf104ae8a.jsonl": {
+    "api_requests": 18,
+    "cache_create": 65429,
+    "cache_read": 499787,
+    "date": "2026-06-09",
+    "hash": "1673f6f9afe93cb44acb3eed37b1a27ac44198513fe7f34025225918ee27c584",
+    "input": 22,
+    "machine": "cadence",
+    "output": 13727
+  },
+  "cadence:/Users/brettcoryell/.claude/projects/-Users-brettcoryell/0b4041d0-5cf2-44f0-8a82-fcfce1d623d2.jsonl": {
+    "api_requests": 28,
+    "cache_create": 109410,
+    "cache_read": 639706,
+    "date": "2026-06-08",
+    "hash": "5aacf3f5826e2b706f5b93a8da6d3ea3668d3569ae5ee6b18f4c8eda10479a7b",
+    "input": 946,
+    "machine": "cadence",
+    "output": 16148
+  }
+}

@@ -1,0 +1,542 @@
+[
+  {
+    "date": "2026-05-11",
+    "claude_code_input": 10,
+    "claude_code_output": 30,
+    "claude_code_cache_read": 600,
+    "claude_code_cache_create": 360,
+    "claude_code_api_requests": 1,
+    "claude_code_sessions": 1,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 1000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "infrastructure",
+    "evidence": "Evidence for day 1: feature work"
+  },
+  {
+    "date": "2026-05-12",
+    "claude_code_input": 20,
+    "claude_code_output": 60,
+    "claude_code_cache_read": 1200,
+    "claude_code_cache_create": 720,
+    "claude_code_api_requests": 1,
+    "claude_code_sessions": 1,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 2000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "career",
+    "evidence": "Evidence for day 2: feature work"
+  },
+  {
+    "date": "2026-05-13",
+    "claude_code_input": 0,
+    "claude_code_output": 0,
+    "claude_code_cache_read": 0,
+    "claude_code_cache_create": 0,
+    "claude_code_api_requests": 0,
+    "claude_code_sessions": 0,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 0,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "markets",
+    "evidence": "Evidence for day 3: feature work"
+  },
+  {
+    "date": "2026-05-14",
+    "claude_code_input": 40,
+    "claude_code_output": 120,
+    "claude_code_cache_read": 2400,
+    "claude_code_cache_create": 1440,
+    "claude_code_api_requests": 2,
+    "claude_code_sessions": 1,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 4000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "memoir",
+    "evidence": "Evidence for day 4: feature work"
+  },
+  {
+    "date": "2026-05-15",
+    "claude_code_input": 0,
+    "claude_code_output": 0,
+    "claude_code_cache_read": 0,
+    "claude_code_cache_create": 0,
+    "claude_code_api_requests": 0,
+    "claude_code_sessions": 0,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 0,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "research",
+    "evidence": "Evidence for day 5: feature work"
+  },
+  {
+    "date": "2026-05-16",
+    "claude_code_input": 60,
+    "claude_code_output": 180,
+    "claude_code_cache_read": 3600,
+    "claude_code_cache_create": 2160,
+    "claude_code_api_requests": 3,
+    "claude_code_sessions": 1,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 6000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "personal",
+    "evidence": "Evidence for day 6: feature work"
+  },
+  {
+    "date": "2026-05-17",
+    "claude_code_input": 70,
+    "claude_code_output": 210,
+    "claude_code_cache_read": 4200,
+    "claude_code_cache_create": 2520,
+    "claude_code_api_requests": 3,
+    "claude_code_sessions": 1,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 7000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "mixed",
+    "evidence": "Evidence for day 7: feature work"
+  },
+  {
+    "date": "2026-05-18",
+    "claude_code_input": 0,
+    "claude_code_output": 0,
+    "claude_code_cache_read": 0,
+    "claude_code_cache_create": 0,
+    "claude_code_api_requests": 0,
+    "claude_code_sessions": 0,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 0,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "code",
+    "evidence": "Evidence for day 8: feature work"
+  },
+  {
+    "date": "2026-05-19",
+    "claude_code_input": 90,
+    "claude_code_output": 270,
+    "claude_code_cache_read": 5400,
+    "claude_code_cache_create": 3240,
+    "claude_code_api_requests": 4,
+    "claude_code_sessions": 1,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 9000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "infrastructure",
+    "evidence": "Evidence for day 9: feature work"
+  },
+  {
+    "date": "2026-05-20",
+    "claude_code_input": 100,
+    "claude_code_output": 300,
+    "claude_code_cache_read": 6000,
+    "claude_code_cache_create": 3600,
+    "claude_code_api_requests": 5,
+    "claude_code_sessions": 2,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 10000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "career",
+    "evidence": "Evidence for day 10: feature work"
+  },
+  {
+    "date": "2026-05-21",
+    "claude_code_input": 1000,
+    "claude_code_output": 3000,
+    "claude_code_cache_read": 60000,
+    "claude_code_cache_create": 36000,
+    "claude_code_api_requests": 5,
+    "claude_code_sessions": 2,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 100000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "markets",
+    "evidence": "Evidence for day 11: feature work"
+  },
+  {
+    "date": "2026-05-22",
+    "claude_code_input": 2000,
+    "claude_code_output": 6000,
+    "claude_code_cache_read": 120000,
+    "claude_code_cache_create": 72000,
+    "claude_code_api_requests": 6,
+    "claude_code_sessions": 2,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 200000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "memoir",
+    "evidence": "Evidence for day 12: feature work"
+  },
+  {
+    "date": "2026-05-23",
+    "claude_code_input": 3000,
+    "claude_code_output": 9000,
+    "claude_code_cache_read": 180000,
+    "claude_code_cache_create": 108000,
+    "claude_code_api_requests": 6,
+    "claude_code_sessions": 2,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 300000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "research",
+    "evidence": "Evidence for day 13: feature work"
+  },
+  {
+    "date": "2026-05-24",
+    "claude_code_input": 4000,
+    "claude_code_output": 12000,
+    "claude_code_cache_read": 240000,
+    "claude_code_cache_create": 144000,
+    "claude_code_api_requests": 7,
+    "claude_code_sessions": 2,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 400000,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "personal",
+    "evidence": "Evidence for day 14: feature work"
+  },
+  {
+    "date": "2026-05-25",
+    "claude_code_input": 0,
+    "claude_code_output": 0,
+    "claude_code_cache_read": 0,
+    "claude_code_cache_create": 0,
+    "claude_code_api_requests": 0,
+    "claude_code_sessions": 0,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 0,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "mixed",
+    "evidence": "Evidence for day 15: feature work"
+  },
+  {
+    "date": "2026-05-26",
+    "claude_code_input": 6000,
+    "claude_code_output": 18000,
+    "claude_code_cache_read": 360000,
+    "claude_code_cache_create": 216000,
+    "claude_code_api_requests": 8,
+    "claude_code_sessions": 3,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 600000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-05-27",
+    "claude_code_input": 7000,
+    "claude_code_output": 21000,
+    "claude_code_cache_read": 420000,
+    "claude_code_cache_create": 252000,
+    "claude_code_api_requests": 8,
+    "claude_code_sessions": 3,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 700000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-05-28",
+    "claude_code_input": 8000,
+    "claude_code_output": 24000,
+    "claude_code_cache_read": 480000,
+    "claude_code_cache_create": 288000,
+    "claude_code_api_requests": 9,
+    "claude_code_sessions": 3,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 800000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-05-29",
+    "claude_code_input": 9000,
+    "claude_code_output": 27000,
+    "claude_code_cache_read": 540000,
+    "claude_code_cache_create": 324000,
+    "claude_code_api_requests": 9,
+    "claude_code_sessions": 3,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 900000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-05-30",
+    "claude_code_input": 10000,
+    "claude_code_output": 30000,
+    "claude_code_cache_read": 600000,
+    "claude_code_cache_create": 360000,
+    "claude_code_api_requests": 10,
+    "claude_code_sessions": 4,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 1000000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-05-31",
+    "claude_code_input": 12000,
+    "claude_code_output": 36000,
+    "claude_code_cache_read": 720000,
+    "claude_code_cache_create": 432000,
+    "claude_code_api_requests": 10,
+    "claude_code_sessions": 4,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 1200000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-01",
+    "claude_code_input": 0,
+    "claude_code_output": 0,
+    "claude_code_cache_read": 0,
+    "claude_code_cache_create": 0,
+    "claude_code_api_requests": 0,
+    "claude_code_sessions": 0,
+    "claude_chat_sessions": 2,
+    "claude_chat_est": 150000,
+    "total_exact": 0,
+    "total_est": 150000,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-02",
+    "claude_code_input": 16000,
+    "claude_code_output": 48000,
+    "claude_code_cache_read": 960000,
+    "claude_code_cache_create": 576000,
+    "claude_code_api_requests": 11,
+    "claude_code_sessions": 4,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 1600000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-03",
+    "claude_code_input": 18000,
+    "claude_code_output": 54000,
+    "claude_code_cache_read": 1080000,
+    "claude_code_cache_create": 648000,
+    "claude_code_api_requests": 12,
+    "claude_code_sessions": 4,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 1800000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-04",
+    "claude_code_input": 0,
+    "claude_code_output": 0,
+    "claude_code_cache_read": 0,
+    "claude_code_cache_create": 0,
+    "claude_code_api_requests": 0,
+    "claude_code_sessions": 0,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 0,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-05",
+    "claude_code_input": 22000,
+    "claude_code_output": 66000,
+    "claude_code_cache_read": 1320000,
+    "claude_code_cache_create": 792000,
+    "claude_code_api_requests": 13,
+    "claude_code_sessions": 5,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 2200000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-06",
+    "claude_code_input": 24000,
+    "claude_code_output": 72000,
+    "claude_code_cache_read": 1440000,
+    "claude_code_cache_create": 864000,
+    "claude_code_api_requests": 13,
+    "claude_code_sessions": 5,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 2400000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-07",
+    "claude_code_input": 26000,
+    "claude_code_output": 78000,
+    "claude_code_cache_read": 1560000,
+    "claude_code_cache_create": 936000,
+    "claude_code_api_requests": 14,
+    "claude_code_sessions": 5,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 2600000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-08",
+    "claude_code_input": 28000,
+    "claude_code_output": 84000,
+    "claude_code_cache_read": 1680000,
+    "claude_code_cache_create": 1008000,
+    "claude_code_api_requests": 14,
+    "claude_code_sessions": 5,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 2800000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  },
+  {
+    "date": "2026-06-09",
+    "claude_code_input": 30000,
+    "claude_code_output": 90000,
+    "claude_code_cache_read": 1800000,
+    "claude_code_cache_create": 1080000,
+    "claude_code_api_requests": 15,
+    "claude_code_sessions": 6,
+    "claude_chat_sessions": 0,
+    "claude_chat_est": 0,
+    "total_exact": 3000000,
+    "total_est": 0,
+    "sources": [
+      "cadence"
+    ],
+    "driver": "",
+    "evidence": ""
+  }
+]
