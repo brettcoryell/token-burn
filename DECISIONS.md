@@ -1,0 +1,85 @@
+# DECISIONS.md — token-burn
+
+Architectural decisions for the token-burn dashboard. Consult before making changes.
+
+---
+
+## D1: Supabase as the single source of truth for token data
+
+**Decision (2026-06-09):** Token data lives in a Supabase `token_sessions` table,
+not in flat JSON files committed to the repo.
+
+**Why:** Two machines (Coda + Cadence) and one chat agent (Ariel) all need to write
+token data. Flat JSON files committed to git require synchronization via git pull/push,
+and Ariel has no disk access at all. Supabase gives a shared source of truth with
+real-time consistency.
+
+**Constraints:**
+- The Supabase service key MUST stay server-side (Vercel env vars, local `.env`).
+  Never in `VITE_*` env vars. Never committed to git.
+- The repo is public — no secrets in tracked files.
+
+---
+
+## D2: Vercel serverless proxy for all Supabase reads
+
+**Decision (2026-06-09):** The frontend fetches data from Vercel API routes (`/api/daily`,
+`/api/sessions`), never from Supabase directly from the browser.
+
+**Why:** The service role key grants write access to the entire OB database. If it
+appeared in the browser bundle, any visitor could read or write all OB data.
+
+**Constraints:**
+- No `VITE_SUPABASE_*` env vars — these would be bundled.
+- All new dashboard data fetches go through `/api/*.ts` routes.
+- This proxy pattern should be reviewed for other Vercel-deployed projects (SOON intent in OB).
+
+---
+
+## D3: Session-level granularity in token_sessions
+
+**Decision (2026-06-09):** One row per session (not per day). The `get_daily_summary()`
+Postgres function aggregates to day-level for the dashboard views.
+
+**Why:** Per-day rows lose information about which work drove token spend. Session-level
+rows allow driver labeling at the session level, enabling the Drivers view to show
+accurate per-project attribution.
+
+**Constraints:**
+- Upsert key: `UNIQUE (session_id, machine)` — idempotent on collector re-runs.
+- `session_id` for Code sessions = JSONL filename stem (no extension).
+- `session_id` for Chat sessions = `ariel-{date}-{uuid}`.
+- `session_id` for legacy rows = `legacy-{date}` or `legacy-chat-{date}`.
+
+---
+
+## D4: Driver taxonomy (closed set)
+
+**Decision (2026-06-09):** The `driver` field accepts only these values:
+`infrastructure`, `career`, `creative`, `markets`, `research`, `personal`, or `NULL`.
+
+**Why:** An open-ended text field would make the Drivers view unworkable (too many
+distinct values). The closed set is enforced by a CHECK constraint in Postgres and
+validated in both MCP tools before the Supabase insert.
+
+---
+
+## D5: Fidelity separation — never mix exact and estimated without labels
+
+**Decision (inherited from v1, confirmed v2):** Claude Code session tokens (`fidelity='exact'`)
+and Claude Chat estimates (`fidelity='estimated'`) are NEVER summed into a single
+undifferentiated total. The dashboard shows them separately with MEASURED/EST badges.
+
+**Why:** Mixing signals of different reliability misleads the user about their true
+AI spend. Exact data from JSONL files is exact; chat estimates are educated guesses.
+
+---
+
+## D6: .collect-state.json for dedup — not committed to git
+
+**Decision (2026-06-09):** The collector uses `.collect-state.json` (gitignored) to
+track content hashes of JSONL files, avoiding redundant Supabase upserts on unchanged files.
+
+**Why:** Without local hash state, every collector run would upsert every JSONL file
+— correct semantically (Supabase ON CONFLICT handles it) but wasteful on large histories.
+If `.collect-state.json` is lost, the collector re-upserts everything — safe, just slow.
