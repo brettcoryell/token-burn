@@ -28,5 +28,8 @@ data/raw/
 .env
 .env.local
 
+# Collector state (local hash cache — not committed)
+.collect-state.json
+
 # OS
 .DS_Store

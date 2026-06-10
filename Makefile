@@ -1,52 +1,41 @@
-.PHONY: collect collect-iMac dev build test test-collector test-ui install
+.PHONY: collect collect-coda migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
-MACHINE ?= cadence
-CHAT_TOKENS ?= 75000
-OUTPUT ?= public/data/daily-burn.json
-ANNOTATIONS ?= data/annotations.json
+MACHINE       ?= cadence
 
-collect:
+collect:        ## Collect Code sessions → upsert to Supabase (run on Cadence)
+	python3 scripts/collect.py \
+		--sessions-root "$(SESSIONS_ROOT)" \
+		--machine "$(MACHINE)"
+
+collect-dry:    ## Dry run — show what would be upserted
 	python3 scripts/collect.py \
 		--sessions-root "$(SESSIONS_ROOT)" \
 		--machine "$(MACHINE)" \
-		--chat-tokens-per-session $(CHAT_TOKENS) \
-		--annotations "$(ANNOTATIONS)" \
-		--output "$(OUTPUT)"
-
-collect-dry:
-	python3 scripts/collect.py \
-		--sessions-root "$(SESSIONS_ROOT)" \
-		--machine "$(MACHINE)" \
-		--annotations "$(ANNOTATIONS)" \
-		--output "$(OUTPUT)" \
 		--dry-run
 
-collect-iMac:
-	@echo "Requires Tailscale + SSH to iMac. Future: rsync sessions then run collect."
-	@echo "For now, manually copy iMac sessions to /tmp/iMac-sessions/ then:"
-	@echo "  make collect SESSIONS_ROOT=/tmp/iMac-sessions/ MACHINE=coda"
+collect-coda:   ## Collect Code sessions on Coda (run on iMac with MACHINE=coda)
+	python3 scripts/collect.py \
+		--sessions-root "$(SESSIONS_ROOT)" \
+		--machine coda
 
-dev:
+migrate:        ## One-time: migrate legacy daily-burn.json → Supabase
+	python3 scripts/migrate_legacy.py
+
+dev:            ## Start Vite dev server (use vercel dev for API routes)
 	npm run dev
 
-build:
+build:          ## Build frontend
 	npm run build
 
-install:
+install:        ## Install dependencies
 	npm install
-	pip3 install pytest
+	pip3 install supabase python-dotenv pytest
 
-test-collector:
+test-collector: ## Run Python collector unit tests
 	python3 -m pytest tests/collector/ -v
 
-test-ui:
+test-ui:        ## Run Playwright UI tests
 	npx playwright test
 
-test: test-collector test-ui
-
-seed-annotations:
-	@if [ ! -f data/annotations.json ]; then \
-		echo '{}' > data/annotations.json; \
-		echo "Created empty data/annotations.json"; \
-	fi
+test: test-collector test-ui  ## Run all tests

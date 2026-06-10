@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react'
-import { DayRecord, TimeRange } from '../types'
+import { DayRecord, SessionRecord, TimeRange } from '../types'
 import { filterByRange } from '../utils/dates'
 
 interface TokenDataState {
   all: DayRecord[]
   filtered: DayRecord[]
+  sessions: SessionRecord[]
   loading: boolean
   error: string | null
 }
 
 export function useTokenData(range: TimeRange): TokenDataState {
   const [all, setAll] = useState<DayRecord[]>([])
+  const [sessions, setSessions] = useState<SessionRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -19,14 +21,20 @@ export function useTokenData(range: TimeRange): TokenDataState {
     setLoading(true)
     setError(null)
 
-    fetch('/data/daily-burn.json')
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    Promise.all([
+      fetch('/api/daily').then(r => {
+        if (!r.ok) throw new Error(`/api/daily: HTTP ${r.status}`)
         return r.json() as Promise<DayRecord[]>
-      })
-      .then(data => {
+      }),
+      fetch('/api/sessions?limit=50').then(r => {
+        if (!r.ok) throw new Error(`/api/sessions: HTTP ${r.status}`)
+        return r.json() as Promise<SessionRecord[]>
+      }),
+    ])
+      .then(([daily, sess]) => {
         if (!cancelled) {
-          setAll(Array.isArray(data) ? data : [])
+          setAll(Array.isArray(daily) ? daily : [])
+          setSessions(Array.isArray(sess) ? sess : [])
           setLoading(false)
         }
       })
@@ -42,5 +50,5 @@ export function useTokenData(range: TimeRange): TokenDataState {
 
   const filtered = filterByRange(all, range)
 
-  return { all, filtered, loading, error }
+  return { all, filtered, sessions, loading, error }
 }

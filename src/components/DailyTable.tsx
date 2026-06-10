@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { DayRecord } from '../types'
+import { DayRecord, DRIVER_LABELS } from '../types'
 import { FidelityBadge } from './FidelityBadge'
 import { formatTokens, formatTokensExact } from '../utils/tokens'
 import { formatDateDisplay } from '../utils/dates'
@@ -44,15 +44,6 @@ export function DailyTable({ records }: Props) {
               <th className="text-right py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
                 Claude Chat Est
               </th>
-              <th className="text-right py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
-                Input
-              </th>
-              <th className="text-right py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
-                Output
-              </th>
-              <th className="text-right py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
-                Cache R/W
-              </th>
               <th className="text-left py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
                 Driver
               </th>
@@ -92,19 +83,8 @@ export function DailyTable({ records }: Props) {
                       <span className="text-slate-600">—</span>
                     )}
                   </td>
-                  <td className="py-2 px-3 text-right font-mono text-xs text-slate-500 whitespace-nowrap">
-                    {r.claude_code_input > 0 ? formatTokens(r.claude_code_input) : '—'}
-                  </td>
-                  <td className="py-2 px-3 text-right font-mono text-xs text-slate-500 whitespace-nowrap">
-                    {r.claude_code_output > 0 ? formatTokens(r.claude_code_output) : '—'}
-                  </td>
-                  <td className="py-2 px-3 text-right font-mono text-xs text-slate-500 whitespace-nowrap">
-                    {r.claude_code_cache_read > 0 || r.claude_code_cache_create > 0
-                      ? `${formatTokens(r.claude_code_cache_read)} / ${formatTokens(r.claude_code_cache_create)}`
-                      : '—'}
-                  </td>
                   <td className="py-2 px-3 text-xs text-slate-500 max-w-40 truncate">
-                    {r.driver || ''}
+                    {r.driver ? (DRIVER_LABELS[r.driver] ?? r.driver) : ''}
                   </td>
                 </tr>
               )

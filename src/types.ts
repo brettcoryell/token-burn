@@ -1,19 +1,28 @@
-// Closed schema — exactly 14 fields, mirrors SPEC.md
+// Day-level aggregated record — returned by /api/daily
 export interface DayRecord {
-  date: string                   // "YYYY-MM-DD" Pacific time
-  claude_code_input: number
-  claude_code_output: number
-  claude_code_cache_read: number
-  claude_code_cache_create: number
-  claude_code_api_requests: number
-  claude_code_sessions: number
-  claude_chat_sessions: number
-  claude_chat_est: number
-  total_exact: number
-  total_est: number
-  sources: string[]
-  driver: string
-  evidence: string
+  date: string                        // "YYYY-MM-DD"
+  total_exact: number                 // sum of exact (Claude Code) tokens
+  total_est: number                   // sum of estimated (Claude Chat) tokens
+  claude_code_sessions: number        // count of Code sessions
+  claude_chat_sessions: number        // count of Chat sessions
+  claude_code_api_requests: number    // sum of API requests from Code sessions
+  sources: string[]                   // distinct machine names
+  driver: string                      // most recent non-null driver, or ''
+}
+
+// Session-level record — returned by /api/sessions
+export interface SessionRecord {
+  id: string
+  session_id: string
+  machine: string
+  session_date: string
+  agent: 'claude-code' | 'claude-chat'
+  total_tokens: number
+  api_requests: number
+  driver: string | null
+  notes: string | null
+  fidelity: 'exact' | 'estimated'
+  created_at: string
 }
 
 export type TimeRange = '30d' | '90d' | '1y' | 'all'
@@ -26,12 +35,10 @@ export const TIME_RANGE_DAYS: Record<TimeRange, number | null> = {
 }
 
 export const DRIVER_LABELS: Record<string, string> = {
-  code: 'Software / Code',
-  memoir: 'Memoir / OB',
-  career: 'Career / ai-resume',
-  markets: 'Markets / MSM',
   infrastructure: 'Infrastructure',
-  research: 'Research',
-  personal: 'Personal / Admin',
-  mixed: 'Mixed',
+  career:         'Career',
+  creative:       'Creative',
+  markets:        'Markets',
+  research:       'Research',
+  personal:       'Personal',
 }
