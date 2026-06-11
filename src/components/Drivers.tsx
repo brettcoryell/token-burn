@@ -5,24 +5,21 @@ import {
 import { SessionRecord } from '../types'
 import { formatTokens } from '../utils/tokens'
 import { formatDateShort } from '../utils/dates'
-
-const C = {
-  accent:     '#22d3ee',  // --tb-accent
-  accentDim:  '#164e63',  // --tb-accent-dim
-  axis:       '#334155',  // --tb-chart-axis
-  border:     '#1e293b',  // --tb-border
-  card:       '#0f172a',  // --tb-card
-  cardHover:  '#141f35',  // --tb-card-hover
-  txtMuted:   '#94a3b8',  // --tb-txt-muted
-}
+import { getChartColors } from '../utils/chartColors'
 
 interface Props {
   sessions: SessionRecord[]
+  theme: 'light' | 'dark'
 }
 
 const MIN_SESSION_TOKENS = 10_000
 
-export function Drivers({ sessions }: Props) {
+const ACCENT_DIM_DARK  = '#164e63'
+const ACCENT_DIM_LIGHT = '#a5f3fc'
+
+export function Drivers({ sessions, theme }: Props) {
+  const C = getChartColors(theme)
+  const accentDim = theme === 'light' ? ACCENT_DIM_LIGHT : ACCENT_DIM_DARK
   const top = useMemo(() => {
     const dailyMap = new Map<string, number>()
     for (const s of sessions) {
@@ -113,7 +110,7 @@ export function Drivers({ sessions }: Props) {
             />
             <Bar dataKey="tokens" radius={[0, 3, 3, 0]} maxBarSize={20}>
               {top.map((_, i) => (
-                <Cell key={i} fill={i === 0 ? C.accent : C.accentDim} />
+                <Cell key={i} fill={i === 0 ? C.accent : accentDim} />
               ))}
             </Bar>
           </BarChart>

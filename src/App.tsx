@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { TimeRange } from './types'
 import { useTokenData } from './hooks/useTokenData'
 import { latestDate } from './utils/dates'
@@ -9,9 +9,19 @@ import { Drivers } from './components/Drivers'
 import { ScaleEquivalents } from './components/ScaleEquivalents'
 import { DailyTable } from './components/DailyTable'
 
+function getInitialTheme(): 'light' | 'dark' {
+  try { return (localStorage.getItem('tb-theme') as 'light' | 'dark') ?? 'dark' } catch { return 'dark' }
+}
+
 export function App() {
   const [range, setRange] = useState<TimeRange>('90d')
+  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme)
   const { all, filtered, sessions, loading, error } = useTokenData(range)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '')
+    try { localStorage.setItem('tb-theme', theme) } catch { /* ignore */ }
+  }, [theme])
 
   if (loading) {
     return (
@@ -27,9 +37,6 @@ export function App() {
         <div className="text-center">
           <p className="text-sm mb-2" style={{ color: 'var(--tb-red)' }}>Failed to load data</p>
           <p className="text-xs" style={{ color: 'var(--tb-txt-faint)' }}>{error}</p>
-          <p className="text-xs mt-3" style={{ color: 'var(--tb-chart-axis)' }}>
-            Run <code style={{ color: 'var(--tb-txt-muted)' }}>make collect</code> to generate data
-          </p>
         </div>
       </div>
     )
@@ -38,12 +45,7 @@ export function App() {
   if (all.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--tb-bg)' }}>
-        <div className="text-center">
-          <p className="text-sm mb-2" style={{ color: 'var(--tb-txt-muted)' }}>No data yet</p>
-          <p className="text-xs mt-2" style={{ color: 'var(--tb-txt-faint)' }}>
-            Run <code style={{ color: 'var(--tb-txt-muted)' }}>make collect</code> to generate data
-          </p>
-        </div>
+        <p className="text-sm" style={{ color: 'var(--tb-txt-muted)' }}>No data yet — run <code>make collect</code></p>
       </div>
     )
   }
@@ -58,10 +60,12 @@ export function App() {
           range={range}
           onRangeChange={setRange}
           lastUpdated={lastUpdated}
+          theme={theme}
+          onThemeChange={setTheme}
         />
         <Heatmap records={filtered} />
-        <TrendLine records={filtered} />
-        <Drivers sessions={sessions} />
+        <TrendLine records={filtered} theme={theme} />
+        <Drivers sessions={sessions} theme={theme} />
         <ScaleEquivalents records={filtered} />
         <DailyTable records={filtered} />
       </div>

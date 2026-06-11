@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { DayRecord, TimeRange } from '../types'
 import { FidelityBadge } from './FidelityBadge'
 import { formatTokens } from '../utils/tokens'
@@ -9,6 +8,8 @@ interface Props {
   range: TimeRange
   onRangeChange: (r: TimeRange) => void
   lastUpdated: string | null
+  theme: 'light' | 'dark'
+  onThemeChange: (t: 'light' | 'dark') => void
 }
 
 const RANGES: TimeRange[] = ['30d', '90d', '1y', 'all']
@@ -16,21 +17,7 @@ const RANGE_LABELS: Record<TimeRange, string> = {
   '30d': '30d', '90d': '90d', '1y': '1y', 'all': 'All',
 }
 
-function getInitialTheme(): 'light' | 'dark' {
-  try {
-    return (localStorage.getItem('tb-theme') as 'light' | 'dark') ?? 'dark'
-  } catch {
-    return 'dark'
-  }
-}
-
-export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
-  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme)
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '')
-    try { localStorage.setItem('tb-theme', theme) } catch { /* ignore */ }
-  }, [theme])
+export function Header({ records, range, onRangeChange, lastUpdated, theme, onThemeChange }: Props) {
 
   const totalExact = records.reduce((s, r) => s + r.total_exact, 0)
   const totalEst = records.reduce((s, r) => s + r.total_est, 0)
@@ -56,7 +43,7 @@ export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
         <div className="flex items-center gap-3">
           {/* Theme toggle */}
           <button
-            onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            onClick={() => onThemeChange(theme === 'dark' ? 'light' : 'dark')}
             className="text-xs px-2 py-1 rounded transition-colors tb-range-btn"
             style={{
               color: 'var(--tb-txt-faint)',
