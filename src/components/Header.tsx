@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import { DayRecord, TimeRange } from '../types'
 import { FidelityBadge } from './FidelityBadge'
+import { HeroSparkline } from './HeroSparkline'
 import { formatTokens } from '../utils/tokens'
 import { formatDateDisplay } from '../utils/dates'
 
@@ -18,10 +20,17 @@ const RANGE_LABELS: Record<TimeRange, string> = {
 }
 
 export function Header({ records, range, onRangeChange, lastUpdated, theme, onThemeChange }: Props) {
-
   const totalExact = records.reduce((s, r) => s + r.total_exact, 0)
   const totalEst = records.reduce((s, r) => s + r.total_est, 0)
   const totalSessions = records.reduce((s, r) => s + r.claude_code_sessions, 0)
+
+  const sortedAsc = useMemo(
+    () => [...records].sort((a, b) => a.date.localeCompare(b.date)),
+    [records]
+  )
+  const exactData    = useMemo(() => sortedAsc.map(r => r.total_exact), [sortedAsc])
+  const sessionsData = useMemo(() => sortedAsc.map(r => r.claude_code_sessions), [sortedAsc])
+  const estData      = useMemo(() => sortedAsc.map(r => r.total_est), [sortedAsc])
 
   return (
     <header className="pb-6 mb-8" style={{ borderBottom: '1px solid var(--tb-border)' }}>
@@ -79,7 +88,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
       {/* KPI cards */}
       <div className="grid grid-cols-3 gap-4">
         <div
-          className="rounded-lg p-4"
+          className="rounded-lg p-4 flex flex-col"
           style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
         >
           <div className="flex items-center gap-2 mb-1">
@@ -88,16 +97,19 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             </span>
             <FidelityBadge type="measured" />
           </div>
-          <div className="text-3xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>
+          <div className="text-3xl font-bold tabular-nums mb-1" style={{ color: 'var(--tb-txt)' }}>
             {formatTokens(totalExact)}
           </div>
-          <div className="text-xs mt-1" style={{ color: 'var(--tb-txt-faint)' }}>
+          <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
             Claude Code tokens
+          </div>
+          <div className="mt-auto">
+            <HeroSparkline data={exactData} />
           </div>
         </div>
 
         <div
-          className="rounded-lg p-4"
+          className="rounded-lg p-4 flex flex-col"
           style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
         >
           <div className="flex items-center gap-2 mb-1">
@@ -106,16 +118,19 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             </span>
             <FidelityBadge type="measured" />
           </div>
-          <div className="text-3xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>
+          <div className="text-3xl font-bold tabular-nums mb-1" style={{ color: 'var(--tb-txt)' }}>
             {totalSessions.toLocaleString()}
           </div>
-          <div className="text-xs mt-1" style={{ color: 'var(--tb-txt-faint)' }}>
+          <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
             Claude Code sessions
+          </div>
+          <div className="mt-auto">
+            <HeroSparkline data={sessionsData} />
           </div>
         </div>
 
         <div
-          className="rounded-lg p-4"
+          className="rounded-lg p-4 flex flex-col"
           style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
         >
           <div className="flex items-center gap-2 mb-1">
@@ -124,12 +139,17 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             </span>
             <FidelityBadge type="estimated" />
           </div>
-          <div className="text-3xl font-bold tabular-nums" style={{ color: totalEst > 0 ? 'var(--tb-yellow)' : 'var(--tb-txt-faint)' }}>
+          <div className="text-3xl font-bold tabular-nums mb-1" style={{ color: totalEst > 0 ? 'var(--tb-yellow)' : 'var(--tb-txt-faint)' }}>
             {totalEst > 0 ? `~${formatTokens(totalEst)}` : '—'}
           </div>
-          <div className="text-xs mt-1" style={{ color: 'var(--tb-txt-faint)' }}>
+          <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
             Floor estimate · Claude Chat
           </div>
+          {totalEst > 0 && (
+            <div className="mt-auto">
+              <HeroSparkline data={estData} dashed />
+            </div>
+          )}
         </div>
       </div>
     </header>

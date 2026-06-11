@@ -11,14 +11,14 @@ export function formatTokensExact(n: number): string {
   return n.toLocaleString()
 }
 
-// Log color scale — 5 non-zero bins relative to the dataset maximum.
+// Log color scale — 7 non-zero bins relative to the dataset maximum.
 // Bins are equal intervals on the log scale from 1 to maxTokens, so the
 // darkest cell is always the busiest day in the current range.
 export function logColorBin(tokens: number, maxTokens: number): number {
   if (tokens <= 0) return 0
   const logMax = Math.log10(Math.max(maxTokens, 1))
   const logVal = Math.log10(Math.max(tokens, 1))
-  return Math.min(5, Math.max(1, Math.ceil((logVal / logMax) * 5)))
+  return Math.min(7, Math.max(1, Math.ceil((logVal / logMax) * 7)))
 }
 
 // Scale equivalents — all use total_exact only

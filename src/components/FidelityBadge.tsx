@@ -12,14 +12,14 @@ export function FidelityBadge({ type, className = '' }: Props) {
       style={
         isMeasured
           ? {
-              backgroundColor: 'var(--tb-accent-dim)',
-              color: 'var(--tb-accent)',
-              border: '1px solid var(--tb-accent)',
+              backgroundColor: 'var(--tb-chip-measured-bg)',
+              color: 'var(--tb-chip-measured-txt)',
+              border: '1px solid var(--tb-chip-measured-border)',
             }
           : {
-              backgroundColor: 'color-mix(in srgb, var(--tb-yellow) 15%, transparent)',
-              color: 'var(--tb-yellow)',
-              border: '1px solid var(--tb-yellow)',
+              backgroundColor: 'var(--tb-chip-est-bg)',
+              color: 'var(--tb-chip-est-txt)',
+              border: '1px solid var(--tb-chip-est-border)',
             }
       }
     >

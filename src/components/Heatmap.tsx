@@ -15,6 +15,8 @@ const BIN_FILLS = [
   'var(--tb-bin-3)',
   'var(--tb-bin-4)',
   'var(--tb-bin-5)',
+  'var(--tb-bin-6)',
+  'var(--tb-bin-7)',
 ]
 
 interface Tooltip {
@@ -93,7 +95,7 @@ export function Heatmap({ records }: Props) {
       <div className="flex items-baseline justify-between mb-3">
         <h2
           className="text-sm font-medium uppercase tracking-wide"
-          style={{ color: 'var(--tb-txt-muted)' }}
+          style={{ color: 'var(--tb-txt)' }}
         >
           Daily burn
         </h2>
@@ -165,7 +167,7 @@ export function Heatmap({ records }: Props) {
                     cx={x + CELL_SIZE / 2}
                     cy={y + CELL_SIZE / 2}
                     r={2}
-                    style={{ fill: 'var(--tb-yellow)', pointerEvents: 'none' }}
+                    style={{ fill: 'var(--tb-accent)', pointerEvents: 'none' }}
                   />
                 )}
               </g>
@@ -177,8 +179,8 @@ export function Heatmap({ records }: Props) {
       {/* Legend */}
       <div className="flex items-center gap-1 mt-2">
         <span className="text-xs mr-1" style={{ color: 'var(--tb-txt-muted)' }}>Less</span>
-        {BIN_FILLS.map((fill, bin) => (
-          <svg key={bin} width={13} height={13}>
+        {BIN_FILLS.slice(1).map((fill, i) => (
+          <svg key={i} width={13} height={13}>
             <rect width={13} height={13} rx={2} style={{ fill }} />
           </svg>
         ))}
@@ -186,7 +188,7 @@ export function Heatmap({ records }: Props) {
         <span className="text-xs ml-4" style={{ color: 'var(--tb-chart-axis)' }}>·</span>
         <svg width={13} height={13} className="ml-2">
           <rect width={13} height={13} rx={2} style={{ fill: 'var(--tb-bin-0)' }} />
-          <circle cx={6.5} cy={6.5} r={2} style={{ fill: 'var(--tb-yellow)' }} />
+          <circle cx={6.5} cy={6.5} r={2} style={{ fill: 'var(--tb-accent)' }} />
         </svg>
         <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-muted)' }}>Chat-only day</span>
       </div>

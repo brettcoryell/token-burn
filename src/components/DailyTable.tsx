@@ -21,7 +21,7 @@ export function DailyTable({ records }: Props) {
       <div className="flex items-center gap-2 mb-3">
         <h2
           className="text-sm font-medium uppercase tracking-wide"
-          style={{ color: 'var(--tb-txt-muted)' }}
+          style={{ color: 'var(--tb-txt)' }}
         >
           Daily detail
         </h2>
@@ -33,7 +33,7 @@ export function DailyTable({ records }: Props) {
       >
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr style={{ borderBottom: '1px solid var(--tb-border)', backgroundColor: 'var(--tb-card)' }}>
+            <tr style={{ borderBottom: '0.5px solid var(--tb-border)', backgroundColor: 'var(--tb-card)' }}>
               <th
                 className="text-left py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
                 style={{ color: 'var(--tb-txt-faint)' }}
@@ -78,32 +78,32 @@ export function DailyTable({ records }: Props) {
                   key={r.date}
                   className="tb-row-hover transition-colors"
                   style={{
-                    borderBottom: '1px solid var(--tb-border)',
+                    borderBottom: '0.5px solid var(--tb-border)',
                     backgroundColor: 'var(--tb-card)',
                   }}
                 >
                   <td
                     className="py-2 px-3 whitespace-nowrap text-xs tabular-nums"
-                    style={{ color: 'var(--tb-txt-muted)' }}
+                    style={{ color: 'var(--tb-data-date)' }}
                   >
                     {formatDateDisplay(r.date)}
                   </td>
                   <td className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap">
                     {isEstOnly ? (
-                      <span style={{ color: 'var(--tb-txt-faint)' }}>—</span>
+                      <span style={{ color: 'var(--tb-data-empty)' }}>—</span>
                     ) : (
-                      <span style={{ color: 'var(--tb-txt)' }}>{formatTokensExact(r.total_exact)}</span>
+                      <span style={{ color: 'var(--tb-data-primary)' }}>{formatTokensExact(r.total_exact)}</span>
                     )}
                   </td>
                   <td
                     className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap"
-                    style={{ color: 'var(--tb-txt-faint)' }}
+                    style={{ color: r.claude_code_sessions > 0 ? 'var(--tb-data-secondary)' : 'var(--tb-data-empty)' }}
                   >
                     {r.claude_code_sessions > 0 ? r.claude_code_sessions : '—'}
                   </td>
                   <td
                     className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap"
-                    style={{ color: 'var(--tb-txt-faint)' }}
+                    style={{ color: r.claude_code_api_requests > 0 ? 'var(--tb-data-secondary)' : 'var(--tb-data-empty)' }}
                   >
                     {r.claude_code_api_requests > 0 ? r.claude_code_api_requests : '—'}
                   </td>
@@ -114,12 +114,12 @@ export function DailyTable({ records }: Props) {
                         <FidelityBadge type="estimated" />
                       </span>
                     ) : (
-                      <span style={{ color: 'var(--tb-txt-faint)' }}>—</span>
+                      <span style={{ color: 'var(--tb-data-empty)' }}>—</span>
                     )}
                   </td>
                   <td
                     className="py-2 px-3 text-xs max-w-40 truncate"
-                    style={{ color: 'var(--tb-txt-faint)' }}
+                    style={{ color: r.driver ? 'var(--tb-data-secondary)' : 'var(--tb-data-empty)' }}
                   >
                     {r.driver ? (DRIVER_LABELS[r.driver] ?? r.driver) : ''}
                   </td>

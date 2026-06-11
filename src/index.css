@@ -18,26 +18,49 @@
   --tb-chart-axis:  #334155;
   --tb-chart-muted: #475569;
 
-  /* Accent (cyan — token-burn primary) */
-  --tb-accent:      #22d3ee;
-  --tb-accent-dim:  #164e63;
+  /* Accent (coral — token-burn primary) */
+  --tb-accent:      #D85A30;
+  --tb-accent-dim:  #3d2a1e;
 
   /* Signal colors */
   --tb-yellow:      #f59e0b;
   --tb-red:         #ef4444;
   --tb-green:       #22c55e;
 
-  /* Heatmap bins: 0 = empty → 5 = max */
+  /* Fidelity badge chips */
+  --tb-chip-measured-bg:     #2a3d2a;
+  --tb-chip-measured-txt:    #7ec87e;
+  --tb-chip-measured-border: #3d5a3d;
+  --tb-chip-est-bg:          #3d2a1e;
+  --tb-chip-est-txt:         #F0997B;
+  --tb-chip-est-border:      #5a3d2a;
+
+  /* Bar chart */
+  --tb-bar-secondary: #4a5568;
+  --tb-bar-track:     #2a3448;
+
+  /* Sparkline */
+  --tb-sparkline:   #6a7a94;
+
+  /* Data table text */
+  --tb-data-primary:   #e8f0fc;
+  --tb-data-secondary: #c8d4e8;
+  --tb-data-date:      #8a9ab5;
+  --tb-data-empty:     #4a5568;
+
+  /* Heatmap bins: 0 = empty, 1–7 = lightest → peak (slate-blue ramp) */
   --tb-bin-0:       #0f172a;
-  --tb-bin-1:       #083344;
-  --tb-bin-2:       #164e63;
-  --tb-bin-3:       #0e7490;
-  --tb-bin-4:       #06b6d4;
-  --tb-bin-5:       #67e8f9;
+  --tb-bin-1:       #1a2d44;
+  --tb-bin-2:       #1e3a5a;
+  --tb-bin-3:       #1d4e7a;
+  --tb-bin-4:       #185fa5;
+  --tb-bin-5:       #0c447c;
+  --tb-bin-6:       #063260;
+  --tb-bin-7:       #042C53;
 }
 
 [data-theme="light"] {
-  --tb-bg:          #eef2f7;
+  --tb-bg:          #ffffff;
   --tb-card:        #ffffff;
   --tb-card-hover:  #f8fafc;
   --tb-border:      #e2e8f0;
@@ -49,19 +72,38 @@
   --tb-chart-axis:  #94a3b8;
   --tb-chart-muted: #94a3b8;
 
-  --tb-accent:      #0891b2;
-  --tb-accent-dim:  #cffafe;
+  --tb-accent:      #D85A30;
+  --tb-accent-dim:  #FAECE7;
 
   --tb-yellow:      #d97706;
   --tb-red:         #dc2626;
   --tb-green:       #16a34a;
 
+  --tb-chip-measured-bg:     #FAECE7;
+  --tb-chip-measured-txt:    #712B13;
+  --tb-chip-measured-border: #e8c4b8;
+  --tb-chip-est-bg:          #FAECE7;
+  --tb-chip-est-txt:         #4A1B0C;
+  --tb-chip-est-border:      #e8c4b8;
+
+  --tb-bar-secondary: #D3D1C7;
+  --tb-bar-track:     transparent;
+
+  --tb-sparkline:   #B4B2A9;
+
+  --tb-data-primary:   #0f172a;
+  --tb-data-secondary: #475569;
+  --tb-data-date:      #94a3b8;
+  --tb-data-empty:     #94a3b8;
+
   --tb-bin-0:       #f1f5f9;
-  --tb-bin-1:       #cffafe;
-  --tb-bin-2:       #a5f3fc;
-  --tb-bin-3:       #22d3ee;
-  --tb-bin-4:       #0891b2;
-  --tb-bin-5:       #0e7490;
+  --tb-bin-1:       #E6F1FB;
+  --tb-bin-2:       #B5D4F4;
+  --tb-bin-3:       #85B7EB;
+  --tb-bin-4:       #378ADD;
+  --tb-bin-5:       #185FA5;
+  --tb-bin-6:       #0C447C;
+  --tb-bin-7:       #042C53;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────────────── */

@@ -14,12 +14,9 @@ interface Props {
 
 const MIN_SESSION_TOKENS = 10_000
 
-const ACCENT_DIM_DARK  = '#164e63'
-const ACCENT_DIM_LIGHT = '#a5f3fc'
-
 export function Drivers({ sessions, theme }: Props) {
   const C = getChartColors(theme)
-  const accentDim = theme === 'light' ? ACCENT_DIM_LIGHT : ACCENT_DIM_DARK
+
   const top = useMemo(() => {
     const dailyMap = new Map<string, number>()
     for (const s of sessions) {
@@ -50,7 +47,7 @@ export function Drivers({ sessions, theme }: Props) {
       <section className="mb-10">
         <h2
           className="text-sm font-medium uppercase tracking-wide mb-3"
-          style={{ color: 'var(--tb-txt-muted)' }}
+          style={{ color: 'var(--tb-txt)' }}
         >
           Drivers on busy days
         </h2>
@@ -66,7 +63,7 @@ export function Drivers({ sessions, theme }: Props) {
       <div className="flex items-baseline justify-between mb-3">
         <h2
           className="text-sm font-medium uppercase tracking-wide"
-          style={{ color: 'var(--tb-txt-muted)' }}
+          style={{ color: 'var(--tb-txt)' }}
         >
           Drivers on busy days
         </h2>
@@ -75,7 +72,10 @@ export function Drivers({ sessions, theme }: Props) {
         </span>
       </div>
 
-      <div className="h-64">
+      <div
+        className="h-64 rounded-lg"
+        style={{ backgroundColor: C.barTrack }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"
@@ -102,7 +102,7 @@ export function Drivers({ sessions, theme }: Props) {
                 background: C.card,
                 border: `1px solid ${C.border}`,
                 borderRadius: 8,
-                color: '#e2e8f0',
+                color: C.txt,
               }}
               labelStyle={{ color: C.txtMuted, fontSize: 11 }}
               formatter={(val: number) => [formatTokens(val), 'Session tokens']}
@@ -110,7 +110,7 @@ export function Drivers({ sessions, theme }: Props) {
             />
             <Bar dataKey="tokens" radius={[0, 3, 3, 0]} maxBarSize={20}>
               {top.map((_, i) => (
-                <Cell key={i} fill={i === 0 ? C.accent : accentDim} />
+                <Cell key={i} fill={i === 0 ? C.peakBar : C.secondaryBar} />
               ))}
             </Bar>
           </BarChart>
