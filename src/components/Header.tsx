@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { DayRecord, TimeRange } from '../types'
 import { FidelityBadge } from './FidelityBadge'
 import { formatTokens } from '../utils/tokens'
@@ -15,7 +16,22 @@ const RANGE_LABELS: Record<TimeRange, string> = {
   '30d': '30d', '90d': '90d', '1y': '1y', 'all': 'All',
 }
 
+function getInitialTheme(): 'light' | 'dark' {
+  try {
+    return (localStorage.getItem('tb-theme') as 'light' | 'dark') ?? 'dark'
+  } catch {
+    return 'dark'
+  }
+}
+
 export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
+  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '')
+    try { localStorage.setItem('tb-theme', theme) } catch { /* ignore */ }
+  }, [theme])
+
   const totalExact = records.reduce((s, r) => s + r.total_exact, 0)
   const totalEst = records.reduce((s, r) => s + r.total_est, 0)
   const totalSessions = records.reduce((s, r) => s + r.claude_code_sessions, 0)
@@ -37,25 +53,39 @@ export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
           )}
         </div>
 
-        {/* Time range selector */}
-        <div
-          className="flex gap-1 rounded-md p-1"
-          style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
-        >
-          {RANGES.map(r => (
-            <button
-              key={r}
-              data-range={r}
-              onClick={() => onRangeChange(r)}
-              className={`px-3 py-1 text-sm rounded transition-colors tb-range-btn`}
-              style={{
-                backgroundColor: range === r ? 'var(--tb-card-hover)' : 'transparent',
-                color: range === r ? 'var(--tb-txt)' : 'var(--tb-txt-faint)',
-              }}
-            >
-              {RANGE_LABELS[r]}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          {/* Theme toggle */}
+          <button
+            onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            className="text-xs px-2 py-1 rounded transition-colors tb-range-btn"
+            style={{
+              color: 'var(--tb-txt-faint)',
+              border: '1px solid var(--tb-border)',
+            }}
+          >
+            {theme === 'dark' ? '☀ Light' : '🌙 Dark'}
+          </button>
+
+          {/* Time range selector */}
+          <div
+            className="flex gap-1 rounded-md p-1"
+            style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
+          >
+            {RANGES.map(r => (
+              <button
+                key={r}
+                data-range={r}
+                onClick={() => onRangeChange(r)}
+                className="px-3 py-1 text-sm rounded transition-colors tb-range-btn"
+                style={{
+                  backgroundColor: range === r ? 'var(--tb-card-hover)' : 'transparent',
+                  color: range === r ? 'var(--tb-txt)' : 'var(--tb-txt-faint)',
+                }}
+              >
+                {RANGE_LABELS[r]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -66,7 +96,7 @@ export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
           style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-faint)' }}>
+            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-muted)' }}>
               Exact Total
             </span>
             <FidelityBadge type="measured" />
@@ -84,7 +114,7 @@ export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
           style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-faint)' }}>
+            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-muted)' }}>
               Sessions
             </span>
             <FidelityBadge type="measured" />
@@ -102,7 +132,7 @@ export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
           style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-faint)' }}>
+            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-muted)' }}>
               Est. Chat
             </span>
             <FidelityBadge type="estimated" />

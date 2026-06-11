@@ -92,7 +92,7 @@ export function Heatmap({ records }: Props) {
         >
           Daily burn
         </h2>
-        <span className="text-xs" style={{ color: 'var(--tb-txt-faint)' }}>
+        <span className="text-xs" style={{ color: 'var(--tb-txt-muted)' }}>
           log color scale · less → more
         </span>
       </div>
@@ -114,7 +114,7 @@ export function Heatmap({ records }: Props) {
               y={MONTH_H + i * STEP + CELL_SIZE - 2}
               textAnchor="end"
               fontSize={9}
-              style={{ fill: 'var(--tb-txt-faint)' }}
+              style={{ fill: 'var(--tb-txt-muted)' }}
             >
               {i % 2 === 1 ? d : ''}
             </text>
@@ -171,19 +171,19 @@ export function Heatmap({ records }: Props) {
 
       {/* Legend */}
       <div className="flex items-center gap-1 mt-2">
-        <span className="text-xs mr-1" style={{ color: 'var(--tb-txt-faint)' }}>Less</span>
+        <span className="text-xs mr-1" style={{ color: 'var(--tb-txt-muted)' }}>Less</span>
         {BIN_FILLS.map((fill, bin) => (
           <svg key={bin} width={13} height={13}>
             <rect width={13} height={13} rx={2} style={{ fill }} />
           </svg>
         ))}
-        <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-faint)' }}>More</span>
+        <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-muted)' }}>More</span>
         <span className="text-xs ml-4" style={{ color: 'var(--tb-chart-axis)' }}>·</span>
         <svg width={13} height={13} className="ml-2">
           <rect width={13} height={13} rx={2} style={{ fill: 'var(--tb-bin-0)' }} />
           <circle cx={6.5} cy={6.5} r={2} style={{ fill: 'var(--tb-yellow)' }} />
         </svg>
-        <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-faint)' }}>Chat-only day</span>
+        <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-muted)' }}>Chat-only day</span>
       </div>
 
       {/* Tooltip */}
@@ -211,13 +211,13 @@ export function Heatmap({ records }: Props) {
               {tooltip.record.total_exact > 0 && (
                 <div style={{ color: 'var(--tb-accent)' }}>
                   {tooltip.record.total_exact.toLocaleString()}{' '}
-                  <span style={{ color: 'var(--tb-txt-faint)' }}>measured</span>
+                  <span style={{ color: 'var(--tb-txt-muted)' }}>measured</span>
                 </div>
               )}
               {tooltip.record.total_est > 0 && (
                 <div style={{ color: 'var(--tb-yellow)' }}>
                   ~{tooltip.record.total_est.toLocaleString()}{' '}
-                  <span style={{ color: 'var(--tb-txt-faint)' }}>estimated</span>
+                  <span style={{ color: 'var(--tb-txt-muted)' }}>estimated</span>
                 </div>
               )}
               {tooltip.record.driver && (

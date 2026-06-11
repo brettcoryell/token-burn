@@ -6,6 +6,18 @@ import { DayRecord } from '../types'
 import { aggregateWeekly, formatDateShort } from '../utils/dates'
 import { formatTokens } from '../utils/tokens'
 
+// Recharts passes these as SVG presentation attributes — CSS vars don't reliably
+// resolve that way. Use hex directly for chart stroke/fill; the CSS var values are
+// the source of truth in index.css.
+const C = {
+  accent:     '#22d3ee',  // --tb-accent
+  yellow:     '#f59e0b',  // --tb-yellow
+  axis:       '#334155',  // --tb-chart-axis
+  border:     '#1e293b',  // --tb-border
+  card:       '#0f172a',  // --tb-card
+  txtMuted:   '#94a3b8',  // --tb-txt-muted
+}
+
 interface Props {
   records: DayRecord[]
 }
@@ -34,7 +46,7 @@ export function TrendLine({ records }: Props) {
         >
           Weekly total
         </h2>
-        <span className="text-xs" style={{ color: 'var(--tb-txt-faint)' }}>
+        <span className="text-xs" style={{ color: 'var(--tb-txt-muted)' }}>
           log y-scale · exact only
         </span>
       </div>
@@ -45,27 +57,27 @@ export function TrendLine({ records }: Props) {
             <XAxis
               dataKey="weekStart"
               tickFormatter={formatDateShort}
-              tick={{ fill: 'var(--tb-chart-axis)', fontSize: 10 }}
+              tick={{ fill: C.axis, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               scale="log"
-              domain={[1, 'auto']}
+              domain={['auto', 'auto']}
               tickFormatter={formatTokens}
-              tick={{ fill: 'var(--tb-chart-axis)', fontSize: 10 }}
+              tick={{ fill: C.axis, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
               width={48}
             />
             <Tooltip
               contentStyle={{
-                background: 'var(--tb-card)',
-                border: '1px solid var(--tb-border)',
+                background: C.card,
+                border: `1px solid ${C.border}`,
                 borderRadius: 8,
-                color: 'var(--tb-txt)',
+                color: '#e2e8f0',
               }}
-              labelStyle={{ color: 'var(--tb-txt-muted)', fontSize: 11 }}
+              labelStyle={{ color: C.txtMuted, fontSize: 11 }}
               formatter={(val: number, name: string) => [
                 formatTokens(val),
                 name === 'total_exact' ? 'Exact (measured)' : 'Chat (estimated)',
@@ -75,11 +87,11 @@ export function TrendLine({ records }: Props) {
             {peakWeek && (
               <ReferenceLine
                 x={peakWeek.weekStart}
-                stroke="var(--tb-border)"
+                stroke={C.border}
                 label={{
                   value: `Peak ${formatTokens(peakWeek.total_exact)}`,
                   position: 'insideTopRight',
-                  fill: 'var(--tb-chart-axis)',
+                  fill: C.axis,
                   fontSize: 10,
                 }}
               />
@@ -87,16 +99,16 @@ export function TrendLine({ records }: Props) {
             <Line
               type="monotone"
               dataKey="total_exact"
-              stroke="var(--tb-accent)"
+              stroke={C.accent}
               strokeWidth={1.5}
               dot={false}
-              activeDot={{ r: 3, fill: 'var(--tb-accent)' }}
+              activeDot={{ r: 3, fill: C.accent }}
             />
             {hasEst && (
               <Line
                 type="monotone"
                 dataKey="total_est"
-                stroke="var(--tb-yellow)"
+                stroke={C.yellow}
                 strokeWidth={1}
                 strokeDasharray="4 2"
                 dot={false}

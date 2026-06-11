@@ -62,7 +62,7 @@ export function ScaleEquivalents({ records }: Props) {
         </h2>
         <FidelityBadge type="measured" />
       </div>
-      <p className="text-xs mb-4" style={{ color: 'var(--tb-txt-faint)' }}>
+      <p className="text-xs mb-4" style={{ color: 'var(--tb-txt-muted)' }}>
         Based on {formatTokens(totalExact)} exact tokens — These are scale translations, not measured utility
       </p>
 
@@ -73,7 +73,7 @@ export function ScaleEquivalents({ records }: Props) {
             className="rounded-lg p-3 flex flex-col gap-1"
             style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
           >
-            <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-faint)' }}>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-muted)' }}>
               {card.label}
             </div>
             <div className="text-xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>

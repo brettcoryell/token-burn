@@ -14,9 +14,10 @@ export function FidelityBadge({ type, className = '' }: Props) {
           ? {
               backgroundColor: 'var(--tb-accent-dim)',
               color: 'var(--tb-accent)',
-              border: '1px solid var(--tb-accent-dim)',
+              border: '1px solid var(--tb-accent)',
             }
           : {
+              backgroundColor: 'color-mix(in srgb, var(--tb-yellow) 15%, transparent)',
               color: 'var(--tb-yellow)',
               border: '1px solid var(--tb-yellow)',
             }
