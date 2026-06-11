@@ -27,10 +27,7 @@ export function DailyTable({ records }: Props) {
         </h2>
       </div>
 
-      <div
-        className="overflow-x-auto rounded-lg"
-        style={{ border: '1px solid var(--tb-border)' }}
-      >
+      <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr style={{ borderBottom: '0.5px solid var(--tb-border)', backgroundColor: 'var(--tb-card)' }}>
@@ -71,14 +68,15 @@ export function DailyTable({ records }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r) => {
+            {sorted.map((r, idx) => {
               const isEstOnly = r.total_exact === 0 && r.total_est > 0
+              const isLast = idx === sorted.length - 1
               return (
                 <tr
                   key={r.date}
                   className="tb-row-hover transition-colors"
                   style={{
-                    borderBottom: '0.5px solid var(--tb-border)',
+                    borderBottom: isLast ? 'none' : '0.5px solid var(--tb-border)',
                     backgroundColor: 'var(--tb-card)',
                   }}
                 >

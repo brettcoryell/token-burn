@@ -36,12 +36,12 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
     <header className="pb-6 mb-8" style={{ borderBottom: '1px solid var(--tb-border)' }}>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--tb-txt-faint)' }}>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--tb-txt)' }}>
             Token Burn Dashboard
-          </p>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--tb-txt)' }}>
-            AI usage by day
           </h1>
+          <p className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--tb-txt-muted)' }}>
+            AI usage by day
+          </p>
           {lastUpdated && (
             <p className="text-xs mt-1" style={{ color: 'var(--tb-txt-faint)' }}>
               Updated {formatDateDisplay(lastUpdated)}
@@ -103,7 +103,10 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
             Claude Code tokens
           </div>
-          <div className="mt-auto">
+          <div
+            className="mt-auto -mx-4 -mb-4 px-4 pt-3 pb-3 rounded-b-lg"
+            style={{ backgroundColor: 'var(--tb-sparkline-bg)' }}
+          >
             <HeroSparkline data={exactData} />
           </div>
         </div>
@@ -124,7 +127,10 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
             Claude Code sessions
           </div>
-          <div className="mt-auto">
+          <div
+            className="mt-auto -mx-4 -mb-4 px-4 pt-3 pb-3 rounded-b-lg"
+            style={{ backgroundColor: 'var(--tb-sparkline-bg)' }}
+          >
             <HeroSparkline data={sessionsData} />
           </div>
         </div>
@@ -146,7 +152,10 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             Floor estimate · Claude Chat
           </div>
           {totalEst > 0 && (
-            <div className="mt-auto">
+            <div
+              className="mt-auto -mx-4 -mb-4 px-4 pt-3 pb-3 rounded-b-lg"
+              style={{ backgroundColor: 'var(--tb-sparkline-bg)' }}
+            >
               <HeroSparkline data={estData} dashed />
             </div>
           )}

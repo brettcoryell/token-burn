@@ -12,11 +12,11 @@
   /* Text */
   --tb-txt:         #e2e8f0;
   --tb-txt-muted:   #94a3b8;
-  --tb-txt-faint:   #475569;
+  --tb-txt-faint:   #64748b;
 
   /* Chart */
-  --tb-chart-axis:  #334155;
-  --tb-chart-muted: #475569;
+  --tb-chart-axis:  #4a5568;
+  --tb-chart-muted: #64748b;
 
   /* Accent (coral — token-burn primary) */
   --tb-accent:      #D85A30;
@@ -48,15 +48,15 @@
   --tb-data-date:      #8a9ab5;
   --tb-data-empty:     #4a5568;
 
-  /* Heatmap bins: 0 = empty, 1–7 = lightest → peak (slate-blue ramp) */
+  /* Heatmap bins: 0 = empty, 1–7 = dark navy → bright blue (dark bg: low→high activity) */
   --tb-bin-0:       #0f172a;
-  --tb-bin-1:       #1a2d44;
-  --tb-bin-2:       #1e3a5a;
-  --tb-bin-3:       #1d4e7a;
-  --tb-bin-4:       #185fa5;
-  --tb-bin-5:       #0c447c;
-  --tb-bin-6:       #063260;
-  --tb-bin-7:       #042C53;
+  --tb-bin-1:       #162237;
+  --tb-bin-2:       #1a3050;
+  --tb-bin-3:       #1d4270;
+  --tb-bin-4:       #1f5794;
+  --tb-bin-5:       #2270b0;
+  --tb-bin-6:       #2e8ecb;
+  --tb-bin-7:       #4aaee0;
 }
 
 [data-theme="light"] {
@@ -105,6 +105,11 @@
   --tb-bin-6:       #0C447C;
   --tb-bin-7:       #042C53;
 }
+
+/* ─── Sparkline background (inside hero tile, bottom strip) ─────────────────── */
+
+:root { --tb-sparkline-bg: #141f35; }
+[data-theme="light"] { --tb-sparkline-bg: #f1f5f9; }
 
 /* ─── Base ──────────────────────────────────────────────────────────────────── */
 

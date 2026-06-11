@@ -11,14 +11,20 @@ export function formatTokensExact(n: number): string {
   return n.toLocaleString()
 }
 
-// Log color scale — 7 non-zero bins relative to the dataset maximum.
-// Bins are equal intervals on the log scale from 1 to maxTokens, so the
-// darkest cell is always the busiest day in the current range.
-export function logColorBin(tokens: number, maxTokens: number): number {
-  if (tokens <= 0) return 0
-  const logMax = Math.log10(Math.max(maxTokens, 1))
-  const logVal = Math.log10(Math.max(tokens, 1))
-  return Math.min(7, Math.max(1, Math.ceil((logVal / logMax) * 7)))
+// Absolute-threshold color bins — 7 non-zero bins calibrated to Brett's
+// daily token range. Fixed breakpoints prevent all heavy days from mapping
+// to bin 7 when values cluster near the max (the failure mode of log-relative).
+//
+// Thresholds (tokens/day): 0 | 100K | 1M | 10M | 50M | 100M | 200M | ∞
+export function logColorBin(tokens: number, _maxTokens: number): number {
+  if (tokens <= 0)            return 0
+  if (tokens < 100_000)       return 1
+  if (tokens < 1_000_000)     return 2
+  if (tokens < 10_000_000)    return 3
+  if (tokens < 50_000_000)    return 4
+  if (tokens < 100_000_000)   return 5
+  if (tokens < 200_000_000)   return 6
+  return 7
 }
 
 // Scale equivalents — all use total_exact only
