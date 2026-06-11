@@ -41,7 +41,7 @@ export function getChartColors(theme: 'light' | 'dark'): ChartColors {
     accent:         '#22d3ee',   // weekly line stays cyan per spec
     peakBar:        '#D85A30',   // coral
     secondaryBar:   '#4a5568',
-    barTrack:       '#2a3448',
+    barTrack:       '#141f35',
     barTrackInner:  '#1a2535',   // darker than chart container bg — bars pop against it
     yellow:         '#f59e0b',
     axis:           '#4a5568',
