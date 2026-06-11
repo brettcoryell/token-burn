@@ -21,34 +21,37 @@ export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
   const totalSessions = records.reduce((s, r) => s + r.claude_code_sessions, 0)
 
   return (
-    <header className="border-b border-slate-800 pb-6 mb-8">
+    <header className="pb-6 mb-8" style={{ borderBottom: '1px solid var(--tb-border)' }}>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">
+          <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--tb-txt-faint)' }}>
             Token Burn Dashboard
           </p>
-          <h1 className="text-2xl font-bold text-slate-100">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--tb-txt)' }}>
             AI usage by day
           </h1>
           {lastUpdated && (
-            <p className="text-xs text-slate-600 mt-1">
+            <p className="text-xs mt-1" style={{ color: 'var(--tb-txt-faint)' }}>
               Updated {formatDateDisplay(lastUpdated)}
             </p>
           )}
         </div>
 
         {/* Time range selector */}
-        <div className="flex gap-1 bg-slate-900 rounded-md p-1 border border-slate-800">
+        <div
+          className="flex gap-1 rounded-md p-1"
+          style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
+        >
           {RANGES.map(r => (
             <button
               key={r}
               data-range={r}
               onClick={() => onRangeChange(r)}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
-                range === r
-                  ? 'bg-slate-700 text-slate-100'
-                  : 'text-slate-500 hover:text-slate-300'
-              }`}
+              className={`px-3 py-1 text-sm rounded transition-colors tb-range-btn`}
+              style={{
+                backgroundColor: range === r ? 'var(--tb-card-hover)' : 'transparent',
+                color: range === r ? 'var(--tb-txt)' : 'var(--tb-txt-faint)',
+              }}
             >
               {RANGE_LABELS[r]}
             </button>
@@ -58,37 +61,58 @@ export function Header({ records, range, onRangeChange, lastUpdated }: Props) {
 
       {/* KPI cards */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+        <div
+          className="rounded-lg p-4"
+          style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
+        >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs text-slate-500 uppercase tracking-wide">Exact Total</span>
+            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-faint)' }}>
+              Exact Total
+            </span>
             <FidelityBadge type="measured" />
           </div>
-          <div className="text-3xl font-bold text-slate-100 font-mono">
+          <div className="text-3xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>
             {formatTokens(totalExact)}
           </div>
-          <div className="text-xs text-slate-600 mt-1">Claude Code tokens</div>
+          <div className="text-xs mt-1" style={{ color: 'var(--tb-txt-faint)' }}>
+            Claude Code tokens
+          </div>
         </div>
 
-        <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+        <div
+          className="rounded-lg p-4"
+          style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
+        >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs text-slate-500 uppercase tracking-wide">Sessions</span>
+            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-faint)' }}>
+              Sessions
+            </span>
             <FidelityBadge type="measured" />
           </div>
-          <div className="text-3xl font-bold text-slate-100 font-mono">
+          <div className="text-3xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>
             {totalSessions.toLocaleString()}
           </div>
-          <div className="text-xs text-slate-600 mt-1">Claude Code sessions</div>
+          <div className="text-xs mt-1" style={{ color: 'var(--tb-txt-faint)' }}>
+            Claude Code sessions
+          </div>
         </div>
 
-        <div className="bg-slate-900 rounded-lg p-4 border border-slate-800">
+        <div
+          className="rounded-lg p-4"
+          style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
+        >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs text-slate-500 uppercase tracking-wide">Est. Chat</span>
+            <span className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-faint)' }}>
+              Est. Chat
+            </span>
             <FidelityBadge type="estimated" />
           </div>
-          <div className="text-3xl font-bold text-amber-400 font-mono">
+          <div className="text-3xl font-bold tabular-nums" style={{ color: totalEst > 0 ? 'var(--tb-yellow)' : 'var(--tb-txt-faint)' }}>
             {totalEst > 0 ? `~${formatTokens(totalEst)}` : '—'}
           </div>
-          <div className="text-xs text-slate-600 mt-1">Floor estimate · Claude Chat</div>
+          <div className="text-xs mt-1" style={{ color: 'var(--tb-txt-faint)' }}>
+            Floor estimate · Claude Chat
+          </div>
         </div>
       </div>
     </header>

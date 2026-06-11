@@ -1,1 +1,83 @@
 @import "tailwindcss";
+
+/* ─── Token-burn design tokens ─────────────────────────────────────────────── */
+
+:root {
+  /* Backgrounds */
+  --tb-bg:          #0a0a0f;
+  --tb-card:        #0f172a;
+  --tb-card-hover:  #141f35;
+  --tb-border:      #1e293b;
+
+  /* Text */
+  --tb-txt:         #e2e8f0;
+  --tb-txt-muted:   #94a3b8;
+  --tb-txt-faint:   #475569;
+
+  /* Chart */
+  --tb-chart-axis:  #334155;
+  --tb-chart-muted: #475569;
+
+  /* Accent (cyan — token-burn primary) */
+  --tb-accent:      #22d3ee;
+  --tb-accent-dim:  #164e63;
+
+  /* Signal colors */
+  --tb-yellow:      #f59e0b;
+  --tb-red:         #ef4444;
+  --tb-green:       #22c55e;
+
+  /* Heatmap bins: 0 = empty → 5 = max */
+  --tb-bin-0:       #0f172a;
+  --tb-bin-1:       #083344;
+  --tb-bin-2:       #164e63;
+  --tb-bin-3:       #0e7490;
+  --tb-bin-4:       #06b6d4;
+  --tb-bin-5:       #67e8f9;
+}
+
+[data-theme="light"] {
+  --tb-bg:          #eef2f7;
+  --tb-card:        #ffffff;
+  --tb-card-hover:  #f8fafc;
+  --tb-border:      #e2e8f0;
+
+  --tb-txt:         #0f172a;
+  --tb-txt-muted:   #475569;
+  --tb-txt-faint:   #94a3b8;
+
+  --tb-chart-axis:  #94a3b8;
+  --tb-chart-muted: #94a3b8;
+
+  --tb-accent:      #0891b2;
+  --tb-accent-dim:  #cffafe;
+
+  --tb-yellow:      #d97706;
+  --tb-red:         #dc2626;
+  --tb-green:       #16a34a;
+
+  --tb-bin-0:       #f1f5f9;
+  --tb-bin-1:       #cffafe;
+  --tb-bin-2:       #a5f3fc;
+  --tb-bin-3:       #22d3ee;
+  --tb-bin-4:       #0891b2;
+  --tb-bin-5:       #0e7490;
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────────── */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--tb-bg);
+  color: var(--tb-txt);
+}
+
+/* ─── Hover utilities (hover state can't use inline style) ──────────────────── */
+
+.tb-row-hover:hover {
+  background-color: var(--tb-card-hover);
+}
+
+.tb-range-btn:hover {
+  color: var(--tb-txt-muted);
+}

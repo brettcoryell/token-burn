@@ -11,24 +11,24 @@ import { DailyTable } from './components/DailyTable'
 
 export function App() {
   const [range, setRange] = useState<TimeRange>('90d')
-  const { all, filtered, loading, error } = useTokenData(range)
+  const { all, filtered, sessions, loading, error } = useTokenData(range)
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <span className="text-slate-500 text-sm font-mono">Loading…</span>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--tb-bg)' }}>
+        <span className="text-sm" style={{ color: 'var(--tb-txt-faint)' }}>Loading…</span>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--tb-bg)' }}>
         <div className="text-center">
-          <p className="text-red-400 text-sm font-mono mb-2">Failed to load data</p>
-          <p className="text-slate-600 text-xs">{error}</p>
-          <p className="text-slate-700 text-xs mt-3">
-            Run <code className="text-slate-500">make collect</code> to generate data
+          <p className="text-sm mb-2" style={{ color: 'var(--tb-red)' }}>Failed to load data</p>
+          <p className="text-xs" style={{ color: 'var(--tb-txt-faint)' }}>{error}</p>
+          <p className="text-xs mt-3" style={{ color: 'var(--tb-chart-axis)' }}>
+            Run <code style={{ color: 'var(--tb-txt-muted)' }}>make collect</code> to generate data
           </p>
         </div>
       </div>
@@ -37,11 +37,11 @@ export function App() {
 
   if (all.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--tb-bg)' }}>
         <div className="text-center">
-          <p className="text-slate-400 text-sm font-mono mb-2">No data yet</p>
-          <p className="text-slate-600 text-xs mt-2">
-            Run <code className="text-slate-500">make collect</code> to generate data
+          <p className="text-sm mb-2" style={{ color: 'var(--tb-txt-muted)' }}>No data yet</p>
+          <p className="text-xs mt-2" style={{ color: 'var(--tb-txt-faint)' }}>
+            Run <code style={{ color: 'var(--tb-txt-muted)' }}>make collect</code> to generate data
           </p>
         </div>
       </div>
@@ -51,7 +51,7 @@ export function App() {
   const lastUpdated = latestDate(all)
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--tb-bg)', color: 'var(--tb-txt)' }}>
       <div className="max-w-6xl mx-auto px-6 py-8">
         <Header
           records={filtered}
@@ -61,7 +61,7 @@ export function App() {
         />
         <Heatmap records={filtered} />
         <TrendLine records={filtered} />
-        <Drivers records={filtered} />
+        <Drivers sessions={sessions} />
         <ScaleEquivalents records={filtered} />
         <DailyTable records={filtered} />
       </div>

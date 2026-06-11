@@ -6,17 +6,16 @@ import { parseDate, getDatesInRange, formatDateDisplay } from '../utils/dates'
 const CELL_SIZE = 13
 const CELL_GAP = 2
 const STEP = CELL_SIZE + CELL_GAP
-// Monday-start: Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
-const BIN_CLASSES: Record<number, string> = {
-  0: 'fill-slate-900',
-  1: 'fill-cyan-950',
-  2: 'fill-cyan-900',
-  3: 'fill-cyan-700',
-  4: 'fill-cyan-500',
-  5: 'fill-cyan-300',
-}
+const BIN_FILLS = [
+  'var(--tb-bin-0)',
+  'var(--tb-bin-1)',
+  'var(--tb-bin-2)',
+  'var(--tb-bin-3)',
+  'var(--tb-bin-4)',
+  'var(--tb-bin-5)',
+]
 
 interface Tooltip {
   x: number; y: number; record: DayRecord | null; date: string
@@ -35,8 +34,6 @@ export function Heatmap({ records }: Props) {
     return m
   }, [records])
 
-  // Build the grid: Monday-start weeks (Mon=row 0, Sun=row 6)
-  // Sunday and following Monday land in different columns (Sun closes week, Mon opens next)
   const { cells, weeks } = useMemo(() => {
     if (records.length === 0) return { cells: [], weeks: 0 }
 
@@ -44,13 +41,11 @@ export function Heatmap({ records }: Props) {
     const firstDate = parseDate(dates[0]!)
     const lastDate = parseDate(dates[dates.length - 1]!)
 
-    // Extend back to the most recent Monday on or before firstDate
     const startDay = new Date(firstDate)
-    const startDow = startDay.getUTCDay() // 0=Sun,1=Mon,...,6=Sat
+    const startDow = startDay.getUTCDay()
     const daysToMon = startDow === 0 ? 6 : startDow - 1
     startDay.setUTCDate(startDay.getUTCDate() - daysToMon)
 
-    // Extend forward to the next Sunday on or after lastDate
     const endDay = new Date(lastDate)
     const endDow = endDay.getUTCDay()
     const daysToSun = endDow === 0 ? 0 : 7 - endDow
@@ -61,7 +56,7 @@ export function Heatmap({ records }: Props) {
 
     const cells = allDates.map((date, idx) => {
       const col = Math.floor(idx / 7)
-      const row = idx % 7 // Mon=0, Tue=1, ..., Sat=5, Sun=6
+      const row = idx % 7
       const record = recordMap.get(date)
       return { date, col, row, record }
     })
@@ -74,7 +69,6 @@ export function Heatmap({ records }: Props) {
   const svgW = LABEL_W + weeks * STEP
   const svgH = MONTH_H + 7 * STEP
 
-  // Month labels
   const monthLabels = useMemo(() => {
     const seen = new Set<string>()
     return cells.filter(c => {
@@ -92,10 +86,15 @@ export function Heatmap({ records }: Props) {
   return (
     <section className="mb-10">
       <div className="flex items-baseline justify-between mb-3">
-        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">
+        <h2
+          className="text-sm font-medium uppercase tracking-wide"
+          style={{ color: 'var(--tb-txt-muted)' }}
+        >
           Daily burn
         </h2>
-        <span className="text-xs text-slate-600">log color scale · less → more</span>
+        <span className="text-xs" style={{ color: 'var(--tb-txt-faint)' }}>
+          log color scale · less → more
+        </span>
       </div>
 
       <div className="overflow-x-auto">
@@ -115,7 +114,7 @@ export function Heatmap({ records }: Props) {
               y={MONTH_H + i * STEP + CELL_SIZE - 2}
               textAnchor="end"
               fontSize={9}
-              className="fill-slate-600 font-mono"
+              style={{ fill: 'var(--tb-txt-faint)' }}
             >
               {i % 2 === 1 ? d : ''}
             </text>
@@ -128,7 +127,7 @@ export function Heatmap({ records }: Props) {
               x={LABEL_W + col * STEP}
               y={MONTH_H - 4}
               fontSize={9}
-              className="fill-slate-500 font-mono"
+              style={{ fill: 'var(--tb-txt-muted)' }}
             >
               {label}
             </text>
@@ -150,22 +149,18 @@ export function Heatmap({ records }: Props) {
                   height={CELL_SIZE}
                   rx={2}
                   data-date={date}
-                  data-col={col}
-                  data-row={row}
-                  data-estimated={isEstOnly ? 'true' : undefined}
-                  className={`${BIN_CLASSES[bin]} cursor-default transition-opacity hover:opacity-80`}
+                  style={{ fill: BIN_FILLS[bin], cursor: 'default' }}
                   onMouseEnter={e => {
                     const rect = (e.target as SVGElement).getBoundingClientRect()
                     setTooltip({ x: rect.left + rect.width / 2, y: rect.top, record: record ?? null, date })
                   }}
                 />
-                {/* Dot indicator for estimated-only days */}
                 {isEstOnly && (
                   <circle
                     cx={x + CELL_SIZE / 2}
                     cy={y + CELL_SIZE / 2}
                     r={2}
-                    className="fill-amber-500 pointer-events-none"
+                    style={{ fill: 'var(--tb-yellow)', pointerEvents: 'none' }}
                   />
                 )}
               </g>
@@ -176,50 +171,63 @@ export function Heatmap({ records }: Props) {
 
       {/* Legend */}
       <div className="flex items-center gap-1 mt-2">
-        <span className="text-xs text-slate-600 mr-1">Less</span>
-        {[0, 1, 2, 3, 4, 5].map(bin => (
+        <span className="text-xs mr-1" style={{ color: 'var(--tb-txt-faint)' }}>Less</span>
+        {BIN_FILLS.map((fill, bin) => (
           <svg key={bin} width={13} height={13}>
-            <rect width={13} height={13} rx={2} className={BIN_CLASSES[bin]} />
+            <rect width={13} height={13} rx={2} style={{ fill }} />
           </svg>
         ))}
-        <span className="text-xs text-slate-600 ml-1">More</span>
-        <span className="text-xs text-slate-700 ml-4">·</span>
+        <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-faint)' }}>More</span>
+        <span className="text-xs ml-4" style={{ color: 'var(--tb-chart-axis)' }}>·</span>
         <svg width={13} height={13} className="ml-2">
-          <rect width={13} height={13} rx={2} className="fill-slate-900" />
-          <circle cx={6.5} cy={6.5} r={2} className="fill-amber-500" />
+          <rect width={13} height={13} rx={2} style={{ fill: 'var(--tb-bin-0)' }} />
+          <circle cx={6.5} cy={6.5} r={2} style={{ fill: 'var(--tb-yellow)' }} />
         </svg>
-        <span className="text-xs text-slate-600 ml-1">Chat-only day</span>
+        <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-faint)' }}>Chat-only day</span>
       </div>
 
       {/* Tooltip */}
       {tooltip && (
         <div
           role="tooltip"
-          className="fixed z-50 pointer-events-none bg-slate-800 border border-slate-700 rounded-lg p-3 text-xs shadow-xl max-w-xs"
-          style={{ left: tooltip.x, top: tooltip.y - 8, transform: 'translate(-50%, -100%)' }}
+          className="fixed z-50 pointer-events-none rounded-lg p-3 text-xs shadow-xl max-w-xs"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y - 8,
+            transform: 'translate(-50%, -100%)',
+            backgroundColor: 'var(--tb-card)',
+            border: '1px solid var(--tb-border)',
+            color: 'var(--tb-txt)',
+          }}
         >
-          <div className="font-medium text-slate-200 mb-1">
+          <div className="font-medium mb-1" style={{ color: 'var(--tb-txt)' }}>
             {formatDateDisplay(tooltip.date)}
-            <span className="text-slate-600 font-mono text-[9px] ml-1">({tooltip.date})</span>
+            <span className="text-[9px] ml-1" style={{ color: 'var(--tb-txt-faint)' }}>
+              ({tooltip.date})
+            </span>
           </div>
           {tooltip.record ? (
             <>
               {tooltip.record.total_exact > 0 && (
-                <div className="text-cyan-400">
-                  {tooltip.record.total_exact.toLocaleString()} <span className="text-slate-500">measured</span>
+                <div style={{ color: 'var(--tb-accent)' }}>
+                  {tooltip.record.total_exact.toLocaleString()}{' '}
+                  <span style={{ color: 'var(--tb-txt-faint)' }}>measured</span>
                 </div>
               )}
               {tooltip.record.total_est > 0 && (
-                <div className="text-amber-400">
-                  ~{tooltip.record.total_est.toLocaleString()} <span className="text-slate-500">estimated</span>
+                <div style={{ color: 'var(--tb-yellow)' }}>
+                  ~{tooltip.record.total_est.toLocaleString()}{' '}
+                  <span style={{ color: 'var(--tb-txt-faint)' }}>estimated</span>
                 </div>
               )}
               {tooltip.record.driver && (
-                <div className="text-slate-400 mt-1">{tooltip.record.driver}</div>
+                <div className="mt-1" style={{ color: 'var(--tb-txt-muted)' }}>
+                  {tooltip.record.driver}
+                </div>
               )}
             </>
           ) : (
-            <div className="text-slate-500">No activity</div>
+            <div style={{ color: 'var(--tb-txt-faint)' }}>No activity</div>
           )}
         </div>
       )}

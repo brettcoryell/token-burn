@@ -19,32 +19,53 @@ export function DailyTable({ records }: Props) {
   return (
     <section className="mb-10">
       <div className="flex items-center gap-2 mb-3">
-        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">
+        <h2
+          className="text-sm font-medium uppercase tracking-wide"
+          style={{ color: 'var(--tb-txt-muted)' }}
+        >
           Daily detail
         </h2>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-slate-800">
+      <div
+        className="overflow-x-auto rounded-lg"
+        style={{ border: '1px solid var(--tb-border)' }}
+      >
         <table className="w-full text-sm border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 bg-slate-900">
-              <th className="text-left py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
+            <tr style={{ borderBottom: '1px solid var(--tb-border)', backgroundColor: 'var(--tb-card)' }}>
+              <th
+                className="text-left py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
+                style={{ color: 'var(--tb-txt-faint)' }}
+              >
                 Date
               </th>
               <th className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap">
-                <span className="text-cyan-600">MEASURED</span>
-                <span className="text-slate-500 ml-1">Exact</span>
+                <span style={{ color: 'var(--tb-accent)' }}>MEASURED</span>
+                <span className="ml-1" style={{ color: 'var(--tb-txt-faint)' }}>Exact</span>
               </th>
-              <th className="text-right py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
+              <th
+                className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
+                style={{ color: 'var(--tb-txt-faint)' }}
+              >
                 Code sessions
               </th>
-              <th className="text-right py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
+              <th
+                className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
+                style={{ color: 'var(--tb-txt-faint)' }}
+              >
                 API Requests
               </th>
-              <th className="text-right py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
+              <th
+                className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
+                style={{ color: 'var(--tb-txt-faint)' }}
+              >
                 Claude Chat Est
               </th>
-              <th className="text-left py-2 px-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              <th
+                className="text-left py-2 px-3 text-xs font-medium uppercase tracking-wide"
+                style={{ color: 'var(--tb-txt-faint)' }}
+              >
                 Driver
               </th>
             </tr>
@@ -55,35 +76,51 @@ export function DailyTable({ records }: Props) {
               return (
                 <tr
                   key={r.date}
-                  className={`border-b border-slate-800 ${i % 2 === 0 ? 'bg-slate-950' : 'bg-slate-900/50'} hover:bg-slate-800/50 transition-colors`}
+                  className="tb-row-hover transition-colors"
+                  style={{
+                    borderBottom: '1px solid var(--tb-border)',
+                    backgroundColor: i % 2 === 0 ? 'var(--tb-bg)' : 'var(--tb-card)',
+                  }}
                 >
-                  <td className="py-2 px-3 text-slate-300 whitespace-nowrap font-mono text-xs">
+                  <td
+                    className="py-2 px-3 whitespace-nowrap text-xs tabular-nums"
+                    style={{ color: 'var(--tb-txt-muted)' }}
+                  >
                     {formatDateDisplay(r.date)}
                   </td>
-                  <td className="py-2 px-3 text-right font-mono text-xs whitespace-nowrap">
+                  <td className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap">
                     {isEstOnly ? (
-                      <span className="text-slate-600">—</span>
+                      <span style={{ color: 'var(--tb-txt-faint)' }}>—</span>
                     ) : (
-                      <span className="text-slate-200">{formatTokensExact(r.total_exact)}</span>
+                      <span style={{ color: 'var(--tb-txt)' }}>{formatTokensExact(r.total_exact)}</span>
                     )}
                   </td>
-                  <td className="py-2 px-3 text-right font-mono text-xs text-slate-500 whitespace-nowrap">
+                  <td
+                    className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap"
+                    style={{ color: 'var(--tb-txt-faint)' }}
+                  >
                     {r.claude_code_sessions > 0 ? r.claude_code_sessions : '—'}
                   </td>
-                  <td className="py-2 px-3 text-right font-mono text-xs text-slate-500 whitespace-nowrap">
+                  <td
+                    className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap"
+                    style={{ color: 'var(--tb-txt-faint)' }}
+                  >
                     {r.claude_code_api_requests > 0 ? r.claude_code_api_requests : '—'}
                   </td>
-                  <td className="py-2 px-3 text-right font-mono text-xs whitespace-nowrap">
+                  <td className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap">
                     {r.total_est > 0 ? (
                       <span className="inline-flex items-center gap-1">
-                        <span className="text-amber-400">~{formatTokens(r.total_est)}</span>
+                        <span style={{ color: 'var(--tb-yellow)' }}>~{formatTokens(r.total_est)}</span>
                         <FidelityBadge type="estimated" />
                       </span>
                     ) : (
-                      <span className="text-slate-600">—</span>
+                      <span style={{ color: 'var(--tb-txt-faint)' }}>—</span>
                     )}
                   </td>
-                  <td className="py-2 px-3 text-xs text-slate-500 max-w-40 truncate">
+                  <td
+                    className="py-2 px-3 text-xs max-w-40 truncate"
+                    style={{ color: 'var(--tb-txt-faint)' }}
+                  >
                     {r.driver ? (DRIVER_LABELS[r.driver] ?? r.driver) : ''}
                   </td>
                 </tr>

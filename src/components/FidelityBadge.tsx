@@ -8,11 +8,19 @@ export function FidelityBadge({ type, className = '' }: Props) {
   return (
     <span
       data-fidelity={type}
-      className={`inline-block text-[10px] font-mono font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+      className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${className}`}
+      style={
         isMeasured
-          ? 'bg-cyan-950 text-cyan-400 border border-cyan-800'
-          : 'bg-amber-950 text-amber-400 border border-amber-800'
-      } ${className}`}
+          ? {
+              backgroundColor: 'var(--tb-accent-dim)',
+              color: 'var(--tb-accent)',
+              border: '1px solid var(--tb-accent-dim)',
+            }
+          : {
+              color: 'var(--tb-yellow)',
+              border: '1px solid var(--tb-yellow)',
+            }
+      }
     >
       {isMeasured ? 'measured' : 'est'}
     </span>

@@ -11,7 +11,10 @@ interface Props {
 }
 
 export function TrendLine({ records }: Props) {
-  const weeks = useMemo(() => aggregateWeekly(records), [records])
+  const weeks = useMemo(
+    () => aggregateWeekly(records).filter(w => w.total_exact > 0),
+    [records]
+  )
 
   const peakWeek = useMemo(() => {
     if (weeks.length === 0) return null
@@ -25,10 +28,15 @@ export function TrendLine({ records }: Props) {
   return (
     <section className="mb-10">
       <div className="flex items-baseline justify-between mb-3">
-        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">
+        <h2
+          className="text-sm font-medium uppercase tracking-wide"
+          style={{ color: 'var(--tb-txt-muted)' }}
+        >
           Weekly total
         </h2>
-        <span className="text-xs text-slate-600">log y-scale · exact only</span>
+        <span className="text-xs" style={{ color: 'var(--tb-txt-faint)' }}>
+          log y-scale · exact only
+        </span>
       </div>
 
       <div className="h-40">
@@ -37,22 +45,27 @@ export function TrendLine({ records }: Props) {
             <XAxis
               dataKey="weekStart"
               tickFormatter={formatDateShort}
-              tick={{ fill: '#64748b', fontSize: 10 }}
+              tick={{ fill: 'var(--tb-chart-axis)', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               scale="log"
-              domain={['auto', 'auto']}
+              domain={[1, 'auto']}
               tickFormatter={formatTokens}
-              tick={{ fill: '#64748b', fontSize: 10 }}
+              tick={{ fill: 'var(--tb-chart-axis)', fontSize: 10 }}
               axisLine={false}
               tickLine={false}
               width={48}
             />
             <Tooltip
-              contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
-              labelStyle={{ color: '#94a3b8', fontSize: 11 }}
+              contentStyle={{
+                background: 'var(--tb-card)',
+                border: '1px solid var(--tb-border)',
+                borderRadius: 8,
+                color: 'var(--tb-txt)',
+              }}
+              labelStyle={{ color: 'var(--tb-txt-muted)', fontSize: 11 }}
               formatter={(val: number, name: string) => [
                 formatTokens(val),
                 name === 'total_exact' ? 'Exact (measured)' : 'Chat (estimated)',
@@ -62,11 +75,11 @@ export function TrendLine({ records }: Props) {
             {peakWeek && (
               <ReferenceLine
                 x={peakWeek.weekStart}
-                stroke="#334155"
+                stroke="var(--tb-border)"
                 label={{
                   value: `Peak ${formatTokens(peakWeek.total_exact)}`,
                   position: 'insideTopRight',
-                  fill: '#64748b',
+                  fill: 'var(--tb-chart-axis)',
                   fontSize: 10,
                 }}
               />
@@ -74,16 +87,16 @@ export function TrendLine({ records }: Props) {
             <Line
               type="monotone"
               dataKey="total_exact"
-              stroke="#22d3ee"
+              stroke="var(--tb-accent)"
               strokeWidth={1.5}
               dot={false}
-              activeDot={{ r: 3, fill: '#22d3ee' }}
+              activeDot={{ r: 3, fill: 'var(--tb-accent)' }}
             />
             {hasEst && (
               <Line
                 type="monotone"
                 dataKey="total_est"
-                stroke="#f59e0b"
+                stroke="var(--tb-yellow)"
                 strokeWidth={1}
                 strokeDasharray="4 2"
                 dot={false}

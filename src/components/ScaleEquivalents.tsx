@@ -54,12 +54,15 @@ export function ScaleEquivalents({ records }: Props) {
   return (
     <section className="mb-10">
       <div className="flex items-center gap-2 mb-3">
-        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">
+        <h2
+          className="text-sm font-medium uppercase tracking-wide"
+          style={{ color: 'var(--tb-txt-muted)' }}
+        >
           Scale equivalents
         </h2>
         <FidelityBadge type="measured" />
       </div>
-      <p className="text-xs text-slate-600 mb-4">
+      <p className="text-xs mb-4" style={{ color: 'var(--tb-txt-faint)' }}>
         Based on {formatTokens(totalExact)} exact tokens — These are scale translations, not measured utility
       </p>
 
@@ -67,12 +70,21 @@ export function ScaleEquivalents({ records }: Props) {
         {cards.map(card => (
           <div
             key={card.label}
-            className="bg-slate-900 rounded-lg p-3 border border-slate-800 flex flex-col gap-1"
+            className="rounded-lg p-3 flex flex-col gap-1"
+            style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
           >
-            <div className="text-xs text-slate-500 uppercase tracking-wide">{card.label}</div>
-            <div className="text-xl font-bold font-mono text-slate-100">{card.value}</div>
-            <div className="text-[10px] text-slate-600 font-mono mt-auto">{card.formula}</div>
-            <div className="text-[10px] text-slate-700">{card.unit}</div>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-faint)' }}>
+              {card.label}
+            </div>
+            <div className="text-xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>
+              {card.value}
+            </div>
+            <div className="text-[10px] mt-auto" style={{ color: 'var(--tb-txt-faint)' }}>
+              {card.formula}
+            </div>
+            <div className="text-[10px]" style={{ color: 'var(--tb-chart-axis)' }}>
+              {card.unit}
+            </div>
           </div>
         ))}
       </div>
