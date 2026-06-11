@@ -11,15 +11,14 @@ export function formatTokensExact(n: number): string {
   return n.toLocaleString()
 }
 
-// Log color scale — 5 non-zero bins for the heatmap
-// Returns a CSS class suffix (0–5)
-export function logColorBin(tokens: number): number {
+// Log color scale — 5 non-zero bins relative to the dataset maximum.
+// Bins are equal intervals on the log scale from 1 to maxTokens, so the
+// darkest cell is always the busiest day in the current range.
+export function logColorBin(tokens: number, maxTokens: number): number {
   if (tokens <= 0) return 0
-  if (tokens < 1_000) return 1
-  if (tokens < 10_000) return 2
-  if (tokens < 100_000) return 3
-  if (tokens < 1_000_000) return 4
-  return 5
+  const logMax = Math.log10(Math.max(maxTokens, 1))
+  const logVal = Math.log10(Math.max(tokens, 1))
+  return Math.min(5, Math.max(1, Math.ceil((logVal / logMax) * 5)))
 }
 
 // Scale equivalents — all use total_exact only

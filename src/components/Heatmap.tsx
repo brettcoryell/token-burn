@@ -34,6 +34,11 @@ export function Heatmap({ records }: Props) {
     return m
   }, [records])
 
+  const maxTokens = useMemo(
+    () => records.reduce((max, r) => Math.max(max, r.total_exact), 1),
+    [records]
+  )
+
   const { cells, weeks } = useMemo(() => {
     if (records.length === 0) return { cells: [], weeks: 0 }
 
@@ -135,7 +140,7 @@ export function Heatmap({ records }: Props) {
 
           {/* Cells */}
           {cells.map(({ date, col, row, record }) => {
-            const bin = record ? logColorBin(record.total_exact) : 0
+            const bin = record ? logColorBin(record.total_exact, maxTokens) : 0
             const isEstOnly = record && record.total_exact === 0 && record.total_est > 0
             const x = LABEL_W + col * STEP
             const y = MONTH_H + row * STEP

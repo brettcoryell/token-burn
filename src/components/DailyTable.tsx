@@ -71,7 +71,7 @@ export function DailyTable({ records }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((r, i) => {
+            {sorted.map((r) => {
               const isEstOnly = r.total_exact === 0 && r.total_est > 0
               return (
                 <tr
@@ -79,7 +79,7 @@ export function DailyTable({ records }: Props) {
                   className="tb-row-hover transition-colors"
                   style={{
                     borderBottom: '1px solid var(--tb-border)',
-                    backgroundColor: i % 2 === 0 ? 'var(--tb-bg)' : 'var(--tb-card)',
+                    backgroundColor: 'var(--tb-card)',
                   }}
                 >
                   <td
