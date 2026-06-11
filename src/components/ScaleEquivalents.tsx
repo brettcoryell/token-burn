@@ -82,7 +82,7 @@ export function ScaleEquivalents({ records }: Props) {
             <div className="text-[10px] mt-auto" style={{ color: 'var(--tb-txt-faint)' }}>
               {card.formula}
             </div>
-            <div className="text-[10px]" style={{ color: 'var(--tb-chart-axis)' }}>
+            <div className="text-[10px]" style={{ color: 'var(--tb-txt-faint)' }}>
               {card.unit}
             </div>
           </div>
