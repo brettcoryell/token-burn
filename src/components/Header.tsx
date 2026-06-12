@@ -97,7 +97,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             </span>
             <FidelityBadge type="measured" />
           </div>
-          <div className="text-3xl font-bold tabular-nums mb-1" style={{ color: 'var(--tb-txt)' }}>
+          <div className="text-2xl font-semibold tabular-nums mb-1" style={{ color: 'var(--tb-txt)' }}>
             {formatTokens(totalExact)}
           </div>
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
@@ -121,7 +121,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             </span>
             <FidelityBadge type="measured" />
           </div>
-          <div className="text-3xl font-bold tabular-nums mb-1" style={{ color: 'var(--tb-txt)' }}>
+          <div className="text-2xl font-semibold tabular-nums mb-1" style={{ color: 'var(--tb-txt)' }}>
             {totalSessions.toLocaleString()}
           </div>
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
@@ -145,7 +145,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             </span>
             <FidelityBadge type="estimated" />
           </div>
-          <div className="text-3xl font-bold tabular-nums mb-1" style={{ color: totalEst > 0 ? 'var(--tb-yellow)' : 'var(--tb-txt-faint)' }}>
+          <div className="text-2xl font-semibold tabular-nums mb-1" style={{ color: totalEst > 0 ? 'var(--tb-yellow)' : 'var(--tb-txt-faint)' }}>
             {totalEst > 0 ? `~${formatTokens(totalEst)}` : '—'}
           </div>
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
