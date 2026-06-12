@@ -38,8 +38,10 @@ export function DailyTable({ records }: Props) {
                 Date
               </th>
               <th className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap">
-                <span style={{ color: 'var(--tb-accent)' }}>MEASURED</span>
-                <span className="ml-1" style={{ color: 'var(--tb-txt-faint)' }}>Exact</span>
+                <span className="inline-flex items-center gap-1">
+                  <FidelityBadge type="measured" />
+                  <span style={{ color: 'var(--tb-txt-faint)' }}>Exact</span>
+                </span>
               </th>
               <th
                 className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"

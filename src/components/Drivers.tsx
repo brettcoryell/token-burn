@@ -112,7 +112,6 @@ export function Drivers({ sessions, theme }: Props) {
               dataKey="tokens"
               radius={[0, 3, 3, 0]}
               maxBarSize={20}
-              background={{ fill: C.barTrackInner, radius: 3 }}
             >
               {top.map((_, i) => (
                 <Cell key={i} fill={i === 0 ? C.peakBar : C.secondaryBar} />

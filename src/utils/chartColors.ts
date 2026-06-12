@@ -10,7 +10,6 @@ export interface ChartColors {
   peakBar:        string  // drivers peak bar — coral
   secondaryBar:   string  // drivers non-peak bars
   barTrack:       string  // drivers chart container background
-  barTrackInner:  string  // per-bar background track (extends full axis width)
   yellow:         string
   axis:           string
   border:         string
@@ -27,7 +26,6 @@ export function getChartColors(theme: 'light' | 'dark'): ChartColors {
       peakBar:        '#D85A30',   // coral
       secondaryBar:   '#D3D1C7',
       barTrack:       'transparent',
-      barTrackInner:  '#ede9df',   // very light warm gray, lighter than secondary bar
       yellow:         '#d97706',
       axis:           '#94a3b8',
       border:         '#e2e8f0',
@@ -42,9 +40,8 @@ export function getChartColors(theme: 'light' | 'dark'): ChartColors {
     peakBar:        '#D85A30',   // coral
     secondaryBar:   '#4a5568',
     barTrack:       '#141f35',
-    barTrackInner:  '#1a2535',   // darker than chart container bg — bars pop against it
     yellow:         '#f59e0b',
-    axis:           '#4a5568',
+    axis:           '#64748b',
     border:         '#1e293b',
     card:           '#0f172a',
     cardHover:      '#141f35',

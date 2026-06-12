@@ -86,7 +86,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div
           className="rounded-lg p-4 flex flex-col"
           style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}

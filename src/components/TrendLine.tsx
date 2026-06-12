@@ -45,7 +45,7 @@ export function TrendLine({ records, theme }: Props) {
 
       <div className="h-40">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={weeks} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <AreaChart data={weeks} margin={{ top: 22, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="tbAccentGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={C.accent} stopOpacity={0.15} />
@@ -88,11 +88,20 @@ export function TrendLine({ records, theme }: Props) {
               <ReferenceLine
                 x={peakWeek.weekStart}
                 stroke={C.border}
-                label={{
-                  value: `Peak ${formatTokens(peakWeek.total_exact)}`,
-                  position: 'insideTopRight',
-                  fill: C.axis,
-                  fontSize: 10,
+                label={(props: { viewBox?: { x?: number; y?: number } }) => {
+                  const x = props.viewBox?.x ?? 0
+                  const y = props.viewBox?.y ?? 0
+                  return (
+                    <text
+                      x={x - 4}
+                      y={y + 4}
+                      fill={C.txtMuted}
+                      fontSize={10}
+                      textAnchor="end"
+                    >
+                      {`Peak ${formatTokens(peakWeek.total_exact)}`}
+                    </text>
+                  )
                 }}
               />
             )}

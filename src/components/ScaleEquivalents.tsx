@@ -66,14 +66,14 @@ export function ScaleEquivalents({ records }: Props) {
         Based on {formatTokens(totalExact)} exact tokens — These are scale translations, not measured utility
       </p>
 
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {cards.map(card => (
           <div
             key={card.label}
             className="rounded-lg p-3 flex flex-col gap-1"
             style={{ backgroundColor: 'var(--tb-card)', border: '1px solid var(--tb-border)' }}
           >
-            <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--tb-txt-muted)' }}>
+            <div className="text-xs uppercase tracking-wide leading-tight" style={{ color: 'var(--tb-txt-muted)' }}>
               {card.label}
             </div>
             <div className="text-xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>
