@@ -46,7 +46,7 @@ export function Drivers({ sessions, theme }: Props) {
     return (
       <section className="mb-10">
         <h2
-          className="text-sm font-medium uppercase tracking-wide mb-3"
+          className="text-sm font-semibold uppercase tracking-wide mb-3"
           style={{ color: 'var(--tb-txt)' }}
         >
           Drivers on busy days
@@ -62,7 +62,7 @@ export function Drivers({ sessions, theme }: Props) {
     <section className="mb-10">
       <div className="flex items-baseline justify-between mb-3">
         <h2
-          className="text-sm font-medium uppercase tracking-wide"
+          className="text-sm font-semibold uppercase tracking-wide"
           style={{ color: 'var(--tb-txt)' }}
         >
           Drivers on busy days

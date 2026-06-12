@@ -94,7 +94,7 @@ export function Heatmap({ records }: Props) {
     <section className="mb-10">
       <div className="flex items-baseline justify-between mb-3">
         <h2
-          className="text-sm font-medium uppercase tracking-wide"
+          className="text-sm font-semibold uppercase tracking-wide"
           style={{ color: 'var(--tb-txt)' }}
         >
           Daily burn

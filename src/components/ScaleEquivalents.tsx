@@ -55,7 +55,7 @@ export function ScaleEquivalents({ records }: Props) {
     <section className="mb-10">
       <div className="flex items-center gap-2 mb-3">
         <h2
-          className="text-sm font-medium uppercase tracking-wide"
+          className="text-sm font-semibold uppercase tracking-wide"
           style={{ color: 'var(--tb-txt)' }}
         >
           Scale equivalents
