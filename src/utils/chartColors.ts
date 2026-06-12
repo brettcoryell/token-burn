@@ -27,7 +27,7 @@ export function getChartColors(theme: 'light' | 'dark'): ChartColors {
       secondaryBar:   '#D3D1C7',
       barTrack:       'transparent',
       yellow:         '#d97706',
-      axis:           '#94a3b8',
+      axis:           '#64748b',
       border:         '#e2e8f0',
       card:           '#ffffff',
       cardHover:      '#f8fafc',

@@ -8,7 +8,7 @@ export function FidelityBadge({ type, className = '' }: Props) {
   return (
     <span
       data-fidelity={type}
-      className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${className}`}
+      className={`inline-block text-[10px] font-medium px-[6px] py-[1px] rounded uppercase tracking-wide ${className}`}
       style={
         isMeasured
           ? {

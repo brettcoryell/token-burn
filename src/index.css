@@ -28,7 +28,7 @@
   --tb-green:       #22c55e;
 
   /* Fidelity badge chips */
-  --tb-chip-measured-bg:     #2a3d2a;
+  --tb-chip-measured-bg:     #1e3a1e;
   --tb-chip-measured-txt:    #7ec87e;
   --tb-chip-measured-border: #3d5a3d;
   --tb-chip-est-bg:          #3d2a1e;
@@ -69,8 +69,8 @@
   --tb-txt-muted:   #475569;
   --tb-txt-faint:   #94a3b8;
 
-  --tb-chart-axis:  #94a3b8;
-  --tb-chart-muted: #94a3b8;
+  --tb-chart-axis:  #64748b;
+  --tb-chart-muted: #64748b;
 
   --tb-accent:      #D85A30;
   --tb-accent-dim:  #FAECE7;
@@ -79,9 +79,9 @@
   --tb-red:         #dc2626;
   --tb-green:       #16a34a;
 
-  --tb-chip-measured-bg:     #FAECE7;
-  --tb-chip-measured-txt:    #712B13;
-  --tb-chip-measured-border: #e8c4b8;
+  --tb-chip-measured-bg:     #f0faf0;
+  --tb-chip-measured-txt:    #2d6a2d;
+  --tb-chip-measured-border: #a8d5a8;
   --tb-chip-est-bg:          #FAECE7;
   --tb-chip-est-txt:         #4A1B0C;
   --tb-chip-est-border:      #e8c4b8;

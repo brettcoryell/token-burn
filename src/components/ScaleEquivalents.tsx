@@ -76,7 +76,7 @@ export function ScaleEquivalents({ records }: Props) {
             <div className="text-xs uppercase tracking-wide leading-tight" style={{ color: 'var(--tb-txt-muted)' }}>
               {card.label}
             </div>
-            <div className="text-xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>
+            <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--tb-txt)' }}>
               {card.value}
             </div>
             <div className="text-[10px] mt-auto" style={{ color: 'var(--tb-txt-faint)' }}>
