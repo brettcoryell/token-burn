@@ -10,7 +10,7 @@ import { ScaleEquivalents } from './components/ScaleEquivalents'
 import { DailyTable } from './components/DailyTable'
 
 function getInitialTheme(): 'light' | 'dark' {
-  try { return (localStorage.getItem('tb-theme') as 'light' | 'dark') ?? 'dark' } catch { return 'dark' }
+  try { return (localStorage.getItem('tb-theme') as 'light' | 'dark') ?? 'light' } catch { return 'light' }
 }
 
 export function App() {

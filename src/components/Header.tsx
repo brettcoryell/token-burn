@@ -36,10 +36,10 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
     <header className="pb-6 mb-8" style={{ borderBottom: '1px solid var(--tb-border)' }}>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--tb-txt)' }}>
+          <h1 className="text-2xl mb-1" style={{ fontFamily: "'Georgia', 'Times New Roman', serif", fontWeight: 400, color: 'var(--tb-txt)' }}>
             Token Burn Dashboard
           </h1>
-          <p className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--tb-txt-muted)' }}>
+          <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--tb-txt-muted)' }}>
             AI usage by day
           </p>
           {lastUpdated && (

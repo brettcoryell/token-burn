@@ -63,14 +63,14 @@
   --tb-bg:          #ffffff;
   --tb-card:        #ffffff;
   --tb-card-hover:  #f8fafc;
-  --tb-border:      #e2e8f0;
+  --tb-border:      #e8edf3;
 
-  --tb-txt:         #0f172a;
-  --tb-txt-muted:   #475569;
-  --tb-txt-faint:   #94a3b8;
+  --tb-txt:         #1a2332;
+  --tb-txt-muted:   #4a5568;
+  --tb-txt-faint:   #8a9ab5;
 
   --tb-chart-axis:  #64748b;
-  --tb-chart-muted: #64748b;
+  --tb-chart-muted: #8a9ab5;
 
   --tb-accent:      #D85A30;
   --tb-accent-dim:  #FAECE7;
@@ -86,15 +86,15 @@
   --tb-chip-est-txt:         #712B13;
   --tb-chip-est-border:      #e8c4b8;
 
-  --tb-bar-secondary: #D3D1C7;
+  --tb-bar-secondary: #e8edf3;
   --tb-bar-track:     transparent;
 
-  --tb-sparkline:   #B4B2A9;
+  --tb-sparkline:   #8a9ab5;
 
-  --tb-data-primary:   #0f172a;
-  --tb-data-secondary: #475569;
-  --tb-data-date:      #94a3b8;
-  --tb-data-empty:     #94a3b8;
+  --tb-data-primary:   #1a2332;
+  --tb-data-secondary: #4a5568;
+  --tb-data-date:      #8a9ab5;
+  --tb-data-empty:     #8a9ab5;
 
   --tb-bin-0:       #f1f5f9;
   --tb-bin-1:       #E6F1FB;

@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Token Burn Dashboard</title>
+    <script>
+      (function() {
+        var t = 'light';
+        try { t = localStorage.getItem('tb-theme') || 'light'; } catch(e) {}
+        if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
