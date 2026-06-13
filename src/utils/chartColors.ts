@@ -24,15 +24,15 @@ export function getChartColors(theme: 'light' | 'dark'): ChartColors {
     return {
       accent:         '#0891b2',   // weekly line stays cyan per spec
       peakBar:        '#D85A30',   // coral
-      secondaryBar:   '#D3D1C7',
+      secondaryBar:   '#e8edf3',   // site-fog
       barTrack:       'transparent',
       yellow:         '#d97706',
       axis:           '#64748b',
-      border:         '#e2e8f0',
+      border:         '#e8edf3',   // site-fog
       card:           '#ffffff',
       cardHover:      '#f8fafc',
-      txtMuted:       '#475569',
-      txt:            '#0f172a',
+      txtMuted:       '#4a5568',   // site-dusk
+      txt:            '#1a2332',   // site-ink
     }
   }
   return {

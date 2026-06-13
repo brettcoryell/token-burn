@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* ── Site color primitives — shared with brettcoryell.com ────────────────────
+   Values must stay in sync with brettcoryell-site-design-guide.md §4.
+   When the site palette changes, update this block first; the --tb-* light
+   tokens below that reference these will pick up the change automatically. */
+:root {
+  --site-sky:      #7a9cb8;
+  --site-sky-deep: #5b7d99;
+  --site-sky-pale: #dce8f0;
+  --site-ink:      #1a2332;
+  --site-dusk:     #4a5568;
+  --site-mist:     #8a9ab5;
+  --site-fog:      #e8edf3;
+  --site-page:     #ffffff;
+}
+
 /* ─── Token-burn design tokens ─────────────────────────────────────────────── */
 
 :root {
@@ -60,17 +75,17 @@
 }
 
 [data-theme="light"] {
-  --tb-bg:          #ffffff;
-  --tb-card:        #ffffff;
+  --tb-bg:          var(--site-page);
+  --tb-card:        var(--site-page);
   --tb-card-hover:  #f8fafc;
-  --tb-border:      #e8edf3;
+  --tb-border:      var(--site-fog);
 
-  --tb-txt:         #1a2332;
-  --tb-txt-muted:   #4a5568;
-  --tb-txt-faint:   #8a9ab5;
+  --tb-txt:         var(--site-ink);
+  --tb-txt-muted:   var(--site-dusk);
+  --tb-txt-faint:   var(--site-mist);
 
   --tb-chart-axis:  #64748b;
-  --tb-chart-muted: #8a9ab5;
+  --tb-chart-muted: var(--site-mist);
 
   --tb-accent:      #D85A30;
   --tb-accent-dim:  #FAECE7;
@@ -86,15 +101,15 @@
   --tb-chip-est-txt:         #712B13;
   --tb-chip-est-border:      #e8c4b8;
 
-  --tb-bar-secondary: #e8edf3;
+  --tb-bar-secondary: var(--site-fog);
   --tb-bar-track:     transparent;
 
-  --tb-sparkline:   #8a9ab5;
+  --tb-sparkline:   var(--site-mist);
 
-  --tb-data-primary:   #1a2332;
-  --tb-data-secondary: #4a5568;
-  --tb-data-date:      #8a9ab5;
-  --tb-data-empty:     #8a9ab5;
+  --tb-data-primary:   var(--site-ink);
+  --tb-data-secondary: var(--site-dusk);
+  --tb-data-date:      var(--site-mist);
+  --tb-data-empty:     var(--site-mist);
 
   --tb-bin-0:       #f1f5f9;
   --tb-bin-1:       #E6F1FB;
