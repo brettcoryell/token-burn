@@ -75,6 +75,19 @@ AI spend. Exact data from JSONL files is exact; chat estimates are educated gues
 
 ---
 
+## D7: Python environment standard
+
+**Decision (2026-06-14):** All Python invocations use a `.venv` at the project root built from Homebrew `python@3.12`. Never bare `python3` or `pip3` in Makefiles, scripts, or documentation.
+
+**Why:** The system Python on macOS is 3.9.6 and lacks PEP 604 union syntax (`dict | None`) used throughout the collector. Bare `python3` silently resolves to the wrong interpreter and fails at runtime.
+
+**Constraints:**
+- `make collect`, `make collect-coda`, `make collect-dry`, `make migrate`, `make test-collector` all call `.venv/bin/python`
+- `make install` creates the venv via `python3.12 -m venv .venv`
+- Canonical standard: `~/Code/AI/PYTHON-ENVIRONMENT.md`
+
+---
+
 ## D6: .collect-state.json for dedup — not committed to git
 
 **Decision (2026-06-09):** The collector uses `.collect-state.json` (gitignored) to
