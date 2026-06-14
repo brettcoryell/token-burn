@@ -54,6 +54,19 @@ export function App() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--tb-bg)', color: 'var(--tb-txt)' }}>
+      <a
+        href="https://brettcoryell.com"
+        style={{
+          position: 'fixed', bottom: '1.25rem', left: '1.5rem', zIndex: 50,
+          fontSize: '0.75rem', color: 'var(--tb-txt-faint)',
+          textDecoration: 'none', fontFamily: 'inherit',
+          transition: 'color 0.15s ease',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--tb-txt-muted)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'var(--tb-txt-faint)')}
+      >
+        ← brettcoryell.com
+      </a>
       <div className="max-w-6xl mx-auto px-6 py-8">
         <Header
           records={filtered}
