@@ -84,7 +84,7 @@ AI spend. Exact data from JSONL files is exact; chat estimates are educated gues
 **Constraints:**
 - `make collect`, `make collect-coda`, `make collect-dry`, `make migrate`, `make test-collector` all call `.venv/bin/python`
 - `make install` creates the venv via `python3.12 -m venv .venv`
-- Canonical standard: `~/Code/AI/PYTHON-ENVIRONMENT.md`
+- Canonical standard: `~/Code/AI/open_brain/PYTHON-ENVIRONMENT.md`
 
 ---
 
