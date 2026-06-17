@@ -31,6 +31,8 @@ interface DayRecord {
   claude_code_sessions: number;
   claude_chat_sessions: number;
   claude_code_api_requests: number;
+  codex_sessions?: number;
+  codex_api_requests?: number;
   sources: string[];
   driver: string;
 }
@@ -40,7 +42,7 @@ interface SessionRecord {
   session_id: string;
   machine: string;
   session_date: string;
-  agent: "claude-code" | "claude-chat";
+  agent: "claude-code" | "claude-chat" | "codex";
   total_tokens: number;
   api_requests: number;
   driver: string | null;
@@ -127,6 +129,8 @@ function buildDailyFixture(): DayRecord[] {
       claude_code_sessions: codeSessions,
       claude_chat_sessions: claudeChatSessions,
       claude_code_api_requests: codeApiRequests,
+      codex_sessions: 0,
+      codex_api_requests: 0,
       sources: ["cadence"],
       driver,
     });
@@ -474,12 +478,16 @@ test("ac8_7_drivers_placeholder_when_no_drivers", async ({ page }) => {
     ...r,
     driver: "",
   }));
+  const noDriverSessions: SessionRecord[] = SESSION_FIXTURE.map((s) => ({
+    ...s,
+    driver: null,
+  }));
 
   await page.route("**/api/daily**", (route) =>
     route.fulfill({ json: noDriverFixture })
   );
   await page.route("**/api/sessions**", (route) =>
-    route.fulfill({ json: SESSION_FIXTURE })
+    route.fulfill({ json: noDriverSessions })
   );
   await page.goto(BASE_URL);
   await page.waitForLoadState("networkidle");

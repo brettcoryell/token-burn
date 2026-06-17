@@ -59,6 +59,18 @@ export function DailyTable({ records }: Props) {
                 className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
                 style={{ color: 'var(--tb-txt-faint)' }}
               >
+                Lumen Sessions
+              </th>
+              <th
+                className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
+                style={{ color: 'var(--tb-txt-faint)' }}
+              >
+                Lumen Requests
+              </th>
+              <th
+                className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
+                style={{ color: 'var(--tb-txt-faint)' }}
+              >
                 Claude Chat Est
               </th>
               <th
@@ -106,6 +118,18 @@ export function DailyTable({ records }: Props) {
                     style={{ color: r.claude_code_api_requests > 0 ? 'var(--tb-data-secondary)' : 'var(--tb-data-empty)' }}
                   >
                     {r.claude_code_api_requests > 0 ? r.claude_code_api_requests : '—'}
+                  </td>
+                  <td
+                    className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap"
+                    style={{ color: (r.codex_sessions ?? 0) > 0 ? 'var(--tb-data-secondary)' : 'var(--tb-data-empty)' }}
+                  >
+                    {(r.codex_sessions ?? 0) > 0 ? r.codex_sessions : '—'}
+                  </td>
+                  <td
+                    className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap"
+                    style={{ color: (r.codex_api_requests ?? 0) > 0 ? 'var(--tb-data-secondary)' : 'var(--tb-data-empty)' }}
+                  >
+                    {(r.codex_api_requests ?? 0) > 0 ? r.codex_api_requests : '—'}
                   </td>
                   <td className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap">
                     {r.total_est > 0 ? (

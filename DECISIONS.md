@@ -66,8 +66,9 @@ validated in both MCP tools before the Supabase insert.
 
 ## D5: Fidelity separation — never mix exact and estimated without labels
 
-**Decision (inherited from v1, confirmed v2):** Claude Code session tokens (`fidelity='exact'`)
-and Claude Chat estimates (`fidelity='estimated'`) are NEVER summed into a single
+**Decision (inherited from v1, confirmed v2):** Claude Code and Codex/Lumen
+session tokens (`fidelity='exact'`) and Claude Chat estimates
+(`fidelity='estimated'`) are NEVER summed into a single
 undifferentiated total. The dashboard shows them separately with MEASURED/EST badges.
 
 **Why:** Mixing signals of different reliability misleads the user about their true
@@ -96,3 +97,24 @@ track content hashes of JSONL files, avoiding redundant Supabase upserts on unch
 **Why:** Without local hash state, every collector run would upsert every JSONL file
 — correct semantically (Supabase ON CONFLICT handles it) but wasteful on large histories.
 If `.collect-state.json` is lost, the collector re-upserts everything — safe, just slow.
+
+---
+
+## D8: Codex/Lumen is a first-class exact contributor
+
+**Decision (2026-06-17):** Codex/Lumen sessions are stored in `token_sessions` with
+`agent='codex'`, `machine='lumen'`, and `fidelity='exact'`.
+
+**Why:** Lumen is part of Brett's AI programming team and must be counted alongside
+Cadence and Coda in measured team token usage. Codex records expose aggregate
+token-count events in `~/.codex/state_5.sqlite` and rollout JSONL files, which are
+exact local telemetry rather than chat estimates.
+
+**Constraints:**
+- `total_exact` includes all `fidelity='exact'` rows, including Claude Code and Codex.
+- Dashboard agent counts remain separate: Claude Code counts stay in
+  `claude_code_sessions` / `claude_code_api_requests`; Codex counts use
+  `codex_sessions` / `codex_api_requests`.
+- Historic dates before Codex collection must not change when the schema/function is
+  widened. Verify pre-change daily summaries before and after any migration.
+- Auto-review/subagent Codex threads are excluded from Lumen contribution totals.

@@ -156,6 +156,7 @@ export function Heatmap({ records }: Props) {
                   height={CELL_SIZE}
                   rx={2}
                   data-date={date}
+                  data-estimated={isEstOnly ? 'true' : undefined}
                   style={{ fill: BIN_FILLS[bin], cursor: 'default' }}
                   onMouseEnter={e => {
                     const rect = (e.target as SVGElement).getBoundingClientRect()

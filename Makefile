@@ -1,7 +1,10 @@
-.PHONY: collect collect-coda migrate dev build test test-collector test-ui install
+.PHONY: collect collect-codex collect-coda migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
 MACHINE       ?= cadence
+CODEX_MACHINE ?= lumen
+CODEX_STATE_DB ?= $(HOME)/.codex/state_5.sqlite
+CODEX_MIN_DATE ?= $(shell date +%Y-%m-%d)
 
 collect:        ## Collect Code sessions → upsert to Supabase (run on Cadence)
 	.venv/bin/python scripts/collect.py \
@@ -13,6 +16,13 @@ collect-dry:    ## Dry run — show what would be upserted
 		--sessions-root "$(SESSIONS_ROOT)" \
 		--machine "$(MACHINE)" \
 		--dry-run
+
+collect-codex:  ## Collect Codex/Lumen sessions → upsert to Supabase
+		.venv/bin/python scripts/collect.py \
+			--source codex \
+			--codex-state-db "$(CODEX_STATE_DB)" \
+			--machine "$(CODEX_MACHINE)" \
+			--codex-min-date "$(CODEX_MIN_DATE)"
 
 collect-coda:   ## Collect Code sessions on Coda (run on iMac with MACHINE=coda)
 	.venv/bin/python scripts/collect.py \

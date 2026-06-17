@@ -1,11 +1,13 @@
 // Day-level aggregated record — returned by /api/daily
 export interface DayRecord {
   date: string                        // "YYYY-MM-DD"
-  total_exact: number                 // sum of exact (Claude Code) tokens
+  total_exact: number                 // sum of exact (Claude Code + Codex) tokens
   total_est: number                   // sum of estimated (Claude Chat) tokens
   claude_code_sessions: number        // count of Code sessions
   claude_chat_sessions: number        // count of Chat sessions
   claude_code_api_requests: number    // sum of API requests from Code sessions
+  codex_sessions?: number             // count of Codex/Lumen sessions
+  codex_api_requests?: number         // sum of token-count events from Codex sessions
   sources: string[]                   // distinct machine names
   driver: string                      // most recent non-null driver, or ''
 }
@@ -16,7 +18,7 @@ export interface SessionRecord {
   session_id: string
   machine: string
   session_date: string
-  agent: 'claude-code' | 'claude-chat'
+  agent: 'claude-code' | 'claude-chat' | 'codex'
   total_tokens: number
   api_requests: number
   driver: string | null

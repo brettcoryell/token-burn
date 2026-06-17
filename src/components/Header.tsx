@@ -22,14 +22,20 @@ const RANGE_LABELS: Record<TimeRange, string> = {
 export function Header({ records, range, onRangeChange, lastUpdated, theme, onThemeChange }: Props) {
   const totalExact = records.reduce((s, r) => s + r.total_exact, 0)
   const totalEst = records.reduce((s, r) => s + r.total_est, 0)
-  const totalSessions = records.reduce((s, r) => s + r.claude_code_sessions, 0)
+  const totalSessions = records.reduce(
+    (s, r) => s + r.claude_code_sessions + (r.codex_sessions ?? 0),
+    0
+  )
 
   const sortedAsc = useMemo(
     () => [...records].sort((a, b) => a.date.localeCompare(b.date)),
     [records]
   )
   const exactData    = useMemo(() => sortedAsc.map(r => r.total_exact), [sortedAsc])
-  const sessionsData = useMemo(() => sortedAsc.map(r => r.claude_code_sessions), [sortedAsc])
+  const sessionsData = useMemo(
+    () => sortedAsc.map(r => r.claude_code_sessions + (r.codex_sessions ?? 0)),
+    [sortedAsc]
+  )
   const estData      = useMemo(() => sortedAsc.map(r => r.total_est), [sortedAsc])
 
   return (
@@ -101,7 +107,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             {formatTokens(totalExact)}
           </div>
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
-            Claude Code tokens
+            Claude Code + Lumen tokens
           </div>
           <div
             className="mt-auto -mx-4 -mb-4 px-4 pt-3 pb-3 rounded-b-lg"
@@ -125,7 +131,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             {totalSessions.toLocaleString()}
           </div>
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
-            Claude Code sessions
+            Claude Code + Lumen sessions
           </div>
           <div
             className="mt-auto -mx-4 -mb-4 px-4 pt-3 pb-3 rounded-b-lg"

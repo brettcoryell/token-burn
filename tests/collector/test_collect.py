@@ -19,6 +19,7 @@ AC numbers in test names map to ACCEPTANCE_CRITERIA_v2.md §AC-5.x.
 import json
 import os
 import shutil
+import sqlite3
 import subprocess
 import sys
 import hashlib
@@ -39,6 +40,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 SIMPLE_SESSION = FIXTURES_DIR / "simple_session.jsonl"
 MIDNIGHT_SESSION = FIXTURES_DIR / "midnight_spanning_session.jsonl"
 MALFORMED_SESSION = FIXTURES_DIR / "malformed_session.jsonl"
+CODEX_SESSION = FIXTURES_DIR / "codex_session.jsonl"
 
 # ---------------------------------------------------------------------------
 # Import helpers: add scripts/ to sys.path so we can import collect directly
@@ -72,6 +74,52 @@ def make_session_dir(tmp_path: Path, *fixture_files: Path) -> Path:
         project_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy(fixture, project_dir / fixture.name)
     return sessions_root
+
+
+def make_codex_state_db(
+    tmp_path: Path,
+    rollout_path: Path,
+    created_at: int = 1781683204,
+) -> Path:
+    state_db = tmp_path / "state_5.sqlite"
+    conn = sqlite3.connect(state_db)
+    try:
+        conn.execute(
+            """
+            CREATE TABLE threads (
+                id TEXT PRIMARY KEY,
+                rollout_path TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                tokens_used INTEGER NOT NULL DEFAULT 0,
+                model TEXT,
+                cwd TEXT NOT NULL,
+                source TEXT NOT NULL,
+                thread_source TEXT NOT NULL DEFAULT 'user'
+            )
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO threads
+              (id, rollout_path, created_at, tokens_used, model, cwd, source, thread_source)
+            VALUES
+              (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "019ed498-test",
+                str(rollout_path),
+                created_at,
+                1590,
+                "gpt-5.5",
+                "/tmp/token-burn-test",
+                "vscode",
+                "user",
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return state_db
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +221,104 @@ def test_ac5_2_parse_session_midnight_spanning():
     assert result["cache_read"] == 200
     assert result["cache_create"] == 100
     assert result["api_requests"] == 2
+
+
+def test_parse_codex_rollout_maps_cached_input():
+    """
+    Codex rollout files expose total input plus cached input. token_sessions
+    stores non-cached input separately from cache_read, so the collector must
+    subtract cached input before upsert.
+    """
+    collect = _import_collect()
+
+    result = collect.parse_codex_rollout(CODEX_SESSION)
+
+    assert result is not None
+    assert result["input_tokens"] == 1000
+    assert result["cache_read"] == 500
+    assert result["cache_create"] == 0
+    assert result["output_tokens"] == 90
+    assert result["api_requests"] == 2
+
+
+def test_collect_codex_upserts_correct_record_shape(tmp_path):
+    """
+    Codex collection writes first-class token_sessions rows with agent='codex'
+    and fidelity='exact'.
+    """
+    collect = _import_collect()
+
+    rollout = tmp_path / "codex_session.jsonl"
+    shutil.copy(CODEX_SESSION, rollout)
+    state_db = make_codex_state_db(tmp_path, rollout)
+    state_file = tmp_path / ".collect-state.json"
+
+    captured_records = []
+
+    mock_sb = MagicMock()
+    mock_execute = MagicMock()
+    mock_execute.return_value.error = None
+
+    def capture_upsert(record, **kwargs):
+        captured_records.append(record)
+        return mock_execute
+
+    mock_sb.table.return_value.upsert = capture_upsert
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                collect.collect_codex(state_db, machine="lumen", dry_run=False, verbose=False)
+
+    assert len(captured_records) == 1
+    rec = captured_records[0]
+    assert rec["session_id"] == "codex-019ed498-test"
+    assert rec["machine"] == "lumen"
+    assert rec["agent"] == "codex"
+    assert rec["fidelity"] == "exact"
+    assert rec["session_date"] == "2026-06-17"
+    assert rec["input_tokens"] == 1000
+    assert rec["cache_read"] == 500
+    assert rec["cache_create"] == 0
+    assert rec["output_tokens"] == 90
+    assert rec["api_requests"] == 2
+
+
+def test_collect_codex_respects_min_session_date(tmp_path):
+    """
+    Codex collection can be constrained to today's date so adding Lumen does not
+    mutate historic daily aggregates by default.
+    """
+    collect = _import_collect()
+
+    rollout = tmp_path / "codex_session.jsonl"
+    shutil.copy(CODEX_SESSION, rollout)
+    state_db = make_codex_state_db(tmp_path, rollout, created_at=1781596804)
+    state_file = tmp_path / ".collect-state.json"
+
+    mock_sb = MagicMock()
+    mock_execute = MagicMock()
+    mock_execute.return_value.error = None
+    mock_sb.table.return_value.upsert.return_value = mock_execute
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                collect.collect_codex(
+                    state_db,
+                    machine="lumen",
+                    dry_run=False,
+                    verbose=False,
+                    min_session_date="2026-06-17",
+                )
+
+    mock_sb.table.return_value.upsert.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
