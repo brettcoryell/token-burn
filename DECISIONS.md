@@ -66,7 +66,7 @@ validated in both MCP tools before the Supabase insert.
 
 ## D5: Fidelity separation — never mix exact and estimated without labels
 
-**Decision (inherited from v1, confirmed v2):** Claude Code and Codex/Lumen
+**Decision (inherited from v1, confirmed v2):** Claude Code and Codex
 session tokens (`fidelity='exact'`) and Claude Chat estimates
 (`fidelity='estimated'`) are NEVER summed into a single
 undifferentiated total. The dashboard shows them separately with MEASURED/EST badges.
@@ -100,12 +100,12 @@ If `.collect-state.json` is lost, the collector re-upserts everything — safe, 
 
 ---
 
-## D8: Codex/Lumen is a first-class exact contributor
+## D8: Codex is a first-class exact contributor
 
-**Decision (2026-06-17):** Codex/Lumen sessions are stored in `token_sessions` with
+**Decision (2026-06-17):** Codex sessions are stored in `token_sessions` with
 `agent='codex'`, `machine='lumen'`, and `fidelity='exact'`.
 
-**Why:** Lumen is part of Brett's AI programming team and must be counted alongside
+**Why:** Codex is part of Brett's AI programming team and must be counted alongside
 Cadence and Coda in measured team token usage. Codex records expose aggregate
 token-count events in `~/.codex/state_5.sqlite` and rollout JSONL files, which are
 exact local telemetry rather than chat estimates.
@@ -117,4 +117,4 @@ exact local telemetry rather than chat estimates.
   `codex_sessions` / `codex_api_requests`.
 - Historic dates before Codex collection must not change when the schema/function is
   widened. Verify pre-change daily summaries before and after any migration.
-- Auto-review/subagent Codex threads are excluded from Lumen contribution totals.
+- Auto-review/subagent Codex threads are excluded from Codex contribution totals.

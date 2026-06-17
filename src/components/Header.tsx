@@ -107,7 +107,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             {formatTokens(totalExact)}
           </div>
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
-            Claude Code + Lumen tokens
+            Claude Code + Codex tokens
           </div>
           <div
             className="mt-auto -mx-4 -mb-4 px-4 pt-3 pb-3 rounded-b-lg"
@@ -131,7 +131,7 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
             {totalSessions.toLocaleString()}
           </div>
           <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
-            Claude Code + Lumen sessions
+            Claude Code + Codex sessions
           </div>
           <div
             className="mt-auto -mx-4 -mb-4 px-4 pt-3 pb-3 rounded-b-lg"

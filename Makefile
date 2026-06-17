@@ -17,7 +17,7 @@ collect-dry:    ## Dry run — show what would be upserted
 		--machine "$(MACHINE)" \
 		--dry-run
 
-collect-codex:  ## Collect Codex/Lumen sessions → upsert to Supabase
+collect-codex:  ## Collect Codex sessions → upsert to Supabase
 		.venv/bin/python scripts/collect.py \
 			--source codex \
 			--codex-state-db "$(CODEX_STATE_DB)" \

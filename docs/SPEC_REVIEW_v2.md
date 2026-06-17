@@ -13,7 +13,7 @@
 RESOLVED. v2 adds a `sources` field to the schema, defines `(date, source)` as the unique ingest key, specifies additive merge behavior when multiple machines contribute to the same date, defines idempotency for repeated runs per machine, and adds AC-1.11 covering the two-machine scenario including deduplication on re-run. The Make targets (`make collect` / `make collect-iMac`) and the rsync-based cross-machine path are now explicit.
 
 **Issue 2 — Timestamp field location and midnight-spanning sessions unspecified.**
-RESOLVED. v2 names `record.timestamp` (top-level on each JSONL record, ISO 8601 UTC) as the source field, specifies bucketing is per-session-file using the first record's timestamp, and adds an explicit midnight-spanning rule: all tokens from a session go into the date of the first record. AC-1.6 is updated with a midnight-spanning fixture (session starts at 23:55 PT, last record at 00:15 PT the next day, all tokens bucketed to the earlier date).
+RESOLVED. v2 names `record.timestamp` (top-level on each JSONL record, ISO 8601 UTC) as the source field, specifies bucketing is per-session-file using the first record's timestamp, and adds an explicit midnight-spanning rule: all tokens from a session go into the date of the first record. AC-1.6 is updated with a midnight-spanning fixture (session starts at 23:55 MT, last record at 00:15 MT the next day, all tokens bucketed to the earlier date).
 
 **Issue 3 — `claude_code_calls` definition ambiguous.**
 RESOLVED. v2 renames the field to `claude_code_api_requests` and defines it as "Count of records where `type == 'assistant'` AND `message.usage` exists" — unambiguously counting API response turns, not user turns. The reconciliation output and View 5 column are updated to match.
@@ -32,7 +32,7 @@ RESOLVED. v2 adds an "Empirical verification" section with a concrete JSONL fixt
 ## New Problems Introduced by v2
 
 **A. AC-1.6 midnight-spanning fixture has a timezone error.**
-AC-1.6 says: session first record is `2026-06-09T23:55:00Z` (= `2026-06-09 PT`) and last record is `2026-06-10T00:15:00Z` (= `2026-06-09 PT, still same day`). But `2026-06-10T00:15:00Z` in US/Pacific is `2026-06-09T17:15:00-07:00` — that is still 2026-06-09 PT. The comment says "still same day" which is correct, but only because both UTC timestamps are before the Pacific midnight (07:00 UTC). The fixture works but is labeled confusingly — it isn't actually a midnight-spanning session from the PT perspective. A genuine midnight-spanning session would start near `2026-06-10T06:55:00Z` (= 23:55 PT) and end at `2026-06-10T07:15:00Z` (= 00:15 PT next day). The test will pass, but a developer reading the fixture may not understand what edge case is being tested. Low severity but worth fixing.
+AC-1.6 says: session first record is `2026-06-09T23:55:00Z` and last record is `2026-06-10T00:15:00Z`, which was mislabeled in an earlier timezone note. The fixture should represent Mountain time. A genuine Mountain midnight-spanning session starts near `2026-06-10T05:55:00Z` (= 23:55 MT) and ends at `2026-06-10T06:15:00Z` (= 00:15 MT next day). Low severity but worth fixing.
 
 **B. Schema field count assertion in AC-1.10 will be brittle if `sources` type is wrong.**
 AC-1.10 asserts exactly 14 keys. The 14 keys listed include `sources` (a `string[]`). If an implementation serializes `sources` as a JSON string instead of a JSON array, the key count is still 14 but the schema is wrong. AC-1.10 should additionally assert that `sources` is a JSON array type, not just that the key exists.

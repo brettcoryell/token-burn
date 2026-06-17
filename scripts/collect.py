@@ -29,7 +29,7 @@ try:
 except ImportError:
     pass  # dotenv optional; env vars may be set directly
 
-PACIFIC = ZoneInfo("America/Los_Angeles")
+LOCAL_TZ = ZoneInfo("America/Denver")
 STATE_FILE = Path(__file__).parent.parent / ".collect-state.json"
 CODEX_STATE_DB = Path.home() / ".codex" / "state_5.sqlite"
 
@@ -46,7 +46,7 @@ def parse_session(path: Path) -> dict | None:
     """
     Parse a JSONL session file.
     Returns token dict or None if no usable data.
-    Buckets by first timestamp in the file (Pacific time).
+    Buckets by first timestamp in the file (Mountain time).
     Malformed lines are skipped with a stderr warning.
     """
     input_tokens = 0
@@ -92,7 +92,7 @@ def parse_session(path: Path) -> dict | None:
 
     try:
         dt_utc = datetime.fromisoformat(first_ts.replace("Z", "+00:00"))
-        date_str = dt_utc.astimezone(PACIFIC).strftime("%Y-%m-%d")
+        date_str = dt_utc.astimezone(LOCAL_TZ).strftime("%Y-%m-%d")
     except (ValueError, TypeError) as exc:
         print(f"[collect] WARNING: bad timestamp in {path.name}: {exc}", file=sys.stderr)
         return None
@@ -212,7 +212,7 @@ def codex_session_from_thread(row: sqlite3.Row) -> dict | None:
     try:
         date_str = (
             datetime.fromtimestamp(int(row["created_at"]), tz=ZoneInfo("UTC"))
-            .astimezone(PACIFIC)
+            .astimezone(LOCAL_TZ)
             .strftime("%Y-%m-%d")
         )
     except (ValueError, TypeError, OSError) as exc:

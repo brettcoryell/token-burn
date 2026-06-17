@@ -91,7 +91,7 @@ CREATE TRIGGER token_sessions_touch_updated_at
 |---|---|
 | `session_id` | JSONL filename stem for Code sessions (e.g., `b11e40c0-...`); `ariel-{date}-{ms-epoch}` for Chat; `legacy-{date}` for migrated rows |
 | `machine` | `cadence`, `coda`, `ariel`, or `merged` (legacy only) |
-| `session_date` | Pacific-time date the session started (matches JSONL first-timestamp logic) |
+| `session_date` | Mountain-time date the session started (matches JSONL first-timestamp logic) |
 | `agent` | `claude-code` or `claude-chat` |
 | `input_tokens` | Non-cached input tokens (what Anthropic charges at full rate) |
 | `output_tokens` | Generated output tokens |
@@ -193,7 +193,7 @@ the primary mechanism; this MCP tool is the explicit, per-session alternative.
 ```
 session_id      text     required — JSONL filename stem (no path, no .jsonl extension)
 machine         text     required — 'cadence' | 'coda'
-session_date    text     required — 'YYYY-MM-DD' Pacific time
+session_date    text     required — 'YYYY-MM-DD' Mountain time
 input_tokens    number   required — non-cached input tokens
 output_tokens   number   required — output tokens
 cache_read      number   required — cache_read_input_tokens

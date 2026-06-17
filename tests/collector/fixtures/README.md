@@ -12,8 +12,8 @@ content — all data is synthetic.
 AC-1.7 (annotations merge), AC-1.10 (schema shape)
 
 A minimal valid session with exactly one user record and two assistant records. All
-timestamps are 2026-06-09 Pacific time (14:00 and 15:00 UTC on 2026-06-09, which is
-07:00 and 08:00 PT). Token counts are small and exact:
+timestamps are 2026-06-09 Mountain time (14:00 and 15:00 UTC on 2026-06-09, which is
+08:00 and 09:00 MT). Token counts are small and exact:
 
 | Message | input | output | cache_read | cache_create |
 |---------|-------|--------|------------|--------------|
@@ -36,11 +36,11 @@ Expected output row:
 
 **Tests:** AC-1.6 (midnight-spanning bucketing)
 
-A session whose first record is 2026-06-10T06:55:00Z (= 2026-06-09 23:55 PT) and
-whose final assistant message is 2026-06-10T07:15:00Z (= 2026-06-10 00:15 PT).
+A session whose first record is 2026-06-10T05:55:00Z (= 2026-06-09 23:55 MT) and
+whose final assistant message is 2026-06-10T06:15:00Z (= 2026-06-10 00:15 MT).
 
 All tokens from this file should be bucketed into 2026-06-09 (the date of the first
-record in PT). Zero tokens should appear in a 2026-06-10 row.
+record in Mountain time). Zero tokens should appear in a 2026-06-10 row.
 
 Token counts per message: input=10, output=5, cache_read=100, cache_create=50.
 Two assistant messages → totals: input=20, output=10, cache_read=200, cache_create=100.

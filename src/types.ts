@@ -6,7 +6,7 @@ export interface DayRecord {
   claude_code_sessions: number        // count of Code sessions
   claude_chat_sessions: number        // count of Chat sessions
   claude_code_api_requests: number    // sum of API requests from Code sessions
-  codex_sessions?: number             // count of Codex/Lumen sessions
+  codex_sessions?: number             // count of Codex sessions
   codex_api_requests?: number         // sum of token-count events from Codex sessions
   sources: string[]                   // distinct machine names
   driver: string                      // most recent non-null driver, or ''

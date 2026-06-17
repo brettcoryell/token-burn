@@ -39,14 +39,14 @@ byte-for-byte identical `daily-burn.json` output (idempotency).
 valid lines) does not crash the collector. All valid lines are processed. The malformed
 lines produce a warning to stderr. Final token counts reflect only the valid lines.
 
-**AC-1.5** A JSONL file where `record.timestamp` is `2026-06-10T07:00:00Z` (= 2026-06-09
-in US/Pacific) produces a `daily-burn.json` row with `date = "2026-06-09"`. A record with
-`2026-06-10T08:00:00Z` (= 2026-06-10 PT) produces `date = "2026-06-10"`.
+**AC-1.5** A JSONL file where `record.timestamp` is `2026-06-10T05:00:00Z` (= 2026-06-09
+in Mountain time) produces a `daily-burn.json` row with `date = "2026-06-09"`. A record with
+`2026-06-10T06:00:00Z` (= 2026-06-10 MT) produces `date = "2026-06-10"`.
 
 **AC-1.6** Midnight-spanning session: a session file whose first record has timestamp
-`2026-06-10T06:55:00Z` (= 2026-06-09 23:55 PT) and whose last record has timestamp
-`2026-06-10T07:15:00Z` (= 2026-06-10 00:15 PT) is bucketed entirely into `2026-06-09`
-(the date of the first record in Pacific time). All tokens from the file appear in the
+`2026-06-10T05:55:00Z` (= 2026-06-09 23:55 MT) and whose last record has timestamp
+`2026-06-10T06:15:00Z` (= 2026-06-10 00:15 MT) is bucketed entirely into `2026-06-09`
+(the date of the first record in Mountain time). All tokens from the file appear in the
 `2026-06-09` row. No tokens appear in the `2026-06-10` row from this file.
 
 **AC-1.7** `annotations.json` containing `{"2026-06-09": {"driver": "code", "evidence": "feature work", "claude_chat_sessions": 3}}` produces a `daily-burn.json` row for `2026-06-09` where:

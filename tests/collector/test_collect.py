@@ -190,7 +190,7 @@ def test_ac5_2_parse_session_correct_token_totals():
 def test_ac5_2_parse_session_correct_date_bucketing():
     """
     AC-5.2 (date): simple_session.jsonl has timestamp 2026-06-09T14:00:00.000Z
-    which is 2026-06-09 in Pacific time (UTC-7 in summer). Date must be 2026-06-09.
+    which is 2026-06-09 in Mountain time (UTC-6 in summer). Date must be 2026-06-09.
     """
     collect = _import_collect()
 
@@ -204,7 +204,7 @@ def test_ac5_2_parse_session_correct_date_bucketing():
 def test_ac5_2_parse_session_midnight_spanning():
     """
     AC-5.2 (midnight): midnight_spanning_session.jsonl starts at
-    2026-06-10T06:55:00.000Z = 2026-06-09 23:55 PT. All tokens must be
+    2026-06-10T05:55:00.000Z = 2026-06-09 23:55 MT. All tokens must be
     bucketed to 2026-06-09 (first timestamp wins).
     """
     collect = _import_collect()
@@ -289,7 +289,7 @@ def test_collect_codex_upserts_correct_record_shape(tmp_path):
 
 def test_collect_codex_respects_min_session_date(tmp_path):
     """
-    Codex collection can be constrained to today's date so adding Lumen does not
+    Codex collection can be constrained to today's date so adding Codex does not
     mutate historic daily aggregates by default.
     """
     collect = _import_collect()

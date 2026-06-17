@@ -59,13 +59,13 @@ export function DailyTable({ records }: Props) {
                 className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
                 style={{ color: 'var(--tb-txt-faint)' }}
               >
-                Lumen Sessions
+                Codex Sessions
               </th>
               <th
                 className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
                 style={{ color: 'var(--tb-txt-faint)' }}
               >
-                Lumen Requests
+                Codex Requests
               </th>
               <th
                 className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"

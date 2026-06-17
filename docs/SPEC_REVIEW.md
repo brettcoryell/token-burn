@@ -61,7 +61,7 @@ But neither document says:
   timestamp, or the median
 
 Claude Code JSONL files contain records with a `timestamp` field per message. But a
-session spanning midnight (e.g., started at 11:45 PM Pacific, ended at 12:15 AM Pacific)
+session spanning midnight (e.g., started at 11:45 PM Mountain, ended at 12:15 AM Mountain)
 will have messages on both sides of midnight. The spec says nothing about which bucket
 those messages go into. Two reasonable implementations diverge here:
 - Bucket each message individually by its own timestamp (one session can contribute to
