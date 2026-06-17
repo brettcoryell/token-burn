@@ -1,18 +1,20 @@
 @import "tailwindcss";
+@import "./styles/themes/default.css";
 
-/* ── Site color primitives — shared with brettcoryell.com ────────────────────
-   Values must stay in sync with brettcoryell-site-design-guide.md §4.
-   When the site palette changes, update this block first; the --tb-* light
-   tokens below that reference these will pick up the change automatically. */
+/* ── Site primitives — raw palette. Do not reference in components. ──────────
+   Semantic tokens (--color-*) come from styles/themes/default.css.
+   The --tb-* light tokens below reference --color-* for automatic theme propagation. */
 :root {
-  --site-sky:      #7a9cb8;
-  --site-sky-deep: #5b7d99;
-  --site-sky-pale: #dce8f0;
-  --site-ink:      #1a2332;
-  --site-dusk:     #4a5568;
-  --site-mist:     #8a9ab5;
-  --site-fog:      #e8edf3;
-  --site-page:     #ffffff;
+  --primitive-sky:      #7a9cb8;
+  --primitive-sky-deep: #5b7d99;
+  --primitive-sky-pale: #dce8f0;
+  --primitive-ink:      #1a2332;
+  --primitive-dusk:     #4a5568;
+  --primitive-mist:     #8a9ab5;
+  --primitive-fog:      #e8edf3;
+  --primitive-page:     #ffffff;
+  --primitive-coral:    #D85A30;
+  --primitive-sonar:    #5b9fd4;
 }
 
 /* ─── Token-burn design tokens ─────────────────────────────────────────────── */
@@ -75,17 +77,17 @@
 }
 
 [data-theme="light"] {
-  --tb-bg:          var(--site-page);
-  --tb-card:        var(--site-page);
+  --tb-bg:          var(--color-bg-page);
+  --tb-card:        var(--color-bg-page);
   --tb-card-hover:  #f8fafc;
-  --tb-border:      var(--site-fog);
+  --tb-border:      var(--color-border);
 
-  --tb-txt:         var(--site-ink);
-  --tb-txt-muted:   var(--site-dusk);
-  --tb-txt-faint:   var(--site-mist);
+  --tb-txt:         var(--color-text-primary);
+  --tb-txt-muted:   var(--color-text-secondary);
+  --tb-txt-faint:   var(--color-text-faint);
 
   --tb-chart-axis:  #64748b;
-  --tb-chart-muted: var(--site-mist);
+  --tb-chart-muted: var(--color-text-faint);
 
   --tb-accent:      #D85A30;
   --tb-accent-dim:  #FAECE7;
@@ -101,15 +103,15 @@
   --tb-chip-est-txt:         #712B13;
   --tb-chip-est-border:      #e8c4b8;
 
-  --tb-bar-secondary: var(--site-fog);
+  --tb-bar-secondary: var(--color-border);
   --tb-bar-track:     transparent;
 
-  --tb-sparkline:   var(--site-mist);
+  --tb-sparkline:   var(--color-text-faint);
 
-  --tb-data-primary:   var(--site-ink);
-  --tb-data-secondary: var(--site-dusk);
-  --tb-data-date:      var(--site-mist);
-  --tb-data-empty:     var(--site-mist);
+  --tb-data-primary:   var(--color-text-primary);
+  --tb-data-secondary: var(--color-text-secondary);
+  --tb-data-date:      var(--color-text-faint);
+  --tb-data-empty:     var(--color-text-faint);
 
   --tb-bin-0:       #f1f5f9;
   --tb-bin-1:       #E6F1FB;
