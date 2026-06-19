@@ -263,7 +263,7 @@ def test_collect_codex_upserts_correct_record_shape(tmp_path):
         captured_records.append(record)
         return mock_execute
 
-    mock_sb.table.return_value.upsert = capture_upsert
+    mock_sb.schema.return_value.table.return_value.upsert = capture_upsert
 
     with patch.object(collect, "STATE_FILE", state_file):
         with patch("collect.create_client", return_value=mock_sb):
@@ -344,7 +344,7 @@ def test_ac5_3_dedup_unchanged_files_skips_upsert(tmp_path):
     mock_execute.return_value.error = None
     mock_upsert.return_value.execute = mock_execute
     mock_table.return_value.upsert = mock_upsert
-    mock_sb.table = mock_table
+    mock_sb.schema.return_value.table = mock_table
 
     with patch.object(collect, "STATE_FILE", state_file):
         with patch("collect.create_client", return_value=mock_sb):
@@ -389,7 +389,7 @@ def test_ac5_4_modified_file_triggers_reupsert(tmp_path):
     mock_sb = MagicMock()
     mock_execute = MagicMock()
     mock_execute.return_value.error = None
-    mock_sb.table.return_value.upsert.return_value.execute = mock_execute
+    mock_sb.schema.return_value.table.return_value.upsert.return_value.execute = mock_execute
 
     with patch.object(collect, "STATE_FILE", state_file):
         with patch("collect.create_client", return_value=mock_sb):
@@ -751,7 +751,7 @@ def test_collect_upserts_correct_record_shape(tmp_path):
         captured_records.append(record)
         return mock_execute
 
-    mock_sb.table.return_value.upsert = capture_upsert
+    mock_sb.schema.return_value.table.return_value.upsert = capture_upsert
 
     with patch.object(collect, "STATE_FILE", state_file):
         with patch("collect.create_client", return_value=mock_sb):
