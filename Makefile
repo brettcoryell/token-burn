@@ -29,6 +29,11 @@ collect-coda:   ## Collect Code sessions on Coda (run on iMac with MACHINE=coda)
 		--sessions-root "$(SESSIONS_ROOT)" \
 		--machine coda
 
+collect-presto: ## Collect Code sessions on Presto (run on MacBook Pro with MACHINE=presto)
+	.venv/bin/python scripts/collect.py \
+		--sessions-root "$(SESSIONS_ROOT)" \
+		--machine presto
+
 migrate:        ## One-time: migrate legacy daily-burn.json → Supabase
 	.venv/bin/python scripts/migrate_legacy.py
 
