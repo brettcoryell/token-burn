@@ -124,7 +124,7 @@ def main() -> None:
     for i in range(0, len(all_rows), 50):
         batch = all_rows[i:i + 50]
         result = (
-            sb.table("token_sessions")
+            sb.schema("token_burn").table("token_sessions")
             .upsert(batch, on_conflict="session_id,machine", ignore_duplicates=True)
             .execute()
         )

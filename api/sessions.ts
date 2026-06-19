@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
+const tb = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+).schema('token_burn');
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {
@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const limit = Math.min(parseInt(String(limitParam ?? "50"), 10) || 50, 200);
 
   try {
-    let q = supabase
+    let q = tb
       .from("token_sessions")
       .select(
         "id, session_id, machine, session_date, agent, total_tokens, api_requests, driver, notes, fidelity, created_at"

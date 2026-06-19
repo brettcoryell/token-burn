@@ -294,7 +294,7 @@ def collect(
         }
 
         result = (
-            sb.table("token_sessions")  # type: ignore[union-attr]
+            sb.schema("token_burn").table("token_sessions")  # type: ignore[union-attr]
             .upsert(record, on_conflict="session_id,machine")
             .execute()
         )
@@ -386,7 +386,7 @@ def collect_codex(
         }
 
         result = (
-            sb.table("token_sessions")  # type: ignore[union-attr]
+            sb.schema("token_burn").table("token_sessions")  # type: ignore[union-attr]
             .upsert(record, on_conflict="session_id,machine")
             .execute()
         )
