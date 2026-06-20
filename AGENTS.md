@@ -45,7 +45,7 @@ Brett may run agents on the Mac Mini and iMac at the same time. Optimize for cle
 
 Codex has two valid Python contexts:
 
-- **Local Mac work:** follow `/Users/brettcoryell/Code/AI/open_brain/PYTHON-ENVIRONMENT.md` and the project's existing `.venv` convention. Current Claude-era docs may mention Homebrew Python 3.12; use the repo's `.venv/bin/python` for scripts once the venv exists.
+- **Local Mac work:** follow `/Users/brettcoryell/Code/AI/open-brain/PYTHON-ENVIRONMENT.md` and the project's existing `.venv` convention. Current Claude-era docs may mention Homebrew Python 3.12; use the repo's `.venv/bin/python` for scripts once the venv exists.
 - **Codex cloud/Ubuntu work:** do not use Homebrew paths. Use Python 3.12 from apt or pyenv, create `.venv` at the repo root, and run scripts with `.venv/bin/python`.
 
 Default setup pattern when a venv is missing:
