@@ -118,3 +118,26 @@ exact local telemetry rather than chat estimates.
 - Historic dates before Codex collection must not change when the schema/function is
   widened. Verify pre-change daily summaries before and after any migration.
 - Auto-review/subagent Codex threads are excluded from Codex contribution totals.
+
+---
+
+## D9: Session IDs are globally unique collection identities
+
+**Decision (2026-06-21):** Claude Code and Codex telemetry `session_id` values are
+treated as globally unique work-session identities, even though the database conflict
+key remains `UNIQUE (session_id, machine)`.
+
+**Why:** During MacBook Pro / Presto onboarding, the same Claude JSONL session IDs
+were collected under multiple machine labels, inflating dashboard totals. A telemetry
+session copied or visible on another machine is still the same work and must not be
+counted twice.
+
+**Constraints:**
+- Collectors must check for an existing `session_id` under another machine before
+  upserting and skip with a warning if found.
+- Historical duplicate cleanup preserves the row with the best annotation
+  (`driver`/`notes`) when possible, then removes duplicate rows.
+- New machines should run dry-run targets first (`collect-presto-dry`,
+  `collect-codex-dry`) and inspect pending sessions before first backfill.
+- Long-running Codex threads can span multiple calendar days but currently bucket
+  to thread creation date; annotate mixed sessions explicitly or leave `driver=NULL`.

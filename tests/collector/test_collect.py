@@ -783,6 +783,36 @@ def test_collect_upserts_correct_record_shape(tmp_path):
     assert rec["api_requests"] == 2
 
 
+def test_collect_skips_cross_machine_duplicate_session_id(tmp_path):
+    """
+    Claude/Codex session IDs are globally unique. If the same session_id already
+    exists under another machine, collecting it again would double-count tokens.
+    """
+    collect = _import_collect()
+
+    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
+    state_file = tmp_path / ".collect-state.json"
+
+    mock_sb = MagicMock()
+    mock_upsert = MagicMock()
+    mock_sb.schema.return_value.table.return_value.upsert = mock_upsert
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch.object(collect, "existing_session_on_other_machine", return_value={
+            "session_id": "simple_session",
+            "machine": "cadence",
+            "session_date": "2026-06-09",
+        }):
+            with patch("collect.create_client", return_value=mock_sb):
+                with patch.dict(os.environ, {
+                    "SUPABASE_URL": "https://fake.supabase.co",
+                    "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+                }):
+                    collect.collect(sessions_root, machine="coda", dry_run=False, verbose=False)
+
+    mock_upsert.assert_not_called()
+
+
 # ---------------------------------------------------------------------------
 # AC-9.1, AC-9.2, AC-9.3 — File cleanup (repo-level static checks)
 # ---------------------------------------------------------------------------

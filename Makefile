@@ -1,4 +1,4 @@
-.PHONY: collect collect-codex collect-coda migrate dev build test test-collector test-ui install
+.PHONY: collect collect-codex collect-codex-dry collect-coda collect-presto collect-presto-dry migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
 MACHINE       ?= cadence
@@ -24,6 +24,15 @@ collect-codex:  ## Collect Codex sessions → upsert to Supabase
 			--machine "$(CODEX_MACHINE)" \
 			--codex-min-date "$(CODEX_MIN_DATE)"
 
+collect-codex-dry:  ## Dry run Codex collection
+		.venv/bin/python scripts/collect.py \
+			--source codex \
+			--codex-state-db "$(CODEX_STATE_DB)" \
+			--machine "$(CODEX_MACHINE)" \
+			--codex-min-date "$(CODEX_MIN_DATE)" \
+			--dry-run \
+			--verbose
+
 collect-coda:   ## Collect Code sessions on Coda (run on iMac with MACHINE=coda)
 	.venv/bin/python scripts/collect.py \
 		--sessions-root "$(SESSIONS_ROOT)" \
@@ -33,6 +42,13 @@ collect-presto: ## Collect Code sessions on Presto (run on MacBook Pro with MACH
 	.venv/bin/python scripts/collect.py \
 		--sessions-root "$(SESSIONS_ROOT)" \
 		--machine presto
+
+collect-presto-dry: ## Dry run Presto collection
+	.venv/bin/python scripts/collect.py \
+		--sessions-root "$(SESSIONS_ROOT)" \
+		--machine presto \
+		--dry-run \
+		--verbose
 
 migrate:        ## One-time: migrate legacy daily-burn.json → Supabase
 	.venv/bin/python scripts/migrate_legacy.py

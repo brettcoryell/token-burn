@@ -119,5 +119,11 @@ Components should consume the app expression layer (`--tb-*`, `--msm-*`, or this
 - Read `DECISIONS.md` and the dashboard design system in `/Users/brettcoryell/Code/AI/wiki/Brett Dashboard Design System.md` before visual, schema, or collector changes.
 - Preserve Token Burn's `--tb-*` expression layer. Do not hardcode chart, table, chip, heatmap, or status colors in React when a token exists.
 - Driver taxonomy is a closed set enforced in Postgres and local validation. To add a driver, update the DB migration/path, validation, UI mapping, and `DECISIONS.md` together.
-- Token collection is part of the session-end protocol. Use the correct local target for the machine when running collection from a Mac session.
-
+- Token collection is part of the session-end protocol. Use the correct local target for the machine when running collection from a Mac session:
+  - Cadence / Mac Mini Claude Code: `make collect`
+  - Coda / iMac Claude Code: `make collect-coda`
+  - Presto / MacBook Pro Claude Code: `make collect-presto`
+  - Lumen / Codex: `make collect-codex` with an explicit `CODEX_MIN_DATE` when backfilling
+  - Ariel / Claude Chat: call `record_chat_session` with `driver`, `estimated_tokens`, and concise notes
+- On a new machine or after collector changes, run `make collect-presto-dry` or `make collect-codex-dry CODEX_MIN_DATE=<date>` first and inspect pending sessions before writing.
+- Never collect the same telemetry session under two machine labels. `session_id` is the work-session identity; see `DECISIONS.md` D9.

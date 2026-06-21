@@ -227,6 +227,34 @@ def codex_session_from_thread(row: sqlite3.Row) -> dict | None:
     }
 
 
+def existing_session_on_other_machine(sb: Client, session_id: str, machine: str) -> dict | None:
+    """
+    Session IDs are globally unique for Claude/Codex telemetry files. If a
+    session already exists under another machine, collecting it again would
+    double-count the same work because the table's conflict key includes machine.
+    """
+    try:
+        result = (
+            sb.schema("token_burn").table("token_sessions")
+            .select("session_id,machine,session_date,total_tokens")
+            .eq("session_id", session_id)
+            .neq("machine", machine)
+            .limit(1)
+            .execute()
+        )
+    except Exception as exc:  # pragma: no cover - defensive network/client guard
+        print(
+            f"[collect] WARNING: could not check existing session {session_id}: {exc}",
+            file=sys.stderr,
+        )
+        return None
+
+    data = getattr(result, "data", None)
+    if isinstance(data, list) and data:
+        return data[0]
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -282,6 +310,16 @@ def collect(
             )
 
         if dry_run:
+            state[path_key] = current_hash
+            continue
+
+        existing = existing_session_on_other_machine(sb, session["session_id"], machine)  # type: ignore[arg-type]
+        if existing:
+            print(
+                f"[collect] WARNING: skipping {session['session_id']} for machine={machine}; "
+                f"already collected as machine={existing.get('machine')} on {existing.get('session_date')}",
+                file=sys.stderr,
+            )
             state[path_key] = current_hash
             continue
 
@@ -374,6 +412,16 @@ def collect_codex(
             )
 
         if dry_run:
+            state[path_key] = current_hash
+            continue
+
+        existing = existing_session_on_other_machine(sb, session["session_id"], machine)  # type: ignore[arg-type]
+        if existing:
+            print(
+                f"[collect] WARNING: skipping {session['session_id']} for machine={machine}; "
+                f"already collected as machine={existing.get('machine')} on {existing.get('session_date')}",
+                file=sys.stderr,
+            )
             state[path_key] = current_hash
             continue
 
