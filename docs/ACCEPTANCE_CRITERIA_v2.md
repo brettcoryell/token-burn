@@ -115,7 +115,7 @@ totals, replacing the old row.
 **AC-5.6** [AUTO] `public/data/daily-burn.json` no longer exists after running `make collect`
 (no output file written).
 
-**AC-5.7** [MANUAL] After running the collector on both Cadence and Coda, the dashboard shows
+**AC-5.7** [MANUAL] After running the collector on both Codex and Claude Code, the dashboard shows
 data from both machines without requiring a git pull on either.
 
 ---
@@ -211,7 +211,7 @@ within 3 seconds on a standard connection.
 **AC-10.3** [MANUAL] `token-burn/Makefile` has a `migrate` target that runs the legacy migration script.
 
 **AC-10.4** [MANUAL] Session notes written at end of this session include the exact text Brett
-should paste into Ariel's Claude.ai project instructions.
+should paste into Claude Chat's Claude.ai project instructions.
 
 ---
 

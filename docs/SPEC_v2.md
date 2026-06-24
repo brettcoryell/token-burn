@@ -2,7 +2,7 @@
 
 **Status:** Draft v2 — adversarial review complete, 6 blockers resolved  
 **Date:** 2026-06-09  
-**Author:** Cadence (Architect)
+**Author:** Codex (Architect)
 
 ---
 
@@ -12,9 +12,9 @@ V1 stored token data in three flat JSON files committed to the repo
 (`public/data/daily-burn.json`, `session-contributions.json`, `session-hashes.json`).
 This created two systemic problems:
 
-1. **Multi-machine sync**: Both Coda (iMac) and Cadence (Mac Mini) must `git pull` before
+1. **Multi-machine sync**: Both Claude Code (iMac) and Codex (Mac Mini) must `git pull` before
    collecting, and `git push` after, or data diverges silently.
-2. **Ariel's exclusion**: Ariel (Claude Chat) has no disk access and cannot run the Python
+2. **Claude Chat's exclusion**: Claude Chat (Claude Chat) has no disk access and cannot run the Python
    collector, so her token usage has been permanently missing from the dashboard.
 
 V2 moves the data layer to Supabase (shared source of truth), adds session-level granularity,
@@ -30,8 +30,8 @@ proxy so the service key never reaches the browser bundle.
 | Storage | 3 flat JSON files in repo | Supabase `token_sessions` table |
 | Granularity | One row per calendar day | One row per agent session |
 | Multi-machine | git-pull-to-sync | Real-time via Supabase |
-| Ariel recording | Not possible | `record_chat_session` MCP tool |
-| Coda/Cadence recording | Python collector → JSON | Python collector → Supabase upsert |
+| Claude Chat recording | Not possible | `record_chat_session` MCP tool |
+| Claude Code/Codex recording | Python collector → JSON | Python collector → Supabase upsert |
 | Browser data access | Fetch static file from repo | Fetch from Vercel proxy (`/api/daily`, `/api/sessions`) |
 | Service key | N/A | Server-side only (Vercel env var) |
 | Annotations | `data/annotations.json` | `driver` + `notes` columns in `token_sessions` |
@@ -100,7 +100,7 @@ CREATE TRIGGER token_sessions_touch_updated_at
 | `total_tokens` | Computed: sum of all four token columns |
 | `driver` | Optional taxonomy label; null until annotated |
 | `notes` | Freeform session notes (max 500 chars enforced in MCP tool) |
-| `fidelity` | `exact` = from JSONL; `estimated` = Ariel's estimate |
+| `fidelity` | `exact` = from JSONL; `estimated` = Claude Chat's estimate |
 
 ### 3.3 Token Formula
 
@@ -185,7 +185,7 @@ No existing tools are modified. No existing tools are removed.
 
 ### 5.1 `record_code_session` (Tool 14)
 
-**Purpose:** Coda or Cadence calls this at session closeout to record exact token counts for the
+**Purpose:** Claude Code or Codex calls this at session closeout to record exact token counts for the
 current Claude Code session. The Python collector (`make collect`) calls Supabase directly and is
 the primary mechanism; this MCP tool is the explicit, per-session alternative.
 
@@ -210,12 +210,12 @@ notes           text     optional — max 500 chars; freeform session summary
 
 ### 5.2 `record_chat_session` (Tool 15)
 
-**Purpose:** Ariel calls this at session closeout to record an estimated token count for her Claude
+**Purpose:** Claude Chat calls this at session closeout to record an estimated token count for her Claude
 Chat session.
 
 **Input schema:**
 ```
-estimated_tokens  number   required — Ariel's estimate of the session's total token use
+estimated_tokens  number   required — Claude Chat's estimate of the session's total token use
 session_date      text     optional — 'YYYY-MM-DD'; defaults to today UTC (Claude Chat has no TZ access)
 driver            text     optional — one of the 6 driver values
 notes             text     optional — max 500 chars
@@ -287,14 +287,14 @@ Dry-run mode (`--dry-run`) still exists and prints what would be upserted withou
 collect:        ## Collect Code sessions → upsert to Supabase
 	python scripts/collect.py --machine cadence
 
-collect-coda:   ## Collect Code sessions on Coda (run on iMac)
+collect-coda:   ## Collect Code sessions on Claude Code (run on iMac)
 	python scripts/collect.py --machine coda
 
 migrate:        ## One-time: migrate legacy daily-burn.json → Supabase
 	python scripts/migrate_legacy.py
 ```
 
-`make collect` on Cadence and `make collect` on Coda each upsert their own machine's sessions.
+`make collect` on Codex and `make collect` on Claude Code each upsert their own machine's sessions.
 No git operations required.
 
 ---
@@ -403,7 +403,7 @@ SUPABASE_URL=https://<project>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 ```
 
-These are the same values currently in Cadence's `.env`. They are NOT prefixed with `VITE_` and
+These are the same values currently in Codex's `.env`. They are NOT prefixed with `VITE_` and
 are therefore unavailable to the browser bundle.
 
 ---
@@ -511,9 +511,9 @@ The Session End section in `/Users/brettcoryell/Code/AI/open_brain/CLAUDE.md` ga
 
 ---
 
-## 11. Ariel Session Closeout Instructions
+## 11. Claude Chat Session Closeout Instructions
 
-Ariel's dedicated Chat project instructions (set by Brett in Claude.ai) should include:
+Claude Chat's dedicated Chat project instructions (set by Brett in Claude.ai) should include:
 
 ```
 At session closeout, call record_chat_session with:
@@ -523,7 +523,7 @@ At session closeout, call record_chat_session with:
   - notes: one sentence describing what the session was about
 ```
 
-Brett will add this text to Ariel's project instructions manually. The instructions for the exact
+Brett will add this text to Claude Chat's project instructions manually. The instructions for the exact
 wording to paste are included in the session notes.
 
 ---

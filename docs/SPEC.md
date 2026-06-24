@@ -1,7 +1,7 @@
 # Token Burn Dashboard — Formal Specification
 
 **Project:** token-burn  
-**Author:** Cadence (Claude Code, Mac Mini)  
+**Author:** Codex (Claude Code, Mac Mini)  
 **Version:** 2.0 — post-adversarial review  
 **Date:** 2026-06-09  
 **Status:** Final — cleared for build  
@@ -24,10 +24,10 @@ This is Brett Coryell's personal tool. It will not be shared publicly without sc
 
 | Lane | Source | Fidelity | Collection Method |
 |---|---|---|---|
-| Claude Code — Cadence (Mac Mini) | JSONL session files at `~/.claude/projects/` | **Exact** | `scripts/collect.py` |
-| Claude Code — Coda (iMac) | JSONL session files (future: sync via Tailscale) | **Exact** | `scripts/collect.py --sessions-root <path> --machine coda` |
+| Claude Code — Codex (Mac Mini) | JSONL session files at `~/.claude/projects/` | **Exact** | `scripts/collect.py` |
+| Claude Code — Claude Code (iMac) | JSONL session files (future: sync via Tailscale) | **Exact** | `scripts/collect.py --sessions-root <path> --machine coda` |
 | Codex | Codex state database and rollout JSONL files | **Exact** | `make collect-codex` |
-| Claude Chat — Ariel (claude.ai) | No API export | **Estimated** | Via `data/annotations.json` per-date entry |
+| Claude Chat — Claude Chat (claude.ai) | No API export | **Estimated** | Via `data/annotations.json` per-date entry |
 
 Brett does not use ChatGPT as a separate estimated lane. Codex is counted as exact usage.
 
@@ -130,7 +130,7 @@ started than by when the last message fired.
 When running the collector against multiple machines' session files:
 
 ```bash
-make collect          # Cadence's sessions (default)
+make collect          # Codex's sessions (default)
 make collect-iMac     # Adds iMac sessions to the same daily-burn.json
 ```
 
@@ -168,7 +168,7 @@ row. This is the canonical mechanism for updating these fields. Direct edits to
 | Driver | Meaning |
 |---|---|
 | `code` | Software development, debugging, feature work |
-| `memoir` | Biographical sessions, OB thought capture, Ariel interview work |
+| `memoir` | Biographical sessions, OB thought capture, Claude Chat interview work |
 | `career` | ai-resume, recruiter interactions, career site work |
 | `markets` | market-signal-monitor, financial analysis |
 | `infrastructure` | open_brain, Claude Code config, portability, bootstrap |
@@ -204,7 +204,7 @@ Week starts on **Sunday** (consistent with GitHub and View 2).
 - Cells colored by `total_exact` using a **logarithmic** color scale.
 - Color bins: 0 (empty/dim), 1–1K, 1K–10K, 10K–100K, 100K–1M, 1M+ (5 non-zero bins).
 - A day with 1M tokens and a day with 100K tokens must be visibly distinct colors.
-- A day with `total_exact = 0` and `total_est > 0` (pure Ariel day) shows a distinct
+- A day with `total_exact = 0` and `total_est > 0` (pure Claude Chat day) shows a distinct
   pattern: dim background cell WITH a small dot or accent indicator (`data-estimated="true"`
   on the cell element). This is different from a zero-activity day which is plain dim.
 - A zero-activity day (no exact, no estimated) is a plain dim cell.
@@ -393,7 +393,7 @@ token-burn/
 
 **Local MVP:**
 ```
-make collect    # Collect Cadence sessions → updates daily-burn.json
+make collect    # Collect Codex sessions → updates daily-burn.json
 make dev        # npm run dev → localhost:5173
 make test       # pytest + playwright (combined)
 make build      # npm run build → dist/

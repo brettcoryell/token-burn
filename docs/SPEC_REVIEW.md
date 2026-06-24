@@ -13,7 +13,7 @@ The spec is well-structured and shows real thought about fidelity separation —
 MEASURED/ESTIMATED honesty constraint is genuinely well-articulated and the schema is
 mostly sound. However, it has six critical defects that would cause either a broken
 implementation or a faithless one. The most dangerous: `total_exact` is silently
-double-counted on days that receive data from both Cadence and the future Coda iMac
+double-counted on days that receive data from both Codex and the future Claude Code iMac
 import (the multi-source aggregation logic is completely unspecified). The second most
 dangerous: the timezone bucketing rule applies to session timestamps but JSONL session
 files are named by session ID, not date — the spec never says where the timestamp
@@ -30,13 +30,13 @@ to catch a wrong implementation.
 
 The spec defines `claude_code_sessions` as "count of JSONL files contributing to this
 date" and describes a future iMac import path. But it never defines what happens when
-both Cadence and Coda contribute sessions to the same date. Does the collector:
+both Codex and Claude Code contribute sessions to the same date. Does the collector:
 - Sum `input_tokens` from both machines into one row?
 - Produce two rows (one per machine)?
 - Tag rows with a `source` field?
 
 There is no `source` field in the schema. If you naively run `collect.py --sessions-root
-~/.claude/projects/` on Cadence and then again with the iMac path on the same
+~/.claude/projects/` on Codex and then again with the iMac path on the same
 `daily-burn.json`, you either silently corrupt the output or correctly upsert — but
 which behavior is correct is nowhere specified. A developer building the iMac import
 path in the future will be forced to make this up. This is not a "future problem" —
@@ -181,14 +181,14 @@ happens when a day has only estimated data.**
 
 AC-4.5 says "Cells from `total_exact` and `total_est` are visually differentiated (e.g.,
 estimated days get a subtle indicator)." But how is a day with `total_exact = 0` and
-`total_est > 0` (a pure Ariel day) colored? By `total_exact` only, it would appear as
+`total_est > 0` (a pure Claude Chat day) colored? By `total_exact` only, it would appear as
 an empty cell even though significant work happened. The spec says "Cells colored by
 `total_exact` only" which is correct for fidelity, but the dot indicator for estimated
-data described in the spec is too subtle to find significant pure-Ariel days.
+data described in the spec is too subtle to find significant pure-Claude Chat days.
 
-A user might legitimately want to see "this was an Ariel-heavy day" at a glance. The
+A user might legitimately want to see "this was an Claude Chat-heavy day" at a glance. The
 current spec makes that nearly invisible, and there is no AC that tests whether a
-pure-Ariel day is distinguishable from a zero-activity day.
+pure-Claude Chat day is distinguishable from a zero-activity day.
 
 **8. The weekly trend line (View 2) bucketing is undefined.**
 

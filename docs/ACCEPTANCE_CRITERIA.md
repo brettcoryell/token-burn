@@ -2,7 +2,7 @@
 
 **Version:** 2.0 (post-adversarial review)  
 **Date:** 2026-06-09  
-**Written by:** Cadence  
+**Written by:** Codex  
 **Status:** Final — cleared for build
 
 All criteria must pass before the build is considered complete.
@@ -121,7 +121,7 @@ including days with `total_exact = 0` and `total_est = 0`.
 CSS class or different inline style value). A linear color scale that maps both to
 nearly the same color is a test failure.
 
-**AC-4.3** A cell with `total_exact = 0` and `total_est > 0` (pure Ariel day) has
+**AC-4.3** A cell with `total_exact = 0` and `total_est > 0` (pure Claude Chat day) has
 `data-estimated="true"` on the DOM element. A cell with `total_exact = 0` and
 `total_est = 0` does NOT have `data-estimated="true"`.
 
