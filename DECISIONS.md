@@ -9,9 +9,9 @@ Architectural decisions for the token-burn dashboard. Consult before making chan
 **Decision (2026-06-09):** Token data lives in a Supabase `token_sessions` table,
 not in flat JSON files committed to the repo.
 
-**Why:** Two machines (Coda + Cadence) and one chat agent (Ariel) all need to write
+**Why:** Multiple agents across machines (Claude Code, Codex) and Claude Chat all need to write
 token data. Flat JSON files committed to git require synchronization via git pull/push,
-and Ariel has no disk access at all. Supabase gives a shared source of truth with
+and Claude Chat has no disk access at all. Supabase gives a shared source of truth with
 real-time consistency.
 
 **Constraints:**
@@ -83,7 +83,7 @@ AI spend. Exact data from JSONL files is exact; chat estimates are educated gues
 **Why:** The system Python on macOS is 3.9.6 and lacks PEP 604 union syntax (`dict | None`) used throughout the collector. Bare `python3` silently resolves to the wrong interpreter and fails at runtime.
 
 **Constraints:**
-- `make collect`, `make collect-coda`, `make collect-dry`, `make migrate`, `make test-collector` all call `.venv/bin/python`
+- `make collect`, `make collect-codex`, `make collect-dry`, `make migrate`, `make test-collector` all call `.venv/bin/python`
 - `make install` creates the venv via `python3.12 -m venv .venv`
 - Canonical standard: `~/Code/AI/open_brain/PYTHON-ENVIRONMENT.md`
 
@@ -103,10 +103,10 @@ If `.collect-state.json` is lost, the collector re-upserts everything — safe, 
 ## D8: Codex is a first-class exact contributor
 
 **Decision (2026-06-17):** Codex sessions are stored in `token_sessions` with
-`agent='codex'`, `machine='lumen'`, and `fidelity='exact'`.
+`agent='codex'`, `machine=<hostname-derived: mini|macbook|imac>`, and `fidelity='exact'`.
 
 **Why:** Codex is part of Brett's AI programming team and must be counted alongside
-Cadence and Coda in measured team token usage. Codex records expose aggregate
+Claude Code agents in measured team token usage. Codex records expose aggregate
 token-count events in `~/.codex/state_5.sqlite` and rollout JSONL files, which are
 exact local telemetry rather than chat estimates.
 
@@ -127,7 +127,7 @@ exact local telemetry rather than chat estimates.
 treated as globally unique work-session identities, even though the database conflict
 key remains `UNIQUE (session_id, machine)`.
 
-**Why:** During MacBook Pro / Presto onboarding, the same Claude JSONL session IDs
+**Why:** During MacBook Pro onboarding, the same Claude JSONL session IDs
 were collected under multiple machine labels, inflating dashboard totals. A telemetry
 session copied or visible on another machine is still the same work and must not be
 counted twice.
