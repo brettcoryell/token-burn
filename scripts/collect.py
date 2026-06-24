@@ -13,6 +13,7 @@ import sys
 import hashlib
 import os
 import sqlite3
+import socket
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -32,6 +33,18 @@ except ImportError:
 LOCAL_TZ = ZoneInfo("America/Denver")
 STATE_FILE = Path(__file__).parent.parent / ".collect-state.json"
 CODEX_STATE_DB = Path.home() / ".codex" / "state_5.sqlite"
+
+
+def detect_machine(hostname: str | None = None) -> str:
+    """Map local hostnames to the structural machine names used across agents."""
+    name = (hostname or socket.gethostname()).lower()
+    if "mini" in name:
+        return "mini"
+    if "macbook" in name or "book" in name:
+        return "macbook"
+    if "imac" in name:
+        return "imac"
+    return name.split(".")[0] or "unknown"
 
 
 # ---------------------------------------------------------------------------
@@ -264,6 +277,7 @@ def collect(
     machine: str,
     dry_run: bool,
     verbose: bool,
+    agent: str = "claude-code",
 ) -> None:
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -326,7 +340,7 @@ def collect(
         record = {
             **session,
             "machine":     machine,
-            "agent":       "claude-code",
+            "agent":       agent,
             "fidelity":    "exact",
             "updated_at":  datetime.now().isoformat(),
         }
@@ -482,7 +496,14 @@ def main() -> None:
         default=None,
         help="Skip Codex sessions before this YYYY-MM-DD date.",
     )
-    parser.add_argument("--machine", default="cadence")
+    parser.add_argument("--machine", default=detect_machine())
+    parser.add_argument("--agent-family", default="claude")
+    parser.add_argument("--surface", default="claude-code")
+    parser.add_argument(
+        "--agent",
+        default=None,
+        help="Deprecated compatibility override for the token_sessions.agent field.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
@@ -496,11 +517,13 @@ def main() -> None:
             min_session_date=args.codex_min_date,
         )
     else:
+        agent = args.agent or args.surface
         collect(
             sessions_root=args.sessions_root,
             machine=args.machine,
             dry_run=args.dry_run,
             verbose=args.verbose,
+            agent=agent,
         )
 
 

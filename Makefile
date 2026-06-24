@@ -1,54 +1,42 @@
-.PHONY: collect collect-codex collect-codex-dry collect-coda collect-presto collect-presto-dry migrate dev build test test-collector test-ui install
+.PHONY: collect collect-dry collect-codex collect-codex-dry migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
-MACHINE       ?= cadence
-CODEX_MACHINE ?= lumen
+MACHINE       ?= $(shell hostname | tr '[:upper:]' '[:lower:]' | awk '/mini/ {print "mini"; found=1} /macbook|book/ {print "macbook"; found=1} /imac/ {print "imac"; found=1} END {if (!found) print "unknown"}')
+AGENT_FAMILY  ?= claude
+SURFACE       ?= claude-code
 CODEX_STATE_DB ?= $(HOME)/.codex/state_5.sqlite
 CODEX_MIN_DATE ?= $(shell date +%Y-%m-%d)
 
-collect:        ## Collect Code sessions → upsert to Supabase (run on Cadence)
+collect:        ## Collect agent sessions → upsert to Supabase
 	.venv/bin/python scripts/collect.py \
 		--sessions-root "$(SESSIONS_ROOT)" \
-		--machine "$(MACHINE)"
+		--machine "$(MACHINE)" \
+		--agent-family "$(AGENT_FAMILY)" \
+		--surface "$(SURFACE)"
 
 collect-dry:    ## Dry run — show what would be upserted
 	.venv/bin/python scripts/collect.py \
 		--sessions-root "$(SESSIONS_ROOT)" \
 		--machine "$(MACHINE)" \
+		--agent-family "$(AGENT_FAMILY)" \
+		--surface "$(SURFACE)" \
 		--dry-run
 
 collect-codex:  ## Collect Codex sessions → upsert to Supabase
 		.venv/bin/python scripts/collect.py \
 			--source codex \
 			--codex-state-db "$(CODEX_STATE_DB)" \
-			--machine "$(CODEX_MACHINE)" \
+			--machine "$(MACHINE)" \
 			--codex-min-date "$(CODEX_MIN_DATE)"
 
 collect-codex-dry:  ## Dry run Codex collection
 		.venv/bin/python scripts/collect.py \
 			--source codex \
 			--codex-state-db "$(CODEX_STATE_DB)" \
-			--machine "$(CODEX_MACHINE)" \
+			--machine "$(MACHINE)" \
 			--codex-min-date "$(CODEX_MIN_DATE)" \
 			--dry-run \
 			--verbose
-
-collect-coda:   ## Collect Code sessions on Coda (run on iMac with MACHINE=coda)
-	.venv/bin/python scripts/collect.py \
-		--sessions-root "$(SESSIONS_ROOT)" \
-		--machine coda
-
-collect-presto: ## Collect Code sessions on Presto (run on MacBook Pro with MACHINE=presto)
-	.venv/bin/python scripts/collect.py \
-		--sessions-root "$(SESSIONS_ROOT)" \
-		--machine presto
-
-collect-presto-dry: ## Dry run Presto collection
-	.venv/bin/python scripts/collect.py \
-		--sessions-root "$(SESSIONS_ROOT)" \
-		--machine presto \
-		--dry-run \
-		--verbose
 
 migrate:        ## One-time: migrate legacy daily-burn.json → Supabase
 	.venv/bin/python scripts/migrate_legacy.py

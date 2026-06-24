@@ -201,6 +201,13 @@ def test_ac5_2_parse_session_correct_date_bucketing():
     )
 
 
+def test_detect_machine_maps_known_hostnames():
+    collect = _import_collect()
+    assert collect.detect_machine("Bretts-iMac.local") == "imac"
+    assert collect.detect_machine("Bretts-Mac-mini.local") == "mini"
+    assert collect.detect_machine("Bretts-MacBook-Pro.local") == "macbook"
+
+
 def test_ac5_2_parse_session_midnight_spanning():
     """
     AC-5.2 (midnight): midnight_spanning_session.jsonl starts at
