@@ -18,28 +18,42 @@ export function Drivers({ sessions, theme }: Props) {
   const C = getChartColors(theme)
 
   const top = useMemo(() => {
-    const dailyMap = new Map<string, number>()
+    // Build per-day totals and per-driver token sums
+    const dayTotals = new Map<string, number>()
+    const dayDriverTokens = new Map<string, Map<string, number>>()
+
     for (const s of sessions) {
-      dailyMap.set(s.session_date, (dailyMap.get(s.session_date) ?? 0) + s.total_tokens)
+      if (s.total_tokens < MIN_SESSION_TOKENS) continue
+      dayTotals.set(s.session_date, (dayTotals.get(s.session_date) ?? 0) + s.total_tokens)
+      if (s.driver) {
+        if (!dayDriverTokens.has(s.session_date)) dayDriverTokens.set(s.session_date, new Map())
+        const dm = dayDriverTokens.get(s.session_date)!
+        dm.set(s.driver, (dm.get(s.driver) ?? 0) + s.total_tokens)
+      }
     }
 
-    const sortedDates = [...dailyMap.keys()].sort().reverse().slice(0, 7)
-    const avg7 = sortedDates.reduce((sum, d) => sum + (dailyMap.get(d) ?? 0), 0)
+    // 7-day avg from most recent 7 days
+    const sortedDates = [...dayTotals.keys()].sort().reverse().slice(0, 7)
+    const avg7 = sortedDates.reduce((sum, d) => sum + (dayTotals.get(d) ?? 0), 0)
       / Math.max(sortedDates.length, 1)
 
     const busyDates = new Set(
-      [...dailyMap.entries()].filter(([, t]) => t > avg7).map(([d]) => d)
+      [...dayTotals.entries()].filter(([, t]) => t > avg7).map(([d]) => d)
     )
 
-    return sessions
-      .filter(s => s.driver && s.total_tokens >= MIN_SESSION_TOKENS && busyDates.has(s.session_date))
-      .sort((a, b) => b.total_tokens - a.total_tokens)
+    return [...busyDates]
+      .filter(date => dayDriverTokens.has(date))
+      .map(date => {
+        const dm = dayDriverTokens.get(date)!
+        const pluralityDriver = [...dm.entries()].reduce((a, b) => a[1] >= b[1] ? a : b)[0]
+        return {
+          label: `${pluralityDriver} · ${formatDateShort(date)}`,
+          driver: pluralityDriver,
+          tokens: dayTotals.get(date)!,
+        }
+      })
+      .sort((a, b) => b.tokens - a.tokens)
       .slice(0, 10)
-      .map(s => ({
-        label: `${s.driver} · ${formatDateShort(s.session_date)}`,
-        driver: s.driver!,
-        tokens: s.total_tokens,
-      }))
   }, [sessions])
 
   if (top.length === 0) {
@@ -68,7 +82,7 @@ export function Drivers({ sessions, theme }: Props) {
           Drivers on busy days
         </h2>
         <span className="text-xs" style={{ color: 'var(--tb-txt-muted)' }}>
-          above 7-day avg · per session
+          above 7-day avg · per day
         </span>
       </div>
 
@@ -105,7 +119,7 @@ export function Drivers({ sessions, theme }: Props) {
                 color: C.txt,
               }}
               labelStyle={{ color: C.txtMuted, fontSize: 11 }}
-              formatter={(val: number) => [formatTokens(val), 'Session tokens']}
+              formatter={(val: number) => [formatTokens(val), 'Day total']}
               cursor={{ fill: C.cardHover }}
             />
             <Bar
