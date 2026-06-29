@@ -141,3 +141,23 @@ counted twice.
   `collect-codex-dry`) and inspect pending sessions before first backfill.
 - Long-running Codex threads can span multiple calendar days but currently bucket
   to thread creation date; annotate mixed sessions explicitly or leave `driver=NULL`.
+
+---
+
+## D10: Manual Codex split backfills use a local skip list
+
+**Decision (2026-06-28):** If a single long Codex thread is intentionally recorded
+as multiple `token_sessions` rows, the raw thread id can be listed in the local,
+gitignored `.collect-codex-skip.json` file.
+
+**Why:** The normal Codex collector is one row per thread. Manual split backfills are
+rare but useful for unusually long sessions that span multiple logical work periods.
+Without a thread-level skip list, a later `make collect-codex` run could also upsert
+the original unsplit row and double-count the same work.
+
+**Constraints:**
+- The skip file is local machine state and MUST NOT be committed.
+- Split rows must name the source thread in `notes` and use exact token deltas from
+  the rollout token-count telemetry.
+- Run `make collect-codex-dry CODEX_MIN_DATE=<date>` after adding a skip entry and
+  confirm the raw thread is skipped.

@@ -294,6 +294,36 @@ def test_collect_codex_upserts_correct_record_shape(tmp_path):
     assert rec["api_requests"] == 2
 
 
+def test_collect_codex_skip_file_suppresses_raw_thread_upsert(tmp_path):
+    """
+    A locally configured skip list prevents manually split Codex threads from
+    being collected again as one unsplit token_sessions row.
+    """
+    collect = _import_collect()
+
+    rollout = tmp_path / "codex_session.jsonl"
+    shutil.copy(CODEX_SESSION, rollout)
+    state_db = make_codex_state_db(tmp_path, rollout)
+    state_file = tmp_path / ".collect-state.json"
+    skip_file = tmp_path / ".collect-codex-skip.json"
+    skip_file.write_text(json.dumps({"thread_ids": ["019ed498-test"]}))
+
+    mock_sb = MagicMock()
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch.object(collect, "CODEX_SKIP_FILE", skip_file):
+            with patch("collect.create_client", return_value=mock_sb):
+                with patch.dict(os.environ, {
+                    "SUPABASE_URL": "https://fake.supabase.co",
+                    "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+                }):
+                    collect.collect_codex(state_db, machine="lumen", dry_run=False, verbose=False)
+
+    mock_sb.schema.return_value.table.return_value.upsert.assert_not_called()
+    state = json.loads(state_file.read_text())
+    assert "lumen:codex:019ed498-test" in state
+
+
 def test_collect_codex_respects_min_session_date(tmp_path):
     """
     Codex collection can be constrained to today's date so adding Codex does not

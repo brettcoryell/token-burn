@@ -32,6 +32,7 @@ except ImportError:
 
 LOCAL_TZ = ZoneInfo("America/Denver")
 STATE_FILE = Path(__file__).parent.parent / ".collect-state.json"
+CODEX_SKIP_FILE = Path(__file__).parent.parent / ".collect-codex-skip.json"
 CODEX_STATE_DB = Path.home() / ".codex" / "state_5.sqlite"
 
 
@@ -186,6 +187,30 @@ def load_state() -> dict[str, str]:
 
 def save_state(state: dict[str, str]) -> None:
     STATE_FILE.write_text(json.dumps(state, indent=2, sort_keys=True))
+
+
+def load_codex_skip_ids() -> set[str]:
+    """
+    Local escape hatch for manually split Codex threads.
+
+    The normal Codex collector records one row per thread. If a long thread is
+    intentionally backfilled as multiple token_sessions rows, list the raw thread
+    id here so future collector runs do not also upsert the unsplit row.
+    """
+    if not CODEX_SKIP_FILE.exists():
+        return set()
+    try:
+        raw = json.loads(CODEX_SKIP_FILE.read_text())
+    except json.JSONDecodeError as exc:
+        print(f"[collect] WARNING: ignoring malformed {CODEX_SKIP_FILE.name}: {exc}", file=sys.stderr)
+        return set()
+
+    values = raw.get("thread_ids", raw) if isinstance(raw, dict) else raw
+    if not isinstance(values, list):
+        print(f"[collect] WARNING: ignoring {CODEX_SKIP_FILE.name}: expected a list or thread_ids list", file=sys.stderr)
+        return set()
+
+    return {str(value) for value in values if value}
 
 
 def codex_threads(state_db: Path) -> list[sqlite3.Row]:
@@ -393,6 +418,7 @@ def collect_codex(
         sb = create_client(supabase_url, supabase_key)  # type: ignore[arg-type]
 
     state = load_state()
+    codex_skip_ids = load_codex_skip_ids()
     rows = codex_threads(state_db)
     new_or_changed = 0
     upserted = 0
@@ -403,6 +429,12 @@ def collect_codex(
         path_key = f"{machine}:codex:{row['id']}"
 
         if state.get(path_key) == current_hash:
+            continue
+
+        if row["id"] in codex_skip_ids or f"codex-{row['id']}" in codex_skip_ids:
+            if verbose:
+                print(f"codex-{row['id']}  skipped via {CODEX_SKIP_FILE.name}")
+            state[path_key] = current_hash
             continue
 
         session = codex_session_from_thread(row)

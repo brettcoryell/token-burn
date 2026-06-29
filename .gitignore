@@ -31,6 +31,7 @@ data/raw/
 
 # Collector state (local hash cache — not committed)
 .collect-state.json
+.collect-codex-skip.json
 
 # OS
 .DS_Store
