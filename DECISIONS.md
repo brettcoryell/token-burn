@@ -161,3 +161,32 @@ the original unsplit row and double-count the same work.
   the rollout token-count telemetry.
 - Run `make collect-codex-dry CODEX_MIN_DATE=<date>` after adding a skip entry and
   confirm the raw thread is skipped.
+
+---
+
+## D11: The MCP write path lives in this repo, not open-brain-mcp
+
+**Decision (2026-07-08):** `record_code_session`, `record_chat_session`, and `record_codex_session`
+are served from `api/mcp.ts` in this repo (deployed to `https://token-burn-nine.vercel.app/api/mcp`
+on this project's existing Vercel deployment), not from the `open-brain` project's `open-brain-mcp`
+Supabase function where they originally lived.
+
+**Why:** They write to this project's `token_burn` schema, not OB's `ob` schema. Colocating them with
+`open-brain-mcp` was deployment convenience from when `record_chat_session` was first added for Ariel,
+not a structural fit — this repo already owns the schema, the read API (`/api/daily`, `/api/sessions`),
+and the dashboard, so it should own the write path too.
+
+**Constraints:**
+- `api/mcp.ts` runs on Vercel's Node.js runtime (no `export const config = { runtime: "edge" }`).
+  `@modelcontextprotocol/sdk`'s subpath exports don't bundle under Vercel's Edge runtime.
+- It uses `@hono/node-server`'s `getRequestListener(app.fetch)` as the default export, not `app.fetch`
+  directly — a bare Vercel Node request isn't a Fetch API `Request`, and Hono's MCP transport needs
+  `headers.get()`.
+- Auth is a dedicated `TOKEN_BURN_MCP_ACCESS_KEY` Vercel env var (`x-brain-key` header or `?key=`
+  query param, same contract shape as OB's `MCP_ACCESS_KEY` but a distinct value) — not shared with OB.
+- Claude Code and Codex call this directly with `TOKEN_BURN_MCP_ACCESS_KEY`. Claude Chat (Ariel) reaches
+  it through the `token-burn` slug on the `ob-oauth-shim` OAuth shim (see `open_brain/DECISIONS.md`),
+  which requires its own claude.ai custom connector separate from the `open-brain` one.
+
+**Violation looks like:** Adding a new MCP tool that writes to `token_burn` back into `open-brain-mcp`.
+Changing `api/mcp.ts` to Edge runtime without re-verifying the MCP SDK bundles cleanly there.
