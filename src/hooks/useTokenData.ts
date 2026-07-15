@@ -17,35 +17,35 @@ export function useTokenData(range: TimeRange): TokenDataState {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let cancelled = false
+    const controller = new AbortController()
     setLoading(true)
     setError(null)
 
     Promise.all([
-      fetch('/api/daily').then(r => {
+      fetch('/api/daily', { signal: controller.signal }).then(r => {
         if (!r.ok) throw new Error(`/api/daily: HTTP ${r.status}`)
         return r.json() as Promise<DayRecord[]>
       }),
-      fetch('/api/sessions?limit=200').then(r => {
+      fetch('/api/sessions?limit=200', { signal: controller.signal }).then(r => {
         if (!r.ok) throw new Error(`/api/sessions: HTTP ${r.status}`)
         return r.json() as Promise<SessionRecord[]>
       }),
     ])
       .then(([daily, sess]) => {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setAll(Array.isArray(daily) ? daily : [])
           setSessions(Array.isArray(sess) ? sess : [])
           setLoading(false)
         }
       })
       .catch(err => {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setError((err as Error).message)
           setLoading(false)
         }
       })
 
-    return () => { cancelled = true }
+    return () => controller.abort()
   }, [])
 
   const filtered = filterByRange(all, range)

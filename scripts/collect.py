@@ -293,6 +293,24 @@ def existing_session_on_other_machine(sb: Client, session_id: str, machine: str)
     return None
 
 
+def upsert_exact_session(sb: Client, session: dict, machine: str, agent: str) -> str | None:
+    """Upsert one exact telemetry session and return an error message, if any."""
+    record = {
+        **session,
+        "machine": machine,
+        "agent": agent,
+        "fidelity": "exact",
+        "updated_at": datetime.now().isoformat(),
+    }
+    result = (
+        sb.schema("token_burn").table("token_sessions")
+        .upsert(record, on_conflict="session_id,machine")
+        .execute()
+    )
+    error = getattr(result, "error", None)
+    return str(error) if error else None
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -362,22 +380,9 @@ def collect(
             state[path_key] = current_hash
             continue
 
-        record = {
-            **session,
-            "machine":     machine,
-            "agent":       agent,
-            "fidelity":    "exact",
-            "updated_at":  datetime.now().isoformat(),
-        }
-
-        result = (
-            sb.schema("token_burn").table("token_sessions")  # type: ignore[union-attr]
-            .upsert(record, on_conflict="session_id,machine")
-            .execute()
-        )
-
-        if hasattr(result, "error") and result.error:
-            print(f"[collect] ERROR upserting {path.stem}: {result.error}", file=sys.stderr)
+        upsert_error = upsert_exact_session(sb, session, machine, agent)  # type: ignore[arg-type]
+        if upsert_error:
+            print(f"[collect] ERROR upserting {path.stem}: {upsert_error}", file=sys.stderr)
         else:
             state[path_key] = current_hash
             upserted += 1
@@ -471,22 +476,9 @@ def collect_codex(
             state[path_key] = current_hash
             continue
 
-        record = {
-            **session,
-            "machine":     machine,
-            "agent":       "codex",
-            "fidelity":    "exact",
-            "updated_at":  datetime.now().isoformat(),
-        }
-
-        result = (
-            sb.schema("token_burn").table("token_sessions")  # type: ignore[union-attr]
-            .upsert(record, on_conflict="session_id,machine")
-            .execute()
-        )
-
-        if hasattr(result, "error") and result.error:
-            print(f"[collect] ERROR upserting {session['session_id']}: {result.error}", file=sys.stderr)
+        upsert_error = upsert_exact_session(sb, session, machine, "codex")  # type: ignore[arg-type]
+        if upsert_error:
+            print(f"[collect] ERROR upserting {session['session_id']}: {upsert_error}", file=sys.stderr)
         else:
             state[path_key] = current_hash
             upserted += 1

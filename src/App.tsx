@@ -1,13 +1,18 @@
-import { useState, useEffect } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { TimeRange } from './types'
 import { useTokenData } from './hooks/useTokenData'
 import { latestDate } from './utils/dates'
 import { Header } from './components/Header'
 import { Heatmap } from './components/Heatmap'
-import { TrendLine } from './components/TrendLine'
-import { Drivers } from './components/Drivers'
 import { ScaleEquivalents } from './components/ScaleEquivalents'
 import { DailyTable } from './components/DailyTable'
+
+const TrendLine = lazy(() => import('./components/TrendLine').then(({ TrendLine }) => ({ default: TrendLine })))
+const Drivers = lazy(() => import('./components/Drivers').then(({ Drivers }) => ({ default: Drivers })))
+
+function ChartFallback({ height }: { height: string }) {
+  return <div className="mb-10" style={{ height }} aria-busy="true" />
+}
 
 function getInitialTheme(): 'light' | 'dark' {
   try { return (localStorage.getItem('tb-theme') as 'light' | 'dark') ?? 'light' } catch { return 'light' }
@@ -77,8 +82,12 @@ export function App() {
           onThemeChange={setTheme}
         />
         <Heatmap records={filtered} />
-        <TrendLine records={filtered} theme={theme} />
-        <Drivers sessions={sessions} theme={theme} />
+        <Suspense fallback={<ChartFallback height="12.5rem" />}>
+          <TrendLine records={filtered} theme={theme} />
+        </Suspense>
+        <Suspense fallback={<ChartFallback height="16rem" />}>
+          <Drivers sessions={sessions} theme={theme} />
+        </Suspense>
         <ScaleEquivalents records={filtered} />
         <DailyTable records={filtered} />
       </div>
