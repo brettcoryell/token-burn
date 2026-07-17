@@ -113,3 +113,11 @@ Components consume `--tb-*` tokens, not raw hex or primitive values. Tailwind fo
 - Repo: `/Users/brettcoryell/Code/AI/token-burn`
 - GitHub: `brettcoryell/token-burn`
 - Stack: React + TypeScript + Vite dashboard with Python collection scripts, Supabase storage, and token usage analytics.
+
+## Networked Git Operations
+
+For local AI repositories, Codex should not attempt networked Git commands inside the sandbox first. Commands such as `git push`, `git pull --ff-only`, `git fetch`, and `git ls-remote` require network access, so use `require_escalated` on the first attempt with a narrow prefix rule when useful.
+
+Do not retry a failed sandboxed Git network command unless the first failure was not network/DNS/remote-access related.
+
+When closing repo work, if a push is needed, run `git push` with escalation on the first try. Brett has approved this pattern for local AI repo handoffs.
