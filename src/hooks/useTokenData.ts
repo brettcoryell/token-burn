@@ -26,7 +26,7 @@ export function useTokenData(range: TimeRange): TokenDataState {
         if (!r.ok) throw new Error(`/api/daily: HTTP ${r.status}`)
         return r.json() as Promise<DayRecord[]>
       }),
-      fetch('/api/sessions?limit=200', { signal: controller.signal }).then(r => {
+      fetch('/api/sessions?limit=1000', { signal: controller.signal }).then(r => {
         if (!r.ok) throw new Error(`/api/sessions: HTTP ${r.status}`)
         return r.json() as Promise<SessionRecord[]>
       }),

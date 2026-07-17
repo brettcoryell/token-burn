@@ -469,10 +469,10 @@ test("ac8_6_daily_table_sorted_descending", async ({ page }) => {
 });
 
 // ---------------------------------------------------------------------------
-// AC-8.7 — Drivers view shows placeholder when driver fields are null/empty
+// AC-8.7 — Drivers view shows unannotated bars when driver fields are null/empty
 // ---------------------------------------------------------------------------
 
-test("ac8_7_drivers_placeholder_when_no_drivers", async ({ page }) => {
+test("ac8_7_drivers_shows_unannotated_days_when_no_drivers", async ({ page }) => {
   // Build a fixture with all driver fields empty
   const noDriverFixture: DayRecord[] = FULL_FIXTURE.map((r) => ({
     ...r,
@@ -493,7 +493,75 @@ test("ac8_7_drivers_placeholder_when_no_drivers", async ({ page }) => {
   await page.waitForLoadState("networkidle");
 
   const body = page.locator("body");
-  await expect(body).toContainText("Annotate sessions to see drivers");
+  await expect(body).toContainText("Unannotated · Jun 9");
+  await expect(body).toContainText("top 10 days");
+});
+
+test("drivers_chart_shows_top_days_by_daily_total", async ({ page }) => {
+  const days: DayRecord[] = [
+    {
+      date: "2026-07-16",
+      total_exact: 250_000_000,
+      total_est: 0,
+      claude_code_sessions: 2,
+      claude_chat_sessions: 0,
+      claude_code_api_requests: 100,
+      codex_sessions: 1,
+      codex_api_requests: 20,
+      sources: ["mini"],
+      driver: "research",
+    },
+    {
+      date: "2026-07-15",
+      total_exact: 12_000_000,
+      total_est: 500_000,
+      claude_code_sessions: 1,
+      claude_chat_sessions: 1,
+      claude_code_api_requests: 12,
+      codex_sessions: 0,
+      codex_api_requests: 0,
+      sources: ["mini"],
+      driver: "infrastructure",
+    },
+  ];
+  const sessions: SessionRecord[] = [
+    {
+      id: "10000000-0000-0000-0000-000000000001",
+      session_id: "session-largest",
+      machine: "mini",
+      session_date: "2026-07-16",
+      agent: "codex",
+      total_tokens: 250_000_000,
+      api_requests: 20,
+      driver: "research",
+      notes: null,
+      fidelity: "exact",
+      created_at: "2026-07-16T20:00:00.000Z",
+    },
+    {
+      id: "10000000-0000-0000-0000-000000000002",
+      session_id: "session-smaller",
+      machine: "mini",
+      session_date: "2026-07-15",
+      agent: "claude-code",
+      total_tokens: 12_000_000,
+      api_requests: 12,
+      driver: "infrastructure",
+      notes: null,
+      fidelity: "exact",
+      created_at: "2026-07-15T20:00:00.000Z",
+    },
+  ];
+
+  await page.route("**/api/daily**", (route) => route.fulfill({ json: days }));
+  await page.route("**/api/sessions**", (route) => route.fulfill({ json: sessions }));
+  await page.goto(BASE_URL);
+  await page.waitForLoadState("networkidle");
+
+  const body = page.locator("body");
+  await expect(body).toContainText("Research · Jul 16");
+  await expect(body).toContainText("Infrastructure · Jul 15");
+  await expect(body).not.toContainText("above 7-day avg");
 });
 
 // ---------------------------------------------------------------------------

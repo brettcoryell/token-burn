@@ -1,4 +1,4 @@
-.PHONY: collect collect-dry collect-codex collect-codex-dry migrate dev build test test-collector test-ui install
+.PHONY: collect collect-dry collect-codex collect-codex-dry audit-token-accounting migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
 MACHINE       ?= $(shell hostname | tr '[:upper:]' '[:lower:]' | awk '/mini/ {print "mini"; found=1} /macbook|book/ {print "macbook"; found=1} /imac/ {print "imac"; found=1} END {if (!found) print "unknown"}')
@@ -37,6 +37,9 @@ collect-codex-dry:  ## Dry run Codex collection
 			--codex-min-date "$(CODEX_MIN_DATE)" \
 			--dry-run \
 			--verbose
+
+audit-token-accounting:  ## Audit recent Supabase rows against local telemetry
+	.venv/bin/python scripts/audit_token_accounting.py --days 30 --machine "$(MACHINE)"
 
 migrate:        ## One-time: migrate legacy daily-burn.json → Supabase
 	.venv/bin/python scripts/migrate_legacy.py

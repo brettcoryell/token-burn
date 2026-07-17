@@ -86,7 +86,7 @@ export function App() {
           <TrendLine records={filtered} theme={theme} />
         </Suspense>
         <Suspense fallback={<ChartFallback height="16rem" />}>
-          <Drivers sessions={sessions} theme={theme} />
+          <Drivers records={filtered} sessions={sessions} theme={theme} />
         </Suspense>
         <ScaleEquivalents records={filtered} />
         <DailyTable records={filtered} />

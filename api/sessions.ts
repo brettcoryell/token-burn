@@ -11,7 +11,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { date, limit: limitParam } = req.query;
+  const { date, since, limit: limitParam } = req.query;
 
   if (date !== undefined) {
     if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -19,7 +19,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     }
   }
 
-  const limit = Math.min(parseInt(String(limitParam ?? "50"), 10) || 50, 200);
+  if (since !== undefined) {
+    if (typeof since !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(since)) {
+      return res.status(400).json({ error: "since must be a YYYY-MM-DD date string" });
+    }
+  }
+
+  const limit = Math.min(parseInt(String(limitParam ?? "50"), 10) || 50, 1000);
 
   try {
     let q = tb
@@ -33,6 +39,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
     if (date) {
       q = q.eq("session_date", date);
+    } else if (since) {
+      q = q.gte("session_date", since);
     }
 
     const { data, error } = await q;

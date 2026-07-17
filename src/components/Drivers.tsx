@@ -2,29 +2,27 @@ import { useMemo } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { SessionRecord } from '../types'
+import { DayRecord, DRIVER_LABELS, SessionRecord } from '../types'
 import { formatTokens } from '../utils/tokens'
 import { formatDateShort } from '../utils/dates'
 import { getChartColors } from '../utils/chartColors'
 
 interface Props {
+  records: DayRecord[]
   sessions: SessionRecord[]
   theme: 'light' | 'dark'
 }
 
-const MIN_SESSION_TOKENS = 10_000
+const TOP_DAY_COUNT = 10
+const UNANNOTATED_DRIVER = 'unannotated'
 
-export function Drivers({ sessions, theme }: Props) {
+export function Drivers({ records, sessions, theme }: Props) {
   const C = getChartColors(theme)
 
   const top = useMemo(() => {
-    // Build per-day totals and per-driver token sums
-    const dayTotals = new Map<string, number>()
     const dayDriverTokens = new Map<string, Map<string, number>>()
 
     for (const s of sessions) {
-      if (s.total_tokens < MIN_SESSION_TOKENS) continue
-      dayTotals.set(s.session_date, (dayTotals.get(s.session_date) ?? 0) + s.total_tokens)
       if (s.driver) {
         if (!dayDriverTokens.has(s.session_date)) dayDriverTokens.set(s.session_date, new Map())
         const dm = dayDriverTokens.get(s.session_date)!
@@ -32,29 +30,35 @@ export function Drivers({ sessions, theme }: Props) {
       }
     }
 
-    // 7-day avg from most recent 7 days
-    const sortedDates = [...dayTotals.keys()].sort().reverse().slice(0, 7)
-    const avg7 = sortedDates.reduce((sum, d) => sum + (dayTotals.get(d) ?? 0), 0)
-      / Math.max(sortedDates.length, 1)
+    return records
+      .map(record => ({
+        date: record.date,
+        exactTokens: record.total_exact,
+        estTokens: record.total_est,
+        tokens: record.total_exact + record.total_est,
+        fallbackDriver: record.driver || null,
+      }))
+      .filter(day => day.tokens > 0)
+      .sort((a, b) => b.tokens - a.tokens)
+      .slice(0, TOP_DAY_COUNT)
+      .map(day => {
+        const dm = dayDriverTokens.get(day.date)
+        const pluralityDriver = dm && dm.size > 0
+          ? [...dm.entries()].reduce((a, b) => a[1] >= b[1] ? a : b)[0]
+          : day.fallbackDriver ?? UNANNOTATED_DRIVER
+        const driverLabel = pluralityDriver === UNANNOTATED_DRIVER
+          ? 'Unannotated'
+          : DRIVER_LABELS[pluralityDriver] ?? pluralityDriver
 
-    const busyDates = new Set(
-      [...dayTotals.entries()].filter(([, t]) => t > avg7).map(([d]) => d)
-    )
-
-    return [...busyDates]
-      .filter(date => dayDriverTokens.has(date))
-      .map(date => {
-        const dm = dayDriverTokens.get(date)!
-        const pluralityDriver = [...dm.entries()].reduce((a, b) => a[1] >= b[1] ? a : b)[0]
         return {
-          label: `${pluralityDriver} · ${formatDateShort(date)}`,
+          label: `${driverLabel} · ${formatDateShort(day.date)}`,
           driver: pluralityDriver,
-          tokens: dayTotals.get(date)!,
+          exactTokens: day.exactTokens,
+          estTokens: day.estTokens,
+          tokens: day.tokens,
         }
       })
-      .sort((a, b) => b.tokens - a.tokens)
-      .slice(0, 10)
-  }, [sessions])
+  }, [records, sessions])
 
   if (top.length === 0) {
     return (
@@ -82,7 +86,7 @@ export function Drivers({ sessions, theme }: Props) {
           Drivers on busy days
         </h2>
         <span className="text-xs" style={{ color: 'var(--tb-txt-muted)' }}>
-          above 7-day avg · per day
+          top {TOP_DAY_COUNT} days · measured + est
         </span>
       </div>
 
@@ -119,11 +123,19 @@ export function Drivers({ sessions, theme }: Props) {
                 color: C.txt,
               }}
               labelStyle={{ color: C.txtMuted, fontSize: 11 }}
-              formatter={(val: number) => [formatTokens(val), 'Day total']}
+              formatter={(val: number, name: string) => {
+                const label = name === 'exactTokens'
+                  ? 'Measured'
+                  : name === 'estTokens'
+                    ? 'Estimated'
+                    : 'Day total'
+                return [formatTokens(val), label]
+              }}
               cursor={{ fill: C.cardHover }}
             />
             <Bar
-              dataKey="tokens"
+              dataKey="exactTokens"
+              stackId="tokens"
               radius={[0, 3, 3, 0]}
               maxBarSize={20}
             >
@@ -131,6 +143,13 @@ export function Drivers({ sessions, theme }: Props) {
                 <Cell key={i} fill={i === 0 ? C.peakBar : C.secondaryBar} />
               ))}
             </Bar>
+            <Bar
+              dataKey="estTokens"
+              stackId="tokens"
+              fill={C.yellow}
+              radius={[0, 3, 3, 0]}
+              maxBarSize={20}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
