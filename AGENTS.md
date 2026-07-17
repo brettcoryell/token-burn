@@ -66,11 +66,13 @@ Use `machine` (not agent nicknames) in session refs, token-burn records, and OB 
 1. **Update project status docs** — mark completed items before committing.
 2. Run `git status --short` and review the diff.
 3. Run `make test-collector` and report results.
-4. Update `DECISIONS.md` first if the session created or changed an architectural rule.
-5. Commit all intended changes with a descriptive message.
-6. Push to origin and confirm it succeeded.
-7. **Sync tokens**: run `make collect-codex` from this repo directory to record this session.
-8. Record session context in OpenBrain if tools are available:
+4. **Audit accounting**: run `make audit-token-accounting-strict` after collection-affecting work or suspected skipped closeout. It must pass before handoff; if it fails, stop and resolve or explicitly report the dangerous finding.
+5. Update `DECISIONS.md` first if the session created or changed an architectural rule.
+6. Commit all intended changes with a descriptive message.
+7. Push to origin and confirm it succeeded.
+8. **Sync tokens**: run `make collect-codex` from this repo directory to record this session.
+9. **Post-sync audit**: run `make audit-token-accounting-strict` again after the final token sync. Today's active Codex session may move during the conversation, but missing local telemetry, nonzero duplicate IDs, component mismatches, or older local/Supabase mismatches must not be ignored.
+10. Record session context in OpenBrain if tools are available:
    - **Registry (upsert):** First fetch: `list_context(topics=["project-registry", "project-token-burn"], permanent=true, limit=1)` to get the existing entry's `id`. Then call `capture_context` with that `id` to update in-place. If no entry exists, omit `id` to insert.
      - `session_ref`: `"project-registry-token-burn"` — same value every time
      - `topics`: `["project-registry", "project-token-burn"]`
@@ -81,7 +83,7 @@ Use `machine` (not agent nicknames) in session refs, token-burn records, and OB 
      - `topics`: `["project-token-burn", "now"]` (or `soon`/`later`)
      - `expires_at`: 45 days from today
      - `source`: `"Codex"`
-9. Create or update OB intents for follow-up work that should survive beyond the chat.
+11. Create or update OB intents for follow-up work that should survive beyond the chat.
 
 ## Token Burn Rules
 
@@ -89,6 +91,8 @@ Use `machine` (not agent nicknames) in session refs, token-burn records, and OB 
 - Preserve Token Burn's `--tb-*` expression layer. Do not hardcode chart, table, chip, heatmap, or status colors in React when a token exists.
 - Driver taxonomy is a closed set enforced in Postgres and local validation. To add a driver, update the DB migration/path, validation, UI mapping, and `DECISIONS.md` together.
 - Token collection uses `make collect` (Claude Code, machine auto-derived from hostname) or `make collect-codex` (Codex sessions). Pass an explicit `CODEX_MIN_DATE` when backfilling Codex sessions.
+- `make audit-token-accounting` is read-only and reports accounting hygiene findings. `make audit-token-accounting-strict` is the handoff gate; it fails only on dangerous accounting risks, not on ordinary annotation backlog.
+- If audit reports local telemetry total/API mismatches but normal collection says there is nothing to write, use `make collect-reconcile-dry` or `make collect-codex-reconcile-dry` first. If the dry-run matches the expected repair, use the corresponding reconcile target to re-upsert local telemetry while ignoring `.collect-state.json`.
 - On a new machine or after collector changes, run `make collect-dry` or `make collect-codex-dry CODEX_MIN_DATE=<date>` first and inspect pending sessions before writing.
 - Never collect the same telemetry session under two machine labels. `session_id` is the work-session identity; see `DECISIONS.md` D9.
 

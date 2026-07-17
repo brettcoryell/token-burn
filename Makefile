@@ -1,4 +1,4 @@
-.PHONY: collect collect-dry collect-codex collect-codex-dry audit-token-accounting migrate dev build test test-collector test-ui install
+.PHONY: collect collect-dry collect-reconcile collect-reconcile-dry collect-codex collect-codex-dry collect-codex-reconcile collect-codex-reconcile-dry audit-token-accounting audit-token-accounting-strict normalize-machine-labels-dry normalize-machine-labels migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
 MACHINE       ?= $(shell hostname | tr '[:upper:]' '[:lower:]' | awk '/mini/ {print "mini"; found=1} /macbook|book/ {print "macbook"; found=1} /imac/ {print "imac"; found=1} END {if (!found) print "unknown"}')
@@ -22,6 +22,24 @@ collect-dry:    ## Dry run — show what would be upserted
 		--surface "$(SURFACE)" \
 		--dry-run
 
+collect-reconcile:  ## Re-upsert local Claude Code telemetry ignoring hash state
+	.venv/bin/python scripts/collect.py \
+		--sessions-root "$(SESSIONS_ROOT)" \
+		--machine "$(MACHINE)" \
+		--agent-family "$(AGENT_FAMILY)" \
+		--surface "$(SURFACE)" \
+		--ignore-state
+
+collect-reconcile-dry:  ## Dry run reconciliation ignoring hash state
+	.venv/bin/python scripts/collect.py \
+		--sessions-root "$(SESSIONS_ROOT)" \
+		--machine "$(MACHINE)" \
+		--agent-family "$(AGENT_FAMILY)" \
+		--surface "$(SURFACE)" \
+		--ignore-state \
+		--dry-run \
+		--verbose
+
 collect-codex:  ## Collect Codex sessions → upsert to Supabase
 		.venv/bin/python scripts/collect.py \
 			--source codex \
@@ -38,8 +56,35 @@ collect-codex-dry:  ## Dry run Codex collection
 			--dry-run \
 			--verbose
 
+collect-codex-reconcile:  ## Re-upsert Codex telemetry ignoring hash state
+		.venv/bin/python scripts/collect.py \
+			--source codex \
+			--codex-state-db "$(CODEX_STATE_DB)" \
+			--machine "$(MACHINE)" \
+			--codex-min-date "$(CODEX_MIN_DATE)" \
+			--ignore-state
+
+collect-codex-reconcile-dry:  ## Dry run Codex reconciliation ignoring hash state
+		.venv/bin/python scripts/collect.py \
+			--source codex \
+			--codex-state-db "$(CODEX_STATE_DB)" \
+			--machine "$(MACHINE)" \
+			--codex-min-date "$(CODEX_MIN_DATE)" \
+			--ignore-state \
+			--dry-run \
+			--verbose
+
 audit-token-accounting:  ## Audit recent Supabase rows against local telemetry
 	.venv/bin/python scripts/audit_token_accounting.py --days 30 --machine "$(MACHINE)"
+
+audit-token-accounting-strict:  ## Fail on dangerous accounting findings only
+	.venv/bin/python scripts/audit_token_accounting.py --days 30 --machine "$(MACHINE)" --fail-on-dangerous
+
+normalize-machine-labels-dry:  ## Dry-run legacy machine label cleanup
+	.venv/bin/python scripts/normalize_machine_labels.py
+
+normalize-machine-labels:  ## Apply legacy machine label cleanup
+	.venv/bin/python scripts/normalize_machine_labels.py --apply
 
 migrate:        ## One-time: migrate legacy daily-burn.json → Supabase
 	.venv/bin/python scripts/migrate_legacy.py

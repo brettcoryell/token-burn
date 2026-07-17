@@ -321,6 +321,7 @@ def collect(
     dry_run: bool,
     verbose: bool,
     agent: str = "claude-code",
+    ignore_state: bool = False,
 ) -> None:
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -346,7 +347,7 @@ def collect(
         path_key = f"{machine}:{path}"
         current_hash = file_hash(path)
 
-        if state.get(path_key) == current_hash:
+        if not ignore_state and state.get(path_key) == current_hash:
             continue  # Unchanged — skip
 
         session = parse_session(path)
@@ -406,6 +407,7 @@ def collect_codex(
     dry_run: bool,
     verbose: bool,
     min_session_date: str | None = None,
+    ignore_state: bool = False,
 ) -> None:
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -433,7 +435,7 @@ def collect_codex(
         current_hash = file_hash(rollout_path) if rollout_path.exists() else str(row["tokens_used"])
         path_key = f"{machine}:codex:{row['id']}"
 
-        if state.get(path_key) == current_hash:
+        if not ignore_state and state.get(path_key) == current_hash:
             continue
 
         if row["id"] in codex_skip_ids or f"codex-{row['id']}" in codex_skip_ids:
@@ -530,6 +532,11 @@ def main() -> None:
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument(
+        "--ignore-state",
+        action="store_true",
+        help="Re-parse and re-upsert matching local telemetry even when .collect-state.json says the file/thread is unchanged.",
+    )
     args = parser.parse_args()
 
     if args.source == "codex":
@@ -539,6 +546,7 @@ def main() -> None:
             dry_run=args.dry_run,
             verbose=args.verbose,
             min_session_date=args.codex_min_date,
+            ignore_state=args.ignore_state,
         )
     else:
         agent = args.agent or args.surface
@@ -548,6 +556,7 @@ def main() -> None:
             dry_run=args.dry_run,
             verbose=args.verbose,
             agent=agent,
+            ignore_state=args.ignore_state,
         )
 
 

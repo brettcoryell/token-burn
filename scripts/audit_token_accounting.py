@@ -57,6 +57,11 @@ def parse_args() -> argparse.Namespace:
         help="Exit non-zero when audit findings are present",
     )
     parser.add_argument(
+        "--fail-on-dangerous",
+        action="store_true",
+        help="Exit non-zero only for dangerous accounting findings: nonzero duplicate rows, token sum mismatches, missing local telemetry, or local/Supabase mismatches",
+    )
+    parser.add_argument(
         "--include-today-local-mismatches",
         action="store_true",
         help="Report local-vs-Supabase mismatches for today's in-progress telemetry",
@@ -185,13 +190,20 @@ def main() -> None:
         by_day[str(row["session_date"])].append(row)
 
     duplicate_rows = []
+    dangerous_duplicate_rows = []
     for session_id, grouped in sorted(by_session.items()):
         machines = sorted({str(row["machine"]) for row in grouped})
         if len(machines) > 1:
             total = sum(row_total(row) for row in grouped)
-            duplicate_rows.append(f"{session_id}: machines={', '.join(machines)} rows={len(grouped)} total={format_tokens(total)}")
+            nonzero_rows = [row for row in grouped if row_total(row) > 0]
+            label = "dangerous" if len(nonzero_rows) > 1 else "harmless"
+            detail = f"{session_id}: {label}; machines={', '.join(machines)} rows={len(grouped)} nonzero_rows={len(nonzero_rows)} total={format_tokens(total)}"
+            duplicate_rows.append(detail)
+            if len(nonzero_rows) > 1:
+                dangerous_duplicate_rows.append(detail)
     findings += len(duplicate_rows)
     print_table("Cross-Machine Duplicate Session IDs", duplicate_rows)
+    print_table("Dangerous Nonzero Duplicate Session IDs", dangerous_duplicate_rows)
 
     stale_machine_rows = [
         f"{row['session_date']} {row['session_id']} agent={row['agent']} machine={row['machine']} total={format_tokens(row_total(row))}"
@@ -208,6 +220,13 @@ def main() -> None:
     ]
     findings += len(high_unannotated_rows)
     print_table(f"Unannotated Sessions >= {format_tokens(HIGH_VOLUME_TOKENS)} Tokens", high_unannotated_rows)
+
+    component_mismatch_rows = [
+        f"{row['session_date']} {row['session_id']} machine={row['machine']} total={format_tokens(row_total(row))} component_sum={format_tokens(expected_total(row))}"
+        for row in rows
+        if row_total(row) != expected_total(row)
+    ]
+    print_table("Rows With Token Component Sum Mismatch", component_mismatch_rows)
 
     missing_days = []
     cursor = since
@@ -265,7 +284,16 @@ def main() -> None:
         print_table("Local Telemetry Missing From Supabase", missing_local)
         print_table("Local Telemetry Total/API Mismatches", mismatched_local)
 
+    dangerous_findings = (
+        len(dangerous_duplicate_rows)
+        + len(component_mismatch_rows)
+        + (len(missing_local) if not args.skip_local else 0)
+        + (len(mismatched_local) if not args.skip_local else 0)
+    )
+    print(f"Dangerous findings: {dangerous_findings}")
     print(f"\nFindings: {findings}")
+    if dangerous_findings and args.fail_on_dangerous:
+        sys.exit(1)
     if findings and args.fail_on_findings:
         sys.exit(1)
 
