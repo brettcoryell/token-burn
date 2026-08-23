@@ -40,6 +40,7 @@ def parse_args() -> argparse.Namespace:
 def run_step(label: str, command: list[str], env: dict[str, str] | None = None) -> None:
     print(f"\n## {label}")
     print("$ " + " ".join(command))
+    sys.stdout.flush()
     result = subprocess.run(command, cwd=REPO_ROOT, env=env)
     if result.returncode != 0:
         print(f"[token-accounting] ERROR: {label} failed with exit code {result.returncode}", file=sys.stderr)
@@ -52,6 +53,7 @@ def main() -> None:
 
     print("# Token Burn Token-Accounting Closeout")
     print("Scope: token accounting only; continue normal project closeout separately.")
+    sys.stdout.flush()
 
     if not args.skip_claude:
         run_step("Collect local Claude Code telemetry", [*make, "collect"])
