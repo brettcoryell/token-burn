@@ -137,7 +137,7 @@ counted twice.
   upserting and skip with a warning if found.
 - Historical duplicate cleanup preserves the row with the best annotation
   (`driver`/`notes`) when possible, then removes duplicate rows.
-- New machines should run dry-run targets first (`collect-presto-dry`,
+- New machines should run dry-run targets first (`collect-dry`,
   `collect-codex-dry`) and inspect pending sessions before first backfill.
 - Long-running Codex threads can span multiple calendar days but currently bucket
   to thread creation date; annotate mixed sessions explicitly or leave `driver=NULL`.
@@ -190,3 +190,32 @@ and the dashboard, so it should own the write path too.
 
 **Violation looks like:** Adding a new MCP tool that writes to `token_burn` back into `open-brain-mcp`.
 Changing `api/mcp.ts` to Edge runtime without re-verifying the MCP SDK bundles cleanly there.
+
+---
+
+## D12: Exact MCP writes use structural machine labels only
+
+**Decision (2026-08-23):** `record_code_session` and `record_codex_session` accept only
+`machine='mini' | 'imac' | 'macbook'`. Agent nicknames such as `cadence`, `coda`,
+`lumen`, and `presto` are not accepted in exact token write tools.
+
+**Why:** Token Burn treats `session_id` as the global collection identity, while the
+database conflict key remains `(session_id, machine)`. If a closeout tool writes a
+zero-token or stale duplicate under an agent nickname, later collector runs can be
+blocked or forced through cleanup even though the closeout appeared successful.
+Structural machine labels keep MCP writes aligned with collectors, audits, and
+OpenBrain session refs.
+
+**Constraints:**
+- `record_chat_session` may continue to use `machine='ariel'` because Chat rows are
+  estimated, intentionally separate from exact local telemetry, and not collected from
+  a machine-local file.
+- Do not add default machine values to exact MCP schemas. A caller must provide the
+  actual structural host label.
+- Legacy cleanup scripts may know how to normalize old rows, but normal operation
+  must fail closed instead of writing nickname-labeled exact rows.
+
+**Violation looks like:** A zod schema or MCP description accepting `cadence`, `coda`,
+`lumen`, or any other agent nickname for `record_code_session` or
+`record_codex_session`; a default exact machine value like `lumen`; or closeout
+instructions telling agents to record exact sessions under nicknames.

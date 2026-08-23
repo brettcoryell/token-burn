@@ -14,6 +14,8 @@ const tb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY).schema("token_b
 const VALID_DRIVERS = new Set([
   "infrastructure", "career", "creative", "markets", "research", "personal",
 ]);
+const MACHINE_SCHEMA = z.enum(["mini", "imac", "macbook"]);
+const MACHINE_DESCRIPTION = "Structural machine label: mini | imac | macbook. Do not use agent nicknames such as cadence, coda, or lumen.";
 
 function validateDriver(driver: string | undefined): string | null {
   if (driver === undefined || driver === "") return null;
@@ -38,7 +40,7 @@ server.registerTool(
       "Record exact token usage for a Claude Code session. Call at session closeout. Upserts on (session_id, machine) — safe to call multiple times for the same session.",
     inputSchema: {
       session_id:     z.string().describe("JSONL filename stem (no path, no .jsonl extension)"),
-      machine:        z.enum(["cadence", "coda", "ariel"]).describe("Machine name"),
+      machine:        MACHINE_SCHEMA.describe(MACHINE_DESCRIPTION),
       session_date:   z.string().describe("Session date in YYYY-MM-DD format (Mountain time)"),
       input_tokens:   z.number().int().min(0).describe("Non-cached input tokens"),
       output_tokens:  z.number().int().min(0).describe("Output tokens"),
@@ -163,7 +165,7 @@ server.registerTool(
       "Record exact token usage for a Codex session. Call at session closeout. Upserts on (session_id, machine) — safe to call multiple times for the same session.",
     inputSchema: {
       session_id:     z.string().describe("Codex thread/session id, usually prefixed with codex-"),
-      machine:        z.string().default("lumen").describe("Contributor/source label, usually lumen"),
+      machine:        MACHINE_SCHEMA.describe(MACHINE_DESCRIPTION),
       session_date:   z.string().describe("Session date in YYYY-MM-DD format (Mountain time)"),
       input_tokens:   z.number().int().min(0).describe("Non-cached input tokens"),
       output_tokens:  z.number().int().min(0).describe("Output tokens"),

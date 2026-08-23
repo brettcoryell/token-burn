@@ -278,12 +278,12 @@ def test_collect_codex_upserts_correct_record_shape(tmp_path):
                 "SUPABASE_URL": "https://fake.supabase.co",
                 "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
             }):
-                collect.collect_codex(state_db, machine="lumen", dry_run=False, verbose=False)
+                collect.collect_codex(state_db, machine="mini", dry_run=False, verbose=False)
 
     assert len(captured_records) == 1
     rec = captured_records[0]
     assert rec["session_id"] == "codex-019ed498-test"
-    assert rec["machine"] == "lumen"
+    assert rec["machine"] == "mini"
     assert rec["agent"] == "codex"
     assert rec["fidelity"] == "exact"
     assert rec["session_date"] == "2026-06-17"
@@ -317,11 +317,11 @@ def test_collect_codex_skip_file_suppresses_raw_thread_upsert(tmp_path):
                     "SUPABASE_URL": "https://fake.supabase.co",
                     "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
                 }):
-                    collect.collect_codex(state_db, machine="lumen", dry_run=False, verbose=False)
+                    collect.collect_codex(state_db, machine="mini", dry_run=False, verbose=False)
 
     mock_sb.schema.return_value.table.return_value.upsert.assert_not_called()
     state = json.loads(state_file.read_text())
-    assert "lumen:codex:019ed498-test" in state
+    assert "mini:codex:019ed498-test" in state
 
 
 def test_collect_codex_respects_min_session_date(tmp_path):
@@ -349,7 +349,7 @@ def test_collect_codex_respects_min_session_date(tmp_path):
             }):
                 collect.collect_codex(
                     state_db,
-                    machine="lumen",
+                    machine="mini",
                     dry_run=False,
                     verbose=False,
                     min_session_date="2026-06-17",
@@ -390,11 +390,11 @@ def test_ac5_3_dedup_unchanged_files_skips_upsert(tmp_path):
                 "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
             }):
                 # First run: should upsert
-                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                collect.collect(sessions_root, machine="mini", dry_run=False, verbose=False)
                 calls_after_first = mock_execute.call_count
 
                 # Second run: files unchanged — must NOT upsert again
-                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                collect.collect(sessions_root, machine="mini", dry_run=False, verbose=False)
                 calls_after_second = mock_execute.call_count
 
     assert calls_after_first >= 1, "First run should have upserted at least one record"
@@ -435,7 +435,7 @@ def test_ac5_4_modified_file_triggers_reupsert(tmp_path):
                 "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
             }):
                 # First run
-                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                collect.collect(sessions_root, machine="mini", dry_run=False, verbose=False)
                 count_after_first = mock_execute.call_count
 
                 # Modify the file (append a new assistant message)
@@ -452,7 +452,7 @@ def test_ac5_4_modified_file_triggers_reupsert(tmp_path):
                     f.write(extra_line)
 
                 # Second run after modification
-                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                collect.collect(sessions_root, machine="mini", dry_run=False, verbose=False)
                 count_after_second = mock_execute.call_count
 
     assert count_after_second > count_after_first, (
@@ -617,8 +617,8 @@ def test_save_and_load_state_roundtrip(tmp_path):
 
     state_file = tmp_path / ".collect-state.json"
     original = {
-        "cadence:/path/to/session1.jsonl": "abc123",
-        "cadence:/path/to/session2.jsonl": "def456",
+        "mini:/path/to/session1.jsonl": "abc123",
+        "mini:/path/to/session2.jsonl": "def456",
     }
 
     with patch.object(collect, "STATE_FILE", state_file):
@@ -694,7 +694,7 @@ def test_collect_dry_run_does_not_call_supabase(tmp_path):
 
     with patch.object(collect, "STATE_FILE", state_file):
         with patch("collect.create_client") as mock_create_client:
-            collect.collect(sessions_root, machine="cadence", dry_run=True, verbose=False)
+            collect.collect(sessions_root, machine="mini", dry_run=True, verbose=False)
 
     mock_create_client.assert_not_called(), "create_client must not be called in dry_run mode"
 
@@ -715,7 +715,7 @@ def test_collect_dry_run_state_behavior(tmp_path):
     state_file = tmp_path / ".collect-state.json"
 
     with patch.object(collect, "STATE_FILE", state_file):
-        collect.collect(sessions_root, machine="cadence", dry_run=True, verbose=False)
+        collect.collect(sessions_root, machine="mini", dry_run=True, verbose=False)
 
     # dry_run does NOT persist state — state file should NOT exist
     # (collect.py only calls save_state() in the non-dry-run branch)
@@ -753,7 +753,7 @@ def test_collect_requires_credentials_when_not_dry_run():
                     with pytest.raises(SystemExit) as exc_info:
                         collect.collect(
                             sessions_root,
-                            machine="cadence",
+                            machine="mini",
                             dry_run=False,
                             verbose=False,
                         )
@@ -796,7 +796,7 @@ def test_collect_upserts_correct_record_shape(tmp_path):
                 "SUPABASE_URL": "https://fake.supabase.co",
                 "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
             }):
-                collect.collect(sessions_root, machine="cadence", dry_run=False, verbose=False)
+                collect.collect(sessions_root, machine="mini", dry_run=False, verbose=False)
 
     assert len(captured_records) >= 1, "Should have upserted at least one record"
 
@@ -808,7 +808,7 @@ def test_collect_upserts_correct_record_shape(tmp_path):
     missing = required_fields - set(rec.keys())
     assert not missing, f"Upserted record missing fields: {missing}"
 
-    assert rec["machine"] == "cadence"
+    assert rec["machine"] == "mini"
     assert rec["agent"] == "claude-code"
     assert rec["fidelity"] == "exact"
     assert rec["session_id"] == "simple_session"
@@ -837,7 +837,7 @@ def test_collect_skips_cross_machine_duplicate_session_id(tmp_path):
     with patch.object(collect, "STATE_FILE", state_file):
         with patch.object(collect, "existing_session_on_other_machine", return_value={
             "session_id": "simple_session",
-            "machine": "cadence",
+            "machine": "mini",
             "session_date": "2026-06-09",
         }):
             with patch("collect.create_client", return_value=mock_sb):
@@ -845,7 +845,7 @@ def test_collect_skips_cross_machine_duplicate_session_id(tmp_path):
                     "SUPABASE_URL": "https://fake.supabase.co",
                     "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
                 }):
-                    collect.collect(sessions_root, machine="coda", dry_run=False, verbose=False)
+                    collect.collect(sessions_root, machine="imac", dry_run=False, verbose=False)
 
     mock_upsert.assert_not_called()
 
