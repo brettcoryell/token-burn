@@ -219,3 +219,35 @@ OpenBrain session refs.
 `lumen`, or any other agent nickname for `record_code_session` or
 `record_codex_session`; a default exact machine value like `lumen`; or closeout
 instructions telling agents to record exact sessions under nicknames.
+
+---
+
+## D13: Token-accounting closeout uses one blessed wrapper
+
+**Decision (2026-08-23):** Claude Code and Codex should run
+`make token-accounting-closeout` from `/Users/brettcoryell/Code/AI/token-burn`
+for the token-accounting portion of session closeout.
+
+**Why:** Token accounting has repeatedly drifted because closeout required agents
+to remember several separate commands (`collect`, `collect-codex`, machine-label
+normalization, annotation repair, and strict audit) and because `driver`/`notes`
+repair lived outside ordinary collection. A single wrapper makes the accounting
+subroutine repeatable without pretending to replace the rest of session closeout.
+
+**Constraints:**
+- `make token-accounting-closeout` is only token accounting. Agents must still run
+  project-specific tests, closeout checkers, commits/pushes, OpenBrain notes, and
+  intent updates according to the active project instructions.
+- The individual collector and reconcile targets remain available for backfills,
+  first-machine dry runs, and troubleshooting, but normal end-of-session token
+  accounting should not call them as the primary path.
+- The wrapper collects local Claude Code telemetry and local Codex telemetry,
+  normalizes legacy machine labels, applies only high-confidence annotation
+  suggestions, writes the remaining annotation review report, and runs the strict
+  accounting audit.
+- Dashboard accounting-health UI is intentionally out of scope for this decision.
+
+**Violation looks like:** Closeout instructions telling Claude Code to run only
+`make collect`, telling Codex to run only `make collect-codex`, reviving
+`collect-coda`, or describing `make token-accounting-closeout` as the whole
+session closeout rather than the token-accounting subroutine.

@@ -1,4 +1,4 @@
-.PHONY: collect collect-dry collect-reconcile collect-reconcile-dry collect-codex collect-codex-dry collect-codex-reconcile collect-codex-reconcile-dry audit-token-accounting audit-token-accounting-strict suggest-annotations apply-high-confidence-annotations normalize-machine-labels-dry normalize-machine-labels migrate dev build test test-collector test-ui install
+.PHONY: collect collect-dry collect-reconcile collect-reconcile-dry collect-codex collect-codex-dry collect-codex-reconcile collect-codex-reconcile-dry token-accounting-closeout audit-token-accounting audit-token-accounting-strict suggest-annotations apply-high-confidence-annotations normalize-machine-labels-dry normalize-machine-labels migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
 MACHINE       ?= $(shell hostname | tr '[:upper:]' '[:lower:]' | awk '/mini/ {print "mini"; found=1} /macbook|book/ {print "macbook"; found=1} /imac/ {print "imac"; found=1} END {if (!found) print "unknown"}')
@@ -73,6 +73,9 @@ collect-codex-reconcile-dry:  ## Dry run Codex reconciliation ignoring hash stat
 			--ignore-state \
 			--dry-run \
 			--verbose
+
+token-accounting-closeout:  ## Blessed token-accounting closeout subroutine for Claude Code and Codex
+	.venv/bin/python scripts/token_accounting_closeout.py
 
 audit-token-accounting:  ## Audit recent Supabase rows against local telemetry
 	.venv/bin/python scripts/audit_token_accounting.py --days 30 --machine "$(MACHINE)"
