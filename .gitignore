@@ -23,6 +23,7 @@ blob-report/
 
 # Local data (raw, private)
 data/raw/
+data/annotation-*.json
 ~/.local/share/token-burn/
 
 # Secrets

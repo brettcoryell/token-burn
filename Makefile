@@ -1,4 +1,4 @@
-.PHONY: collect collect-dry collect-reconcile collect-reconcile-dry collect-codex collect-codex-dry collect-codex-reconcile collect-codex-reconcile-dry audit-token-accounting audit-token-accounting-strict normalize-machine-labels-dry normalize-machine-labels migrate dev build test test-collector test-ui install
+.PHONY: collect collect-dry collect-reconcile collect-reconcile-dry collect-codex collect-codex-dry collect-codex-reconcile collect-codex-reconcile-dry audit-token-accounting audit-token-accounting-strict suggest-annotations apply-high-confidence-annotations normalize-machine-labels-dry normalize-machine-labels migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
 MACHINE       ?= $(shell hostname | tr '[:upper:]' '[:lower:]' | awk '/mini/ {print "mini"; found=1} /macbook|book/ {print "macbook"; found=1} /imac/ {print "imac"; found=1} END {if (!found) print "unknown"}')
@@ -79,6 +79,12 @@ audit-token-accounting:  ## Audit recent Supabase rows against local telemetry
 
 audit-token-accounting-strict:  ## Fail on dangerous accounting findings only
 	.venv/bin/python scripts/audit_token_accounting.py --days 30 --machine "$(MACHINE)" --fail-on-dangerous
+
+suggest-annotations:  ## Suggest high-value driver annotations without writing
+	.venv/bin/python scripts/suggest_annotations.py --days 60 --min-tokens 10000000 --output data/annotation-review.json
+
+apply-high-confidence-annotations:  ## Apply high-confidence high-value driver annotations
+	.venv/bin/python scripts/suggest_annotations.py --days 60 --min-tokens 10000000 --output data/annotation-suggestions.json --apply
 
 normalize-machine-labels-dry:  ## Dry-run legacy machine label cleanup
 	.venv/bin/python scripts/normalize_machine_labels.py
