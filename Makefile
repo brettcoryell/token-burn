@@ -5,7 +5,18 @@ MACHINE       ?= $(shell hostname | tr '[:upper:]' '[:lower:]' | awk '/mini/ {pr
 AGENT_FAMILY  ?= claude
 SURFACE       ?= claude-code
 CODEX_STATE_DB ?= $(HOME)/.codex/state_5.sqlite
-CODEX_MIN_DATE ?= $(shell date +%Y-%m-%d)
+
+# Collection and audit MUST share one lookback window. When the collector's
+# window is narrower than the audit's, the audit reports drift that collection
+# structurally cannot repair — a Codex thread that starts on one day and keeps
+# running is collected mid-flight, then filtered out from the next day onward
+# and never reconciles. That is exactly how the 2026-08-22 and 2026-09-02
+# sessions sat stale across several closeouts (see D14).
+#
+# CODEX_MIN_DATE still exists as an explicit override for first backfills and
+# for the D10 split-backfill workflow; only its default has changed.
+LOOKBACK_DAYS  ?= 30
+CODEX_MIN_DATE ?= $(shell date -v-$(LOOKBACK_DAYS)d +%Y-%m-%d 2>/dev/null || date -d "$(LOOKBACK_DAYS) days ago" +%Y-%m-%d)
 
 collect:        ## Collect agent sessions → upsert to Supabase
 	.venv/bin/python scripts/collect.py \
@@ -78,10 +89,10 @@ token-accounting-closeout:  ## Blessed token-accounting closeout subroutine for 
 	.venv/bin/python scripts/token_accounting_closeout.py
 
 audit-token-accounting:  ## Audit recent Supabase rows against local telemetry
-	.venv/bin/python scripts/audit_token_accounting.py --days 30 --machine "$(MACHINE)"
+	.venv/bin/python scripts/audit_token_accounting.py --days $(LOOKBACK_DAYS) --machine "$(MACHINE)"
 
 audit-token-accounting-strict:  ## Fail on dangerous accounting findings only
-	.venv/bin/python scripts/audit_token_accounting.py --days 30 --machine "$(MACHINE)" --fail-on-dangerous
+	.venv/bin/python scripts/audit_token_accounting.py --days $(LOOKBACK_DAYS) --machine "$(MACHINE)" --fail-on-dangerous
 
 suggest-annotations:  ## Suggest high-value driver annotations without writing
 	.venv/bin/python scripts/suggest_annotations.py --days 60 --min-tokens 10000000 --output data/annotation-review.json

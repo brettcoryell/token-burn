@@ -251,3 +251,49 @@ subroutine repeatable without pretending to replace the rest of session closeout
 `make collect`, telling Codex to run only `make collect-codex`, reviving
 `collect-coda`, or describing `make token-accounting-closeout` as the whole
 session closeout rather than the token-accounting subroutine.
+
+---
+
+## D14: Collection and audit share one lookback window
+
+**Decision (2026-09-03):** `LOOKBACK_DAYS` (default 30) drives both the Codex
+collection floor (`CODEX_MIN_DATE`) and the audit window (`--days`). The two must
+never be set independently.
+
+**Why:** `CODEX_MIN_DATE` previously defaulted to `$(shell date +%Y-%m-%d)` — today.
+The audit looked back 30 days. That gap is not cosmetic: a Codex thread that starts
+on one day and keeps running is collected mid-flight, and from the next day onward
+it is filtered out of every subsequent collection while its rollout file keeps
+growing. The audit then reports a mismatch that collection structurally cannot
+repair, forever.
+
+Two sessions sat in exactly that state across several closeouts on multiple
+machines — `codex-01a02813…` (2026-08-22, short 426,433 tokens / 5 API calls) and
+`codex-01a060eb…` (2026-09-02, short 2,179,051 tokens / 25 calls). Both were
+reported as dangerous findings and left untouched by both Claude Code and Codex,
+because the documented remediation does not work: `--ignore-state` bypasses the
+content-hash check but not the date floor, so `make collect-codex-reconcile`
+reported "0 new/changed" while the drift was real.
+
+The today-default was originally correct — it protected historic daily aggregates
+during Codex's first backfill (D8). That was a one-time migration concern, and
+pinning the floor to today permanently is the wrong way to hold it.
+
+**Constraints:**
+- Any audit check that compares local telemetry to Supabase must run over a window
+  the collector also covers. Widening the audit without widening collection
+  re-creates this bug.
+- `CODEX_MIN_DATE` remains an explicit override for first backfills on a new
+  machine and for the D10 split-backfill workflow. Only its default changed.
+- A reported mismatch that a documented remediation cannot clear is itself a bug.
+  If `collect-codex-reconcile` reports "0 new/changed" while the audit still flags
+  drift, suspect the date floor before the hash state.
+- Zero-token Codex threads are never upserted. Codex writes the thread row before
+  any billing occurs, so aborted threads look collectable from sqlite's
+  `tokens_used` alone; importing them adds rows to `codex_sessions` worth no
+  tokens. Five such 2026-06-16 stubs became reachable the moment the window
+  widened, and are now skipped in `codex_session_from_thread`.
+
+**Violation looks like:** hardcoding `--days` in an audit target. Setting
+`CODEX_MIN_DATE` to today. Leaving a dangerous audit finding unresolved across
+closeouts without determining whether the remediation path actually works.

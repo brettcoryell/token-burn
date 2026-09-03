@@ -899,3 +899,72 @@ def test_ac8_10_use_token_data_no_daily_burn_reference():
     assert "/api/sessions" in content, (
         "AC-8.10: useTokenData.ts should reference /api/sessions"
     )
+
+
+def test_collect_codex_skips_zero_token_stub_threads(tmp_path):
+    """
+    A Codex thread whose rollout has no token_count events must not become a
+    token_sessions row, even though sqlite's tokens_used is non-zero.
+
+    Codex writes the thread row before any billing happens, so aborted or
+    never-used threads look collectable from sqlite alone. Importing them would
+    inflate the dashboard's codex_sessions count with rows worth zero tokens.
+    The 2026-06-16 stubs in Brett's local state DB are exactly this shape, and
+    they became reachable once the collection window widened past one day.
+    """
+    collect = _import_collect()
+
+    # A rollout with well-formed JSONL but no token_count payloads.
+    rollout = tmp_path / "codex_stub.jsonl"
+    rollout.write_text(
+        '{"payload": {"type": "message", "role": "user"}}\n'
+        '{"payload": {"type": "message", "role": "assistant"}}\n'
+    )
+    state_db = make_codex_state_db(tmp_path, rollout)
+    state_file = tmp_path / ".collect-state.json"
+
+    mock_sb = MagicMock()
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                collect.collect_codex(state_db, machine="mini", dry_run=False, verbose=False)
+
+    mock_sb.schema.return_value.table.return_value.upsert.assert_not_called()
+
+
+def test_collect_codex_collects_threads_older_than_today(tmp_path):
+    """
+    Collection must reach back past today, or a thread that starts on one day and
+    keeps running can never reconcile: it is collected mid-flight, then filtered
+    out from the next day onward while its rollout keeps growing.
+
+    This is the regression behind the 2026-08-22 and 2026-09-02 Codex sessions,
+    which stayed stale across several closeouts because CODEX_MIN_DATE defaulted
+    to today. See D14.
+    """
+    collect = _import_collect()
+
+    rollout = tmp_path / "codex_session.jsonl"
+    shutil.copy(CODEX_SESSION, rollout)
+    # created_at well before today
+    state_db = make_codex_state_db(tmp_path, rollout, created_at=1781596804)
+    state_file = tmp_path / ".collect-state.json"
+
+    mock_sb = MagicMock()
+    mock_sb.schema.return_value.table.return_value.upsert.return_value.execute.return_value.error = None
+    mock_sb.schema.return_value.table.return_value.select.return_value.eq.return_value.neq.return_value.limit.return_value.execute.return_value.data = []
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                # No min_session_date: the default must not silently be "today".
+                collect.collect_codex(state_db, machine="mini", dry_run=False, verbose=False)
+
+    mock_sb.schema.return_value.table.return_value.upsert.assert_called()

@@ -247,6 +247,16 @@ def codex_session_from_thread(row: sqlite3.Row) -> dict | None:
     if usage is None:
         return None
 
+    # A thread whose rollout carries no token-count events is a stub — Codex
+    # created the thread row (so sqlite's tokens_used is non-zero) but nothing
+    # was ever billed. Upserting it would add a session to the dashboard's
+    # codex_sessions count while contributing no tokens. Five such threads from
+    # 2026-06-16 sit in the local state DB; they must stay out of Supabase
+    # regardless of how far back a backfill window reaches.
+    if usage["input_tokens"] + usage["output_tokens"] + usage["cache_read"] + usage["cache_create"] == 0:
+        print(f"[collect] skipping zero-token Codex thread {row['id']}", file=sys.stderr)
+        return None
+
     try:
         date_str = (
             datetime.fromtimestamp(int(row["created_at"]), tz=ZoneInfo("UTC"))
