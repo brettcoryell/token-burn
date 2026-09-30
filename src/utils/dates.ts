@@ -3,8 +3,10 @@ import { DayRecord, TimeRange, TIME_RANGE_DAYS } from '../types'
 export function filterByRange(records: DayRecord[], range: TimeRange): DayRecord[] {
   const days = TIME_RANGE_DAYS[range]
   if (days === null) return records
-  const cutoff = new Date()
-  cutoff.setDate(cutoff.getDate() - days)
+  const anchor = latestDate(records)
+  if (!anchor) return records
+  const cutoff = parseDate(anchor)
+  cutoff.setDate(cutoff.getDate() - (days - 1))
   const cutoffStr = cutoff.toISOString().slice(0, 10)
   return records.filter(r => r.date >= cutoffStr)
 }
