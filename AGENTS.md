@@ -73,7 +73,7 @@ Use `machine` (not agent nicknames) in session refs, token-burn records, and OB 
 8. **Sync token accounting**: run `make token-accounting-closeout` from this repo directory. This is only the token-accounting subroutine; it does not replace the rest of this Session-End Protocol.
 9. **Post-sync audit**: `make token-accounting-closeout` runs `make audit-token-accounting-strict` at the end. Today's active Codex session may move during the conversation, but missing local telemetry, nonzero duplicate IDs, component mismatches, or older local/Supabase mismatches must not be ignored.
 10. Record session context in OpenBrain if tools are available:
-   - **Registry (upsert):** First fetch: `list_context(topics=["project-registry", "project-token-burn"], permanent=true, limit=1)` to get the existing entry's `id`. Then call `capture_context` with that `id` to update in-place. If no entry exists, omit `id` to insert.
+   - **Registry (upsert):** First fetch: `list_context(topics=["project-registry", "project-token-burn"], permanent=true, limit=1)` to get the existing entry's `id`. Then call `capture_context` with that `id` to update in-place. Insert a new entry (omit `id`) only after a full registry listing (`list_context(topics=["project-registry"], permanent=true)`) confirms none exists for this project, under any name.
      - `session_ref`: `"project-registry-token-burn"` — same value every time
      - `topics`: `["project-registry", "project-token-burn"]`
      - `expires_at`: null (permanent)
