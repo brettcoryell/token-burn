@@ -188,6 +188,12 @@ and the dashboard, so it should own the write path too.
   it through the `token-burn` slug on the `ob-oauth-shim` OAuth shim (see `open_brain/DECISIONS.md`),
   which requires its own claude.ai custom connector separate from the `open-brain` one.
 
+**Addendum (2026-10-12): no event stream.** `api/mcp.ts` answers GET with 405 and never holds
+an SSE stream open. Each connected Claude/Codex session's open GET stream kept a Fluid function
+alive. From 2026-09-30 that used 1,082 of the account's 1,083 GB-hours of provisioned memory
+(300% of Hobby), and Vercel paused every project on the account. `vercel.json` also caps
+`api/mcp.ts` at 30 s / 512 MB. Re-enabling GET streaming is a violation.
+
 **Violation looks like:** Adding a new MCP tool that writes to `token_burn` back into `open-brain-mcp`.
 Changing `api/mcp.ts` to Edge runtime without re-verifying the MCP SDK bundles cleanly there.
 

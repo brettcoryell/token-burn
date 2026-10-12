@@ -237,6 +237,15 @@ app.all("*", async (c) => {
     return c.json({ error: "Invalid or missing access key" }, 401, corsHeaders);
   }
 
+  // This stateless server never pushes server-initiated messages, so it refuses the
+  // optional GET event stream (MCP streamable HTTP allows 405 here). Holding that stream
+  // open kept a Fluid function alive per connected client and exhausted the account's
+  // provisioned-memory quota (2026-10-12). Clients fall back to POST request/response.
+  if (c.req.method === "GET") {
+    return c.json({ error: "Method Not Allowed: this server does not offer an event stream" }, 405,
+      { ...corsHeaders, Allow: "POST, OPTIONS, DELETE" });
+  }
+
   if (!c.req.header("accept")?.includes("text/event-stream")) {
     const headers = new Headers(c.req.raw.headers);
     headers.set("Accept", "application/json, text/event-stream");
