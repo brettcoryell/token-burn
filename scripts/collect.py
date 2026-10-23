@@ -308,12 +308,27 @@ def load_codex_skip_ids() -> set[str]:
     return {str(value) for value in values if value}
 
 
+def connect_codex_db(state_db: Path) -> sqlite3.Connection:
+    """
+    Open Codex's state DB read-only. A WAL-mode DB with no -shm file (Codex not
+    running, or another reader holds the directory) cannot be opened mode=ro, so
+    fall back to immutable=1, which reads the main file as a snapshot.
+    """
+    conn = sqlite3.connect(f"file:{state_db}?mode=ro", uri=True)
+    try:
+        conn.execute("SELECT 1 FROM sqlite_master LIMIT 1")
+    except sqlite3.OperationalError:
+        conn.close()
+        conn = sqlite3.connect(f"file:{state_db}?mode=ro&immutable=1", uri=True)
+    return conn
+
+
 def codex_threads(state_db: Path) -> list[sqlite3.Row]:
     if not state_db.exists():
         print(f"[collect] ERROR: Codex state DB not found: {state_db}", file=sys.stderr)
         sys.exit(1)
 
-    conn = sqlite3.connect(f"file:{state_db}?mode=ro", uri=True)
+    conn = connect_codex_db(state_db)
     conn.row_factory = sqlite3.Row
     try:
         return list(conn.execute(

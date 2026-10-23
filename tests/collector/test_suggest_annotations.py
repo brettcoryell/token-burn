@@ -8,7 +8,7 @@ SCRIPTS_DIR = REPO_ROOT / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-from suggest_annotations import score_row
+from suggest_annotations import desktop_titles, inherited_suggestion, score_row
 
 
 def _row(session_date="2026-08-17", total_tokens=10_000_000):
@@ -67,3 +67,41 @@ def test_score_row_generic_title_remains_low_confidence():
 
     assert suggestion.confidence_label == "low"
     assert suggestion.confidence <= 0.5
+
+
+def test_desktop_titles_maps_cli_session_id_to_title(tmp_path):
+    folder = tmp_path / "account" / "workspace"
+    folder.mkdir(parents=True)
+    (folder / "local_1.json").write_text(
+        '{"sessionId": "local_1", "cliSessionId": "cli-1", "title": "Cavendish page 1C cleanup"}'
+    )
+    (folder / "local_2.json").write_text('{"sessionId": "local_2", "title": "no cli id"}')
+    (folder / "local_3.json").write_text("not json")
+
+    assert desktop_titles(tmp_path) == {"cli-1": "Cavendish page 1C cleanup"}
+    assert desktop_titles(tmp_path / "missing") == {}
+
+
+def test_desktop_title_lifts_a_titleless_session_to_high_confidence():
+    suggestion = score_row(
+        _row(),
+        {"title": "Cavendish page 1C cleanup", "cwd": "/Users/brettcoryell/Code/AI/cavendish"},
+        Counter({"cavendish": 5}),
+        Path("/Users/brettcoryell/Code/AI"),
+    )
+
+    assert suggestion.inferred_driver == "research"
+    assert suggestion.confidence_label == "high"
+
+
+def test_subagent_inherits_parent_driver():
+    row = {
+        "id": "row-2", "session_id": "agent-abc", "session_date": "2026-10-20", "agent": "claude-code",
+        "machine": "mini", "total_tokens": 5_000, "notes": None, "parent_session_id": "11111111-2222",
+    }
+
+    suggestion = inherited_suggestion(row, "research")
+
+    assert suggestion.inferred_driver == "research"
+    assert suggestion.confidence_label == "high"
+    assert "11111111" in suggestion.proposed_notes

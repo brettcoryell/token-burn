@@ -1212,3 +1212,39 @@ def test_d15_main_session_record_has_no_parent(tmp_path):
                 collect.collect(sessions_root, machine="mini", dry_run=False, verbose=False)
 
     assert "parent_session_id" not in table.upsert.call_args[0][0]
+
+
+def test_connect_codex_db_falls_back_to_immutable_when_readonly_open_fails(tmp_path):
+    """A WAL DB with no -shm file cannot be opened mode=ro; the snapshot open must still work."""
+    collect = _import_collect()
+    db = tmp_path / "state.sqlite"
+    conn = sqlite3.connect(db)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("CREATE TABLE threads (id TEXT)")
+    conn.execute("INSERT INTO threads VALUES ('t1')")
+    conn.commit()
+    conn.close()
+    for suffix in ("-wal", "-shm"):
+        (tmp_path / f"state.sqlite{suffix}").unlink(missing_ok=True)
+
+    real_connect = sqlite3.connect
+    calls = []
+
+    class Unopenable:
+        def execute(self, *args):
+            raise sqlite3.OperationalError("unable to open database file")
+
+        def close(self):
+            pass
+
+    def flaky(database, *args, **kwargs):
+        calls.append(database)
+        if "immutable=1" not in database:
+            return Unopenable()
+        return real_connect(database, *args, **kwargs)
+
+    with patch.object(collect.sqlite3, "connect", flaky):
+        opened = collect.connect_codex_db(db)
+
+    assert any("immutable=1" in uri for uri in calls)
+    assert opened.execute("SELECT id FROM threads").fetchone()[0] == "t1"

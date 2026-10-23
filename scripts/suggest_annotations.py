@@ -24,10 +24,12 @@ from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from supabase import Client, create_client
 
-from collect import CODEX_STATE_DB
+from collect import CODEX_STATE_DB, connect_codex_db
 
 LOCAL_TZ = ZoneInfo("America/Denver")
 PAGE_SIZE = 1000
+DESKTOP_SESSIONS_ROOT = Path.home() / "Library" / "Application Support" / "Claude" / "claude-code-sessions"
+INHERIT_CONFIDENCE = 0.90
 VALID_DRIVERS = {"infrastructure", "career", "creative", "markets", "research", "personal"}
 
 PROJECT_DRIVER = {
@@ -106,6 +108,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--confidence-threshold", type=float, default=0.85)
     parser.add_argument("--sessions-root", type=Path, default=Path.home() / ".claude" / "projects")
     parser.add_argument("--codex-state-db", type=Path, default=CODEX_STATE_DB)
+    parser.add_argument(
+        "--desktop-sessions-root",
+        type=Path,
+        default=DESKTOP_SESSIONS_ROOT,
+        help="Claude Desktop session metadata (local_*.json); its titles are the best evidence for a session",
+    )
     parser.add_argument("--repos-root", type=Path, default=Path.home() / "Code" / "AI")
     parser.add_argument("--output", type=Path, default=Path("data") / "annotation-suggestions.json")
     parser.add_argument("--apply", action="store_true", help="Apply suggestions at or above threshold")
@@ -130,7 +138,7 @@ def supabase_client() -> Client:
 
 
 def fetch_target_rows(sb: Client, since: date, min_tokens: int) -> list[dict[str, Any]]:
-    columns = "id,session_id,machine,session_date,agent,total_tokens,driver,notes"
+    columns = "id,session_id,machine,session_date,agent,total_tokens,driver,notes,parent_session_id"
     rows: list[dict[str, Any]] = []
     offset = 0
     while True:
@@ -149,6 +157,89 @@ def fetch_target_rows(sb: Client, since: date, min_tokens: int) -> list[dict[str
         if len(batch) < PAGE_SIZE:
             return rows
         offset += PAGE_SIZE
+
+
+def fetch_subagent_rows(sb: Client, since: date, seen_ids: set[str]) -> list[dict[str, Any]]:
+    """Unannotated subagent rows of any size. They only ever inherit; size is irrelevant."""
+    columns = "id,session_id,machine,session_date,agent,total_tokens,driver,notes,parent_session_id"
+    rows: list[dict[str, Any]] = []
+    offset = 0
+    while True:
+        result = (
+            sb.schema("token_burn").table("token_sessions")
+            .select(columns)
+            .is_("driver", "null")
+            .not_.is_("parent_session_id", "null")
+            .gte("session_date", since.isoformat())
+            .range(offset, offset + PAGE_SIZE - 1)
+            .execute()
+        )
+        batch = result.data or []
+        rows.extend(row for row in batch if str(row["id"]) not in seen_ids)
+        if len(batch) < PAGE_SIZE:
+            return rows
+        offset += PAGE_SIZE
+
+
+def fetch_annotated_parents(sb: Client, parent_ids: set[str]) -> dict[tuple[str, str], str]:
+    """(machine, session_id) -> driver for annotated parent sessions."""
+    parents: dict[tuple[str, str], str] = {}
+    ids = sorted(parent_ids)
+    for start in range(0, len(ids), 100):
+        result = (
+            sb.schema("token_burn").table("token_sessions")
+            .select("session_id,machine,driver")
+            .in_("session_id", ids[start:start + 100])
+            .not_.is_("driver", "null")
+            .execute()
+        )
+        for row in result.data or []:
+            parents[(row["machine"], row["session_id"])] = row["driver"]
+    return parents
+
+
+def desktop_titles(root: Path) -> dict[str, str]:
+    """
+    Claude Desktop keeps one local_*.json per session. Its title is written by the
+    app, not the transcript, and cliSessionId links it to the transcript's session id.
+    """
+    titles: dict[str, str] = {}
+    if not root.exists():
+        return titles
+    for path in root.glob("**/local_*.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(data, dict):
+            continue
+        cli_id, title = data.get("cliSessionId"), data.get("title")
+        if isinstance(cli_id, str) and isinstance(title, str) and title.strip():
+            titles[cli_id] = title.strip()
+    return titles
+
+
+def inherited_suggestion(row: dict[str, Any], parent_driver: str) -> Suggestion:
+    """A subagent is the parent session's work (D15), so it takes the parent's driver."""
+    parent = str(row["parent_session_id"])
+    return Suggestion(
+        id=str(row["id"]),
+        session_id=str(row["session_id"]),
+        session_date=str(row["session_date"]),
+        agent=str(row["agent"]),
+        machine=str(row["machine"]),
+        total_tokens=int(row.get("total_tokens") or 0),
+        existing_notes=row.get("notes"),
+        inferred_driver=parent_driver,
+        confidence=INHERIT_CONFIDENCE,
+        confidence_label="high",
+        title=None,
+        cwd=None,
+        evidence=[Evidence("parent", f"subagent of annotated session {parent[:8]} ({parent_driver})", 0.9)],
+        caps=[],
+        conflicts=[],
+        proposed_notes=f"Subagent of session {parent[:8]}; inherits {parent_driver}"[:500],
+    )
 
 
 def claude_metadata(root: Path, session_id: str) -> dict[str, Any]:
@@ -184,7 +275,7 @@ def codex_metadata(state_db: Path, session_id: str) -> dict[str, Any]:
     if not session_id.startswith("codex-") or not state_db.exists():
         return {}
     thread_id = session_id.removeprefix("codex-")
-    conn = sqlite3.connect(f"file:{state_db}?mode=ro", uri=True)
+    conn = connect_codex_db(state_db)
     conn.row_factory = sqlite3.Row
     try:
         row = conn.execute(
@@ -401,6 +492,7 @@ def main() -> None:
     since = start_date(args)
     sb = supabase_client()
     rows = fetch_target_rows(sb, since, args.min_tokens)
+    titles = desktop_titles(args.desktop_sessions_root)
 
     suggestions: list[Suggestion] = []
     git_cache: dict[str, Counter[str]] = {}
@@ -409,11 +501,24 @@ def main() -> None:
         meta = claude_metadata(args.sessions_root, session_id)
         if not meta:
             meta = codex_metadata(args.codex_state_db, session_id)
+        if session_id in titles:
+            meta = {**meta, "title": titles[session_id]}
         day = str(row["session_date"])
         if day not in git_cache:
             git_cache[day] = nearby_git_repos(args.repos_root, day)
         row_with_notes = {**row, "existing_notes": row.get("notes")}
         suggestions.append(score_row(row_with_notes, meta, git_cache[day], args.repos_root))
+
+    # Subagents inherit from their parent: from the database, or from a parent annotated just above.
+    subagent_rows = fetch_subagent_rows(sb, since, {str(row["id"]) for row in rows})
+    parent_drivers = fetch_annotated_parents(sb, {str(row["parent_session_id"]) for row in subagent_rows})
+    for item in suggestions:
+        if item.inferred_driver and item.confidence >= args.confidence_threshold:
+            parent_drivers.setdefault((item.machine, item.session_id), item.inferred_driver)
+    for row in subagent_rows:
+        driver = parent_drivers.get((str(row["machine"]), str(row["parent_session_id"])))
+        if driver:
+            suggestions.append(inherited_suggestion(row, driver))
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     payload = {

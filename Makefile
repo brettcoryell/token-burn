@@ -95,10 +95,10 @@ audit-token-accounting-strict:  ## Fail on dangerous accounting findings only
 	.venv/bin/python scripts/audit_token_accounting.py --days $(LOOKBACK_DAYS) --machine "$(MACHINE)" --fail-on-dangerous
 
 suggest-annotations:  ## Suggest high-value driver annotations without writing
-	.venv/bin/python scripts/suggest_annotations.py --days 60 --min-tokens 10000000 --output data/annotation-review.json
+	.venv/bin/python scripts/suggest_annotations.py --days 60 --min-tokens 1000000 --output data/annotation-review.json
 
 apply-high-confidence-annotations:  ## Apply high-confidence high-value driver annotations
-	.venv/bin/python scripts/suggest_annotations.py --days 60 --min-tokens 10000000 --output data/annotation-suggestions.json --apply
+	.venv/bin/python scripts/suggest_annotations.py --days 60 --min-tokens 1000000 --output data/annotation-suggestions.json --apply
 
 normalize-machine-labels-dry:  ## Dry-run legacy machine label cleanup
 	.venv/bin/python scripts/normalize_machine_labels.py
