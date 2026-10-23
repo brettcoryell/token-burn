@@ -303,3 +303,50 @@ pinning the floor to today permanently is the wrong way to hold it.
 **Violation looks like:** hardcoding `--days` in an audit target. Setting
 `CODEX_MIN_DATE` to today. Leaving a dangerous audit finding unresolved across
 closeouts without determining whether the remediation path actually works.
+
+---
+
+## D15: Claude Code replies are counted once; a resumed subagent is one session
+
+**Decision (2026-10-23):** Brett ruled on the two collector bugs found in the
+2026-10-22 ACUTE audit (`docs/audits/acute-audit-2026-10-22.md` §5). This amends the
+usage-summing behavior the collector had since v2, and the file-name keying in D3/D9
+for subagents.
+
+1. **Count each reply once.** Brett: "Count each reply once." Claude Code writes several
+   transcript lines per assistant reply (text, tool calls) and every line repeats the
+   full `message.usage`; summing every line over-counted by about 1.9×. A reply is
+   identified by `message.id`, with `requestId` as a fallback; a line with neither is
+   counted as its own reply. If repeated lines of one reply disagree, each usage field
+   keeps its largest value. `api_requests` is the number of distinct replies.
+2. **Subagent tokens.** Brett: "the tokens go with the session that sees the end of the
+   subagent." When a subagent is resumed under another parent session, Claude Code writes
+   a second `subagents/agent-<id>.jsonl` under the new parent with the same file name.
+   The collector groups a subagent's transcript files by subagent id (the file stem),
+   counts each reply once across all of the files, and credits the total to the parent
+   session of the file whose last reply is latest.
+3. **History.** Brett: "Yes, I want to fix the history." Stored Claude Code rows are
+   recounted with the fixed collector; the pre-rewrite rows are kept in a dated JSON
+   backup under `docs/audits/`. Rows whose transcripts no longer exist cannot be
+   recounted and are left as recorded, flagged in `notes` as uncorrected, never scaled.
+
+**Why:** Both bugs inflated or lost real work. Across the mini's 271 transcripts there
+were 76,806 usage lines for 40,550 distinct message ids (ratio 1.89), and 12 subagent ids
+overwrote each other, losing ~169M deduplicated tokens, all ACUTE. The strict audit
+reported 9 collision findings that no documented remediation could clear.
+
+**Constraints:**
+- `session_id` stays the transcript file stem (D3, D9 unchanged otherwise); a subagent's
+  row is `agent-<id>` no matter how many parents it ran under.
+- The parent session credited with a subagent is derived at collection time from the
+  winning file's path and shown by `--verbose`. `token_sessions` has no parent column, so
+  it is not stored; adding one is a schema change that needs its own decision.
+- Dedup and grouping apply to Claude Code transcripts only. Codex uses the cumulative
+  `total_token_usage` from the latest token-count event and has no duplicate lines
+  (D8, D14); `collect_codex` is untouched.
+- Totals recorded before 2026-10-23 follow the old convention and are not comparable
+  with later totals except for rows marked uncorrected, whose notes say so.
+
+**Violation looks like:** Summing `usage` per transcript line. Keying a subagent row on
+anything but its id, or letting the last file written win. Scaling uncorrectable rows by
+the ~1.9 ratio instead of flagging them.

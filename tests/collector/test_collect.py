@@ -968,3 +968,226 @@ def test_collect_codex_collects_threads_older_than_today(tmp_path):
                 collect.collect_codex(state_db, machine="mini", dry_run=False, verbose=False)
 
     mock_sb.schema.return_value.table.return_value.upsert.assert_called()
+
+
+# ---------------------------------------------------------------------------
+# D15 — each reply counted once; a resumed subagent is one session
+# ---------------------------------------------------------------------------
+
+def _assistant_line(msg_id, ts, usage, request_id=None, block="text"):
+    record = {
+        "type": "assistant",
+        "timestamp": ts,
+        "message": {
+            "id": msg_id,
+            "role": "assistant",
+            "content": [{"type": block}],
+            "usage": usage,
+        },
+    }
+    if request_id:
+        record["requestId"] = request_id
+    return json.dumps(record)
+
+
+def _usage(inp, out, read, create):
+    return {
+        "input_tokens": inp,
+        "output_tokens": out,
+        "cache_read_input_tokens": read,
+        "cache_creation_input_tokens": create,
+    }
+
+
+def _user_line(ts):
+    return json.dumps({"type": "user", "timestamp": ts, "message": {"role": "user", "content": "hi"}})
+
+
+def test_d15_multi_line_reply_counted_once(tmp_path):
+    """One reply written as three lines (text + two tool calls) repeats the same usage."""
+    collect = _import_collect()
+    path = tmp_path / "session-multi.jsonl"
+    reply = _usage(10, 20, 300, 40)
+    path.write_text("\n".join([
+        _user_line("2026-10-01T15:00:00.000Z"),
+        _assistant_line("msg_1", "2026-10-01T15:00:01.000Z", reply, request_id="req_1"),
+        _assistant_line("msg_1", "2026-10-01T15:00:01.100Z", reply, request_id="req_1", block="tool_use"),
+        _assistant_line("msg_1", "2026-10-01T15:00:01.200Z", reply, request_id="req_1", block="tool_use"),
+        _assistant_line("msg_2", "2026-10-01T15:01:00.000Z", _usage(1, 2, 3, 4), request_id="req_2"),
+    ]) + "\n")
+
+    session = collect.parse_session(path)
+
+    assert session["input_tokens"] == 11
+    assert session["output_tokens"] == 22
+    assert session["cache_read"] == 303
+    assert session["cache_create"] == 44
+    assert session["api_requests"] == 2
+
+
+def test_d15_reply_identity_falls_back_to_request_id(tmp_path):
+    """Lines without message.id are matched by requestId; lines with neither each count."""
+    collect = _import_collect()
+    path = tmp_path / "session-fallback.jsonl"
+
+    def line(ts, request_id, usage):
+        record = {
+            "type": "assistant", "timestamp": ts,
+            "message": {"role": "assistant", "usage": usage},
+        }
+        if request_id:
+            record["requestId"] = request_id
+        return json.dumps(record)
+
+    path.write_text("\n".join([
+        line("2026-10-01T15:00:01.000Z", "req_1", _usage(5, 5, 5, 5)),
+        line("2026-10-01T15:00:01.100Z", "req_1", _usage(5, 5, 5, 5)),
+        line("2026-10-01T15:00:02.000Z", None, _usage(1, 1, 1, 1)),
+        line("2026-10-01T15:00:03.000Z", None, _usage(1, 1, 1, 1)),
+    ]) + "\n")
+
+    session = collect.parse_session(path)
+
+    assert session["api_requests"] == 3
+    assert session["input_tokens"] == 7
+
+
+def test_d15_streamed_reply_keeps_largest_usage(tmp_path):
+    """Repeated lines of one reply that disagree keep each field's largest value."""
+    collect = _import_collect()
+    path = tmp_path / "session-streamed.jsonl"
+    path.write_text("\n".join([
+        _assistant_line("msg_1", "2026-10-01T15:00:01.000Z", _usage(10, 1, 300, 40)),
+        _assistant_line("msg_1", "2026-10-01T15:00:02.000Z", _usage(10, 90, 300, 40)),
+    ]) + "\n")
+
+    session = collect.parse_session(path)
+
+    assert session["output_tokens"] == 90
+    assert session["api_requests"] == 1
+
+
+def _write_subagent(root, parent, agent_id, lines):
+    folder = root / "project" / parent / "subagents"
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"agent-{agent_id}.jsonl"
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def test_d15_resumed_subagent_counted_once_and_credited_to_later_parent(tmp_path):
+    """
+    A subagent resumed under a second parent has two files with the same stem. Their
+    replies overlap (the resumed transcript replays the earlier ones). Count each
+    reply once across both files; credit the parent whose file ends last.
+    """
+    collect = _import_collect()
+    shared = _assistant_line("msg_a", "2026-10-01T15:00:01.000Z", _usage(10, 10, 100, 10))
+    first = _write_subagent(tmp_path, "parent-early", "abc", [
+        _user_line("2026-10-01T15:00:00.000Z"),
+        shared,
+        _assistant_line("msg_b", "2026-10-01T15:05:00.000Z", _usage(20, 20, 200, 20)),
+    ])
+    second = _write_subagent(tmp_path, "parent-late", "abc", [
+        _user_line("2026-10-02T09:00:00.000Z"),
+        shared,
+        _assistant_line("msg_b", "2026-10-01T15:05:00.000Z", _usage(20, 20, 200, 20)),
+        _assistant_line("msg_c", "2026-10-02T09:10:00.000Z", _usage(30, 30, 300, 30)),
+    ])
+
+    groups = collect.group_session_files([second, first])
+    assert len(groups) == 1 and len(groups[0]) == 2
+
+    session = collect.parse_session_group(groups[0])
+
+    assert session["session_id"] == "agent-abc"
+    assert session["parent_session_id"] == "parent-late"
+    assert session["api_requests"] == 3
+    assert session["input_tokens"] == 60
+    assert session["cache_read"] == 600
+    assert session["session_date"] == "2026-10-01"  # the subagent started under the first parent
+
+
+def test_d15_subagent_credit_follows_latest_reply_not_path_order(tmp_path):
+    """The later parent is decided by reply time, not by which path sorts last."""
+    collect = _import_collect()
+    ended_last = _write_subagent(tmp_path, "aaa-parent", "xyz", [
+        _assistant_line("msg_1", "2026-10-05T10:00:00.000Z", _usage(1, 1, 1, 1)),
+    ])
+    ended_first = _write_subagent(tmp_path, "zzz-parent", "xyz", [
+        _assistant_line("msg_0", "2026-10-03T10:00:00.000Z", _usage(1, 1, 1, 1)),
+    ])
+
+    session = collect.parse_session_group([ended_first, ended_last])
+
+    assert session["parent_session_id"] == "aaa-parent"
+    assert session["api_requests"] == 2
+
+
+def test_d15_collect_upserts_one_row_for_resumed_subagent(tmp_path):
+    """collect() writes one agent-<id> row, with no parent key in the stored record."""
+    collect = _import_collect()
+    _write_subagent(tmp_path, "parent-early", "abc", [
+        _assistant_line("msg_a", "2026-10-01T15:00:01.000Z", _usage(10, 10, 100, 10)),
+    ])
+    _write_subagent(tmp_path, "parent-late", "abc", [
+        _assistant_line("msg_a", "2026-10-01T15:00:01.000Z", _usage(10, 10, 100, 10)),
+        _assistant_line("msg_b", "2026-10-02T09:10:00.000Z", _usage(30, 30, 300, 30)),
+    ])
+    state_file = tmp_path / ".collect-state.json"
+    mock_sb = MagicMock()
+    table = mock_sb.schema.return_value.table.return_value
+    table.upsert.return_value.execute.return_value.error = None
+    table.select.return_value.eq.return_value.neq.return_value.limit.return_value.execute.return_value.data = []
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                collect.collect(tmp_path, machine="mini", dry_run=False, verbose=False)
+
+    assert table.upsert.call_count == 1
+    record = table.upsert.call_args[0][0]
+    assert record["session_id"] == "agent-abc"
+    assert record["api_requests"] == 2
+    assert record["input_tokens"] == 40
+    assert "parent_session_id" not in record
+
+
+def test_d15_codex_collection_does_not_use_claude_dedup(tmp_path):
+    """
+    Codex reads cumulative total_token_usage and has no duplicate lines, so the
+    Claude Code reply-dedup and subagent grouping must never run for it.
+    """
+    collect = _import_collect()
+    rollout = tmp_path / "codex_session.jsonl"
+    shutil.copy(CODEX_SESSION, rollout)
+    state_db = make_codex_state_db(tmp_path, rollout)
+    state_file = tmp_path / ".collect-state.json"
+    expected = collect.parse_codex_rollout(rollout)
+
+    mock_sb = MagicMock()
+    table = mock_sb.schema.return_value.table.return_value
+    table.upsert.return_value.execute.return_value.error = None
+    table.select.return_value.eq.return_value.neq.return_value.limit.return_value.execute.return_value.data = []
+
+    boom = MagicMock(side_effect=AssertionError("Claude Code parser used for Codex"))
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch.object(collect, "read_transcript", boom):
+            with patch.object(collect, "parse_session_group", boom):
+                with patch("collect.create_client", return_value=mock_sb):
+                    with patch.dict(os.environ, {
+                        "SUPABASE_URL": "https://fake.supabase.co",
+                        "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+                    }):
+                        collect.collect_codex(state_db, machine="mini", dry_run=False, verbose=False)
+
+    record = table.upsert.call_args[0][0]
+    assert record["agent"] == "codex"
+    assert record["session_id"] == "codex-019ed498-test"
+    assert "parent_session_id" not in record
+    for field in ("input_tokens", "output_tokens", "cache_read", "cache_create", "api_requests"):
+        assert record[field] == expected[field]
+    boom.assert_not_called()

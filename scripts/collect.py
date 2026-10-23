@@ -3,7 +3,7 @@
 Token Burn Collector v2
 Scans Claude Code JSONL session files → upserts to Supabase token_sessions table.
 
-Dedup: content hash stored in .collect-state.json (gitignored) to skip unchanged files.
+Replies are counted once (D15). Dedup: content hash stored in .collect-state.json (gitignored) to skip unchanged files.
 Idempotency: Supabase ON CONFLICT (session_id, machine) DO UPDATE ensures re-runs are safe.
 """
 
@@ -56,19 +56,38 @@ def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def parse_session(path: Path) -> dict | None:
+def _parse_ts(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return None
+
+
+USAGE_FIELDS = (
+    ("input_tokens", "input_tokens"),
+    ("output_tokens", "output_tokens"),
+    ("cache_read", "cache_read_input_tokens"),
+    ("cache_create", "cache_creation_input_tokens"),
+)
+
+
+def read_transcript(path: Path) -> dict:
     """
-    Parse a JSONL session file.
-    Returns token dict or None if no usable data.
-    Buckets by first timestamp in the file (Mountain time).
-    Malformed lines are skipped with a stderr warning.
+    Read one Claude Code transcript into per-reply usage (D15).
+
+    Claude Code writes one line per content block of an assistant reply, and every
+    line repeats the reply's full message.usage. A reply is identified by
+    message.id, falling back to requestId, and its usage is counted once. If the
+    repeated lines disagree (a streamed reply), each field keeps its largest value.
+
+    Returns {"first_ts": str | None, "replies": {key: {"ts": datetime | None,
+    "usage": {field: int}}}}. Malformed lines are skipped with a stderr warning.
     """
-    input_tokens = 0
-    output_tokens = 0
-    cache_read = 0
-    cache_create = 0
-    api_requests = 0
     first_ts: str | None = None
+    replies: dict[str, dict] = {}
+    anonymous = 0
 
     with path.open("r", encoding="utf-8") as f:
         for line in f:
@@ -95,11 +114,64 @@ def parse_session(path: Path) -> dict | None:
             if not isinstance(usage, dict):
                 continue
 
-            input_tokens += usage.get("input_tokens", 0)
-            output_tokens += usage.get("output_tokens", 0)
-            cache_read += usage.get("cache_read_input_tokens", 0)
-            cache_create += usage.get("cache_creation_input_tokens", 0)
-            api_requests += 1
+            key = msg.get("id") or record.get("requestId")
+            if not key:
+                # No reply identity at all: cannot prove it repeats, so count it.
+                anonymous += 1
+                key = f"anonymous:{anonymous}"
+
+            ts = _parse_ts(record.get("timestamp"))
+            entry = replies.setdefault(key, {"ts": ts, "usage": {name: 0 for name, _ in USAGE_FIELDS}})
+            if ts and (entry["ts"] is None or ts > entry["ts"]):
+                entry["ts"] = ts
+            for name, source in USAGE_FIELDS:
+                entry["usage"][name] = max(entry["usage"][name], usage.get(source, 0) or 0)
+
+    return {"first_ts": first_ts, "replies": replies}
+
+
+def parent_session_id(path: Path) -> str | None:
+    """Parent session of a subagent transcript: <parent>/subagents/agent-<id>.jsonl."""
+    if path.parent.name == "subagents":
+        return path.parent.parent.name
+    return None
+
+
+def parse_session_group(paths: list[Path]) -> dict | None:
+    """
+    Parse the transcript files of one session into a single token dict.
+
+    Almost always a group is one file. A resumed subagent is the exception: Claude
+    Code writes a second agent-<id>.jsonl under the new parent session with the same
+    stem. Replies are counted once across the whole group, and the subagent is
+    credited to the parent of the file whose last reply is latest (D15). The latest
+    reply is the end of the subagent; ties and reply-less files fall back to the
+    lexically last path so the result is deterministic.
+    Buckets by the earliest first timestamp in the group (Mountain time).
+    """
+    transcripts = [(path, read_transcript(path)) for path in sorted(paths)]
+
+    replies: dict[str, dict] = {}
+    first_ts: str | None = None
+    first_dt: datetime | None = None
+    last_end: tuple[datetime, int] | None = None
+    final_path = transcripts[-1][0]
+
+    for index, (path, transcript) in enumerate(transcripts):
+        ts = transcript["first_ts"]
+        dt = _parse_ts(ts)
+        if ts and (first_ts is None or (dt and (first_dt is None or dt < first_dt))):
+            first_ts, first_dt = ts, dt
+
+        end = max((r["ts"] for r in transcript["replies"].values() if r["ts"]), default=None)
+        if end and (last_end is None or (end, index) >= last_end):
+            last_end = (end, index)
+            final_path = path
+
+        for key, reply in transcript["replies"].items():
+            merged = replies.setdefault(key, {"usage": {name: 0 for name, _ in USAGE_FIELDS}})
+            for name, _ in USAGE_FIELDS:
+                merged["usage"][name] = max(merged["usage"][name], reply["usage"][name])
 
     if first_ts is None:
         return None
@@ -108,18 +180,41 @@ def parse_session(path: Path) -> dict | None:
         dt_utc = datetime.fromisoformat(first_ts.replace("Z", "+00:00"))
         date_str = dt_utc.astimezone(LOCAL_TZ).strftime("%Y-%m-%d")
     except (ValueError, TypeError) as exc:
-        print(f"[collect] WARNING: bad timestamp in {path.name}: {exc}", file=sys.stderr)
+        print(f"[collect] WARNING: bad timestamp in {final_path.name}: {exc}", file=sys.stderr)
         return None
 
-    return {
-        "session_id":   path.stem,
+    session = {
+        "session_id":   final_path.stem,
         "session_date": date_str,
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "cache_read":   cache_read,
-        "cache_create": cache_create,
-        "api_requests": api_requests,
+        "input_tokens": sum(r["usage"]["input_tokens"] for r in replies.values()),
+        "output_tokens": sum(r["usage"]["output_tokens"] for r in replies.values()),
+        "cache_read":   sum(r["usage"]["cache_read"] for r in replies.values()),
+        "cache_create": sum(r["usage"]["cache_create"] for r in replies.values()),
+        "api_requests": len(replies),
     }
+    parent = parent_session_id(final_path)
+    if parent:
+        session["parent_session_id"] = parent
+    return session
+
+
+def parse_session(path: Path) -> dict | None:
+    """Parse one JSONL session file (each reply counted once). None if no usable data."""
+    return parse_session_group([path])
+
+
+def group_session_files(paths: list[Path]) -> list[list[Path]]:
+    """
+    Group transcript files that are the same work session.
+
+    Subagent files are keyed by subagent id (the file stem); all other transcripts
+    are their own group. The row's session_id stays the file stem (D3/D9).
+    """
+    groups: dict[str, list[Path]] = {}
+    for path in paths:
+        key = path.stem if path.parent.name == "subagents" else str(path)
+        groups.setdefault(key, []).append(path)
+    return [groups[key] for key in sorted(groups)]
 
 
 def parse_codex_rollout(path: Path) -> dict | None:
@@ -350,21 +445,22 @@ def collect(
 
     state = load_state()
     jsonl_files = sorted(sessions_root.glob("**/*.jsonl"))
+    groups = group_session_files(jsonl_files)
     new_or_changed = 0
     upserted = 0
 
-    for path in jsonl_files:
-        path_key = f"{machine}:{path}"
-        current_hash = file_hash(path)
+    for group in groups:
+        hashes = {f"{machine}:{path}": file_hash(path) for path in group}
 
-        if not ignore_state and state.get(path_key) == current_hash:
+        if not ignore_state and all(state.get(key) == value for key, value in hashes.items()):
             continue  # Unchanged — skip
 
-        session = parse_session(path)
+        session = parse_session_group(group)
         if session is None:
-            state[path_key] = current_hash  # Mark as processed even if no data
+            state.update(hashes)  # Mark as processed even if no data
             continue
 
+        parent = session.pop("parent_session_id", None)
         new_or_changed += 1
 
         if verbose:
@@ -372,13 +468,15 @@ def collect(
                 session["input_tokens"] + session["output_tokens"]
                 + session["cache_read"] + session["cache_create"]
             )
+            suffix = f"  parent={parent}" if parent else ""
+            copies = f"  files={len(group)}" if len(group) > 1 else ""
             print(
-                f"{path.stem}  {session['session_date']}  "
-                f"total={total:,}  api_requests={session['api_requests']}"
+                f"{session['session_id']}  {session['session_date']}  "
+                f"total={total:,}  api_requests={session['api_requests']}{suffix}{copies}"
             )
 
         if dry_run:
-            state[path_key] = current_hash
+            state.update(hashes)
             continue
 
         existing = existing_session_on_other_machine(sb, session["session_id"], machine)  # type: ignore[arg-type]
@@ -388,14 +486,14 @@ def collect(
                 f"already collected as machine={existing.get('machine')} on {existing.get('session_date')}",
                 file=sys.stderr,
             )
-            state[path_key] = current_hash
+            state.update(hashes)
             continue
 
         upsert_error = upsert_exact_session(sb, session, machine, agent)  # type: ignore[arg-type]
         if upsert_error:
-            print(f"[collect] ERROR upserting {path.stem}: {upsert_error}", file=sys.stderr)
+            print(f"[collect] ERROR upserting {session['session_id']}: {upsert_error}", file=sys.stderr)
         else:
-            state[path_key] = current_hash
+            state.update(hashes)
             upserted += 1
 
     if dry_run:
