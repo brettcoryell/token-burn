@@ -460,7 +460,7 @@ def collect(
             state.update(hashes)  # Mark as processed even if no data
             continue
 
-        parent = session.pop("parent_session_id", None)
+        parent = session.get("parent_session_id")  # stored on subagent rows (D15)
         new_or_changed += 1
 
         if verbose:

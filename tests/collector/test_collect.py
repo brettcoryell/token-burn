@@ -1125,7 +1125,7 @@ def test_d15_subagent_credit_follows_latest_reply_not_path_order(tmp_path):
 
 
 def test_d15_collect_upserts_one_row_for_resumed_subagent(tmp_path):
-    """collect() writes one agent-<id> row, with no parent key in the stored record."""
+    """collect() writes one agent-<id> row, stamped with the later parent session."""
     collect = _import_collect()
     _write_subagent(tmp_path, "parent-early", "abc", [
         _assistant_line("msg_a", "2026-10-01T15:00:01.000Z", _usage(10, 10, 100, 10)),
@@ -1153,7 +1153,7 @@ def test_d15_collect_upserts_one_row_for_resumed_subagent(tmp_path):
     assert record["session_id"] == "agent-abc"
     assert record["api_requests"] == 2
     assert record["input_tokens"] == 40
-    assert "parent_session_id" not in record
+    assert record["parent_session_id"] == "parent-late"
 
 
 def test_d15_codex_collection_does_not_use_claude_dedup(tmp_path):
@@ -1191,3 +1191,24 @@ def test_d15_codex_collection_does_not_use_claude_dedup(tmp_path):
     for field in ("input_tokens", "output_tokens", "cache_read", "cache_create", "api_requests"):
         assert record[field] == expected[field]
     boom.assert_not_called()
+
+
+def test_d15_main_session_record_has_no_parent(tmp_path):
+    """Only subagent rows carry parent_session_id; main sessions leave it unset."""
+    collect = _import_collect()
+    sessions_root = make_session_dir(tmp_path, SIMPLE_SESSION)
+    state_file = tmp_path / ".collect-state.json"
+    mock_sb = MagicMock()
+    table = mock_sb.schema.return_value.table.return_value
+    table.upsert.return_value.execute.return_value.error = None
+    table.select.return_value.eq.return_value.neq.return_value.limit.return_value.execute.return_value.data = []
+
+    with patch.object(collect, "STATE_FILE", state_file):
+        with patch("collect.create_client", return_value=mock_sb):
+            with patch.dict(os.environ, {
+                "SUPABASE_URL": "https://fake.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "fake-key",
+            }):
+                collect.collect(sessions_root, machine="mini", dry_run=False, verbose=False)
+
+    assert "parent_session_id" not in table.upsert.call_args[0][0]

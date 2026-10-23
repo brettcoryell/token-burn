@@ -339,8 +339,8 @@ reported 9 collision findings that no documented remediation could clear.
 - `session_id` stays the transcript file stem (D3, D9 unchanged otherwise); a subagent's
   row is `agent-<id>` no matter how many parents it ran under.
 - The parent session credited with a subagent is derived at collection time from the
-  winning file's path and shown by `--verbose`. `token_sessions` has no parent column, so
-  it is not stored; adding one is a schema change that needs its own decision.
+  winning file's path, shown by `--verbose`, and stored in `token_sessions.parent_session_id`
+  (see the addendum below). It is NULL for main sessions and Codex.
 - Dedup and grouping apply to Claude Code transcripts only. Codex uses the cumulative
   `total_token_usage` from the latest token-count event and has no duplicate lines
   (D8, D14); `collect_codex` is untouched.
@@ -350,3 +350,11 @@ reported 9 collision findings that no documented remediation could clear.
 **Violation looks like:** Summing `usage` per transcript line. Keying a subagent row on
 anything but its id, or letting the last file written win. Scaling uncorrectable rows by
 the ~1.9 ratio instead of flagging them.
+
+**Addendum (2026-10-23): `parent_session_id` column.** Brett approved storing the credited
+parent ("Sounds fine to add that parent column"). `token_burn.token_sessions.parent_session_id`
+is a nullable `text` column, added by `open_brain/supabase/migrations/20261023000000_token_sessions_parent_session_id.sql`
+(applied with `supabase db query --linked`; that repo's migration history does not match the
+remote, so `db push` was not used). `scripts/collect.py` sends it only for subagent rows. It
+is not part of the upsert key, the driver taxonomy, or any API response. Older collectors that
+omit it keep working; their subagent rows simply have NULL parent until recollected.
