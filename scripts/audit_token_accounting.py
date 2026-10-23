@@ -21,7 +21,8 @@ from collect import (
     codex_threads,
     detect_machine,
     load_codex_skip_ids,
-    parse_session,
+    group_session_files,
+    parse_session_group,
 )
 
 VALID_EXACT_MACHINES = {"mini", "macbook", "imac"}
@@ -127,10 +128,13 @@ def local_claude_sessions(root: Path, since: date) -> list[dict[str, Any]]:
     sessions: list[dict[str, Any]] = []
     if not root.exists():
         return sessions
-    for path in sorted(root.glob("**/*.jsonl")):
-        session = parse_session(path)
+    # Group exactly as the collector does (D15): a resumed subagent has one transcript
+    # file per parent session but is one row, so comparing per file would flag it.
+    for group in group_session_files(sorted(root.glob("**/*.jsonl"))):
+        session = parse_session_group(group)
         if session is None or date.fromisoformat(session["session_date"]) < since:
             continue
+        session.pop("parent_session_id", None)
         sessions.append({"agent": "claude-code", **session})
     return sessions
 
