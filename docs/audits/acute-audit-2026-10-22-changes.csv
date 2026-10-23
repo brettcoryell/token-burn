@@ -1,0 +1,311 @@
+change,session_id,machine,agent,session_date,total_tokens_before,total_tokens_after,driver_before,driver_after,acute
+added (MCP),codex-019ebfa1-d110-7142-9157-2d8bd3448c30,imac,codex,2026-06-13,,3671639,,infrastructure,no
+attributed,codex-019ed625-66ab-7fc3-9e96-1b5b4e9dae65,mini,codex,2026-06-17,5303215,5303215,,infrastructure,no
+notes re-attributed,3061cae7-d4fc-4e0e-80e1-8dd49be2287a,imac,claude-code,2026-06-24,24779209,24779209,research,research,yes
+notes re-attributed,58c78e14-2f2c-46f1-8738-0d9b20cfa204,mini,claude-code,2026-06-24,10744131,10744131,research,research,yes
+notes re-attributed,e2c3abb9-7a66-4fab-8f56-f0cd2e121fab,imac,claude-code,2026-06-24,19207880,19207880,research,research,yes
+notes re-attributed,codex-019f1cff-053c-7831-b591-574c2b41ca87,mini,codex,2026-07-01,13169885,13169885,research,research,yes
+notes re-attributed,codex-019f1eb3-2c94-76e3-9243-413ae63ce65b,mini,codex,2026-07-01,14777796,14777796,research,research,yes
+notes re-attributed,codex-019f289f-be87-7241-a2d4-495e3573fd96,mini,codex,2026-07-03,72989893,72989893,research,research,yes
+notes re-attributed,codex-019f33f7-0ed2-7c70-9feb-4cde85851f83,mini,codex,2026-07-05,12229279,12229279,research,research,yes
+attributed,codex-019f7180-a9fb-7a91-a2ba-db49f566bb11,mini,codex,2026-07-17,50552494,50552494,,creative,no
+attributed,codex-019f736b-6c29-7961-9719-6bb5f9d44d20,mini,codex,2026-07-17,65742871,65742871,,creative,no
+attributed,codex-019f7966-85d6-7552-a548-12a7034e0ec0,mini,codex,2026-07-19,45790973,45790973,,creative,no
+attributed,codex-019f7a72-6e08-72d1-a4bc-e7a594122b07,mini,codex,2026-07-19,28037140,28037140,,creative,no
+attributed,codex-019f7e34-5ea6-7ff1-a20d-7f9dde337ad8,mini,codex,2026-07-20,18216254,18216254,,creative,no
+attributed,codex-019f8147-9ad3-7481-93af-b6626c57a3c1,mini,codex,2026-07-20,34450993,34450993,,creative,no
+attributed,codex-019f81c0-0c5f-7940-b066-cc3d0cdeaa8e,mini,codex,2026-07-20,61879316,61879316,,creative,no
+attributed,codex-019f8636-5b7e-7b20-9e90-1e4967a9e040,mini,codex,2026-07-21,22175372,22175372,,creative,no
+attributed,codex-019f869d-b210-7db3-bc60-a43d9205cb1e,mini,codex,2026-07-21,6597261,6597261,,creative,no
+attributed,codex-019f8844-f0c7-78e0-a0cb-3f26fa6bfecb,mini,codex,2026-07-21,52059643,52059643,,creative,no
+attributed,agent-a283361a92da11e25,mini,claude-code,2026-07-22,1494759,1494759,,creative,no
+attributed,agent-ac848dfad508dcf1f,mini,claude-code,2026-07-22,732322,732322,,creative,no
+attributed,agent-ad7f1892576e5e01e,mini,claude-code,2026-07-22,927347,927347,,creative,no
+attributed,agent-ae2c0c7edf9b3fe7d,mini,claude-code,2026-07-22,1644405,1644405,,creative,no
+attributed,agent-ae4e312cef4e65201,mini,claude-code,2026-07-22,3151594,3151594,,creative,no
+attributed,codex-019f8b00-b6fd-7f83-87c5-9a2af301f49f,mini,codex,2026-07-22,36989210,36989210,,creative,no
+attributed,codex-019f8d4d-3629-77f1-8a7a-b02eb5ae3d31,mini,codex,2026-07-22,25274823,25274823,,creative,no
+attributed,1aed7c3d-63ac-475d-9263-866a97a619e7,mini,claude-code,2026-07-23,308931434,308931434,,creative,no
+attributed,d286745b-5032-40cf-b253-b998725e893c,mini,claude-code,2026-07-23,8828314,8828314,,research,no
+attributed,876b4716-26b4-4c64-8d73-960b6c7572ca,mini,claude-code,2026-07-24,92868823,92868823,,creative,no
+attributed,agent-ab0a863a2f02903e9,mini,claude-code,2026-07-24,3625506,3625506,,creative,no
+attributed,agent-ae9a6cf8cbeef86d9,mini,claude-code,2026-07-24,8015270,8015270,,creative,no
+attributed,agent-af9fdf5e70e276f9f,mini,claude-code,2026-07-24,2891284,2891284,,creative,no
+attributed,agent-afd0b84b6e4374c81,mini,claude-code,2026-07-24,6651287,6651287,,creative,no
+attributed,b66fce08-c0ec-4222-8883-574bee1c9db8,mini,claude-code,2026-07-24,135533119,135533119,,creative,no
+attributed,53fb8074-e7ed-4fb2-ab84-73f1afb9d7f2,mini,claude-code,2026-07-25,41570551,41570551,,creative,no
+attributed,agent-a132e16b219fd965d,mini,claude-code,2026-07-25,22157150,22157150,,creative,no
+attributed,agent-a1e911b65570053ad,mini,claude-code,2026-07-25,11401546,11401546,,creative,no
+attributed,agent-ae4d7ccc4a6c90697,mini,claude-code,2026-07-25,8556230,8556230,,creative,no
+attributed,codex-019f9980-d96c-7f22-9278-5515dc06a944,mini,codex,2026-07-25,233848,233848,,infrastructure,no
+attributed,f2944f71-b660-4bc7-907b-d82899192783,mini,claude-code,2026-07-25,152007679,152007679,,creative,no
+attributed,8428d8ee-faec-4f18-8a8b-214f163cbd65,mini,claude-code,2026-07-26,97505974,97505974,,creative,no
+attributed,agent-a245574dbfb85c81e,mini,claude-code,2026-07-26,2991884,2991884,,creative,no
+attributed,agent-a28725719fab66b8a,mini,claude-code,2026-07-26,6280493,6280493,,creative,no
+attributed,agent-a7bb537a18e33cf7d,mini,claude-code,2026-07-26,50920607,50920607,,creative,no
+attributed,agent-a7c18f92f2f19083c,mini,claude-code,2026-07-26,83667816,83667816,,creative,no
+attributed,agent-a89563e524e6f0967,mini,claude-code,2026-07-26,9967423,9967423,,creative,no
+attributed,agent-aa6a0de7838420233,mini,claude-code,2026-07-26,3776643,3776643,,creative,no
+attributed,agent-a2c110f61d16f472e,mini,claude-code,2026-07-27,769305,769305,,creative,no
+attributed,agent-a40cb1757382a6a41,mini,claude-code,2026-07-27,1473716,1473716,,creative,no
+attributed,agent-aaaaed40cba5c1a0c,mini,claude-code,2026-07-27,3285364,3285364,,creative,no
+attributed,codex-019fa312-f694-7110-b6ed-b09bce92b8d6,mini,codex,2026-07-27,39744357,39744357,,creative,no
+attributed,codex-019fa5d5-6be5-78d0-83d9-60d11f2af7c5,mini,codex,2026-07-27,41201477,41201477,,creative,no
+attributed,codex-019fa6df-7fdc-70a2-83eb-8af7ff249e24,mini,codex,2026-07-27,43502617,43502617,,creative,no
+attributed,86d396b6-4e88-4762-8551-17fe9cfd3484,mini,claude-code,2026-07-31,39359350,39359350,,research,yes
+attributed,agent-a304bc54e61539e81,mini,claude-code,2026-07-31,17185099,17185099,,research,yes
+attributed,agent-ae8679b583d9f36c7,mini,claude-code,2026-07-31,23631281,23631281,,research,yes
+attributed,agent-af4b30024e90097e3,mini,claude-code,2026-07-31,80543879,80543879,,research,yes
+attributed,agent-a2b9b2ceeaa05a601,mini,claude-code,2026-08-01,36708508,36708508,,research,yes
+attributed,39864f0a-d2d8-48f8-a0d8-8891d50404ee,mini,claude-code,2026-08-02,73638471,73638471,,personal,no
+attributed,0b23ae4f-98d1-4d59-b964-87c54787b675,mini,claude-code,2026-08-08,279004166,279004166,,personal,no
+attributed,f1062b56-c940-4a37-8fe1-9b4a7743f836,mini,claude-code,2026-08-12,13649539,13649539,,personal,no
+attributed,6814e3e9-f385-4f9a-b9b5-1903373d8eb6,mini,claude-code,2026-08-14,10341409,10341409,,personal,no
+attributed,agent-a3b3104889796e6c3,mini,claude-code,2026-08-17,901572,901572,,creative,no
+attributed,codex-01a02813-413b-75f0-bbbc-7939bedfe148,mini,codex,2026-08-22,40451105,40451105,,personal,no
+attributed,ee565af4-aa4a-4138-a02a-557601344801,mini,claude-code,2026-08-22,178135942,178135942,,creative,no
+attributed,bbf6d1a1-0ec4-4035-99bd-08ce3a65710c,mini,claude-code,2026-08-23,174334999,174334999,,creative,no
+attributed,codex-01a03126-f03d-76d0-8d8f-c2bb5111d9b2,imac,codex,2026-08-23,15150623,15150623,,personal,no
+attributed,codex-01a036c0-6b49-7770-9472-e03501434b55,imac,codex,2026-08-24,2855175,2855175,,personal,no
+attributed,codex-01a041a7-e620-77c2-baa7-bdb0b468539f,imac,codex,2026-08-26,1716337,1716337,,personal,no
+attributed,b9b05819-7f50-43a7-81a6-b82c53f27924,mini,claude-code,2026-09-01,231251504,231251504,,personal,no
+attributed,c3af2477-2710-4d9f-9a5c-d6398f2b0728,mini,claude-code,2026-09-01,50767156,50767156,,markets,no
+attributed,6c88482b-6ddf-42ee-a2ec-85f8f442bd8a,mini,claude-code,2026-09-02,5714024,5714024,,markets,no
+attributed,88cab332-8d50-4d9a-9477-67aaaec6f343,mini,claude-code,2026-09-02,394016,394016,,personal,no
+attributed,codex-01a060eb-e95f-70a1-b3e3-dc0a4c6531c4,mini,codex,2026-09-02,26124961,26124961,,personal,no
+attributed,6f457c29-9c6f-486e-a5a0-82f0e773d960,mini,claude-code,2026-09-03,62903510,62903510,,markets,no
+attributed,codex-01a06e63-2a9c-7793-aecc-cec6d62c9e0f,mini,codex,2026-09-04,4975420,4975420,,markets,no
+attributed,codex-01a06ef1-f1cf-7692-9d3d-1ea81ad422e3,mini,codex,2026-09-04,20323452,20323452,,personal,no
+attributed,69940a29-1b7b-4a2e-b39d-90cbb02b69a4,mini,claude-code,2026-09-05,26031316,26031316,,personal,no
+attributed,codex-01a07de8-c2c8-7500-83b9-74ed23d4b36e,mini,codex,2026-09-07,4742830,4742830,,career,no
+attributed,542f1830-dfc9-4783-89c7-e34ed0d20a5c,imac,claude-code,2026-09-08,59156322,59156322,,personal,no
+attributed,0f7346b5-b05e-48b5-b55d-38ed932ea8df,macbook,claude-code,2026-09-15,22232398,22232398,,personal,no
+attributed,997baca9-8ab0-434e-9156-87641f8ee9a7,macbook,claude-code,2026-09-18,71780216,71780216,,markets,no
+attributed,41883f26-2c17-414f-84ea-d33051a79f10,imac,claude-code,2026-09-23,84781886,84781886,,markets,no
+attributed,e7810d32-44ff-4467-9f0b-901ea8388469,imac,claude-code,2026-09-25,62722208,62722208,,personal,no
+attributed,24eb1eaa-89a0-4e26-9a8a-179348a2aef4,imac,claude-code,2026-09-27,831980,831980,,personal,no
+added (MCP),25436715-8938-4edb-b8c5-1de88e30742e,imac,claude-code,2026-09-27,,27087182,,personal,no
+attributed,b7dfa3df-5b8e-4b0c-9f66-5a38d9c94562,imac,claude-code,2026-09-27,56048286,56048286,,personal,no
+attributed,104463f5-6ed9-4a7c-8e15-97e4670bd114,mini,claude-code,2026-09-29,867734751,867734751,,research,yes
+attributed,codex-01a0f01a-b1ba-7ea1-8ec4-c0a1891b7aca,mini,codex,2026-09-29,64198759,64198759,,markets,no
+attributed,agent-a8e74cb5ee9246303,mini,claude-code,2026-09-30,1152985,1152985,,research,yes
+added (MCP),codex-01a0f104-5887-7781-80f8-3d320b3d3bef,imac,codex,2026-09-30,,453141,,personal,no
+attributed,codex-01a0f5ed-d721-7d21-894a-d5cfa2aa5912,mini,codex,2026-09-30,20660648,20660648,,research,yes
+attributed,db8dade1-74b5-4873-ac06-fa1e9f3b4bf2,mini,claude-code,2026-09-30,24218265,24218265,,research,yes
+attributed,codex-01a0fabf-8603-7d53-9953-971746711fc9,mini,codex,2026-10-01,23325229,23325229,,research,yes
+attributed,e09e678a-5f4c-4ab1-af59-5efe4120ee2c,mini,claude-code,2026-10-01,72808508,72808508,,research,yes
+attributed,406df224-75be-4b11-b3e3-ad5121da12c7,mini,claude-code,2026-10-02,1556759,1556759,,research,yes
+attributed,412cb2e2-c835-4a95-94cc-2b88875cb6d5,mini,claude-code,2026-10-02,164408608,164408608,,research,yes
+attributed,af1a1abc-a4cd-4d39-a9ed-f7c1f08e6222,mini,claude-code,2026-10-02,552430112,552430112,,research,yes
+attributed,codex-01a0fddd-3535-7112-b8cb-d8da7ddee570,mini,codex,2026-10-02,221518634,221518634,,research,yes
+attributed,5b46b6e4-5f16-4134-b35a-89c31923b6ca,mini,claude-code,2026-10-03,309285105,309285105,,research,yes
+attributed,codex-01a10428-79da-7773-a77f-dce0b42ab385,mini,codex,2026-10-03,38030,38030,,research,yes
+attributed,codex-01a1042e-4ca3-7522-a5b5-be342a8ab817,mini,codex,2026-10-03,39046,39046,,research,yes
+attributed,codex-01a1045b-af51-7873-9254-910c3448d941,mini,codex,2026-10-03,133035015,133035015,,research,yes
+attributed,codex-01a10476-6162-7d83-982e-f8ae3dd329d0,mini,codex,2026-10-03,667226,667226,,research,yes
+attributed,codex-01a1049d-7c60-78f2-9dfd-72b5c6c7dff9,mini,codex,2026-10-03,99248,99248,,research,yes
+attributed,codex-01a104a5-ead3-7460-83f0-5aa90f50cd34,mini,codex,2026-10-03,224378,224378,,research,yes
+attributed,codex-01a104b8-2c47-7b33-bfdf-2ed7aba2b9ed,mini,codex,2026-10-03,37651,37651,,research,yes
+attributed,codex-01a104bd-1ccf-7973-993c-58cd9b25ed83,mini,codex,2026-10-03,63146,63146,,research,yes
+attributed,codex-01a104c4-8312-7933-a9e6-875137cbf211,mini,codex,2026-10-03,94422,94422,,research,yes
+attributed,codex-01a104c7-3284-7562-a3e4-8ea939a2bb8a,mini,codex,2026-10-03,441557,441557,,research,yes
+attributed,codex-01a104cc-eff3-74c0-9c0d-186f1844ec1b,mini,codex,2026-10-03,274936,274936,,research,yes
+attributed,ee6d24b1-ad03-429c-87ad-9fa15dfba2f2,mini,claude-code,2026-10-03,931741074,931741074,,research,yes
+attributed,97109d1b-6ee0-4d95-94b1-07f340017a9d,mini,claude-code,2026-10-04,244016805,244016805,,research,yes
+attributed,c24afdb8-33d5-43ba-bb39-7209fef32ee4,mini,claude-code,2026-10-04,0,0,,research,yes
+attributed,c37eeb45-04a2-43eb-9ff0-6525ce4a1ff2,mini,claude-code,2026-10-04,19970,19970,,research,yes
+attributed,codex-01a107e2-af43-7b42-acd9-fe7831fc76d2,mini,codex,2026-10-04,45527501,45527501,,research,yes
+attributed,codex-01a1097e-9414-7651-8afa-ec259363d7cf,mini,codex,2026-10-04,30660768,30660768,,research,yes
+attributed,dab4da8e-560a-4c8b-9b7e-8d704152cfb2,mini,claude-code,2026-10-04,220841282,220841282,,research,yes
+attributed,19a6984c-b75c-4886-9632-3ec4f4065da5,mini,claude-code,2026-10-05,511049287,511049287,,research,yes
+attributed,45ad21c2-0d32-470c-8114-e962429670e9,mini,claude-code,2026-10-05,289851769,289851769,,research,yes
+attributed,codex-01a10c5e-bb50-77a1-a5b1-001e0539afaf,mini,codex,2026-10-05,360134272,360134272,,research,yes
+attributed,codex-01a10dc9-7e06-7163-a2a6-2cf26633a4ca,mini,codex,2026-10-05,276795,276795,,research,yes
+attributed,13f96056-ccc9-4654-93cf-7d317bf75d75,mini,claude-code,2026-10-06,380871042,380871042,,research,yes
+attributed,867e677b-e407-4518-9620-f3eae687f709,mini,claude-code,2026-10-06,161711619,161711619,,research,yes
+attributed,f95475ce-39aa-49ce-8b72-ee429ee07dfc,mini,claude-code,2026-10-06,242764957,242764957,,research,yes
+attributed,05e544af-8f53-47db-a809-3c4b0c2e61a1,mini,claude-code,2026-10-07,28125861,28125861,,research,yes
+attributed,a46e0e8f-fbd3-470b-9b81-07dea593d15b,mini,claude-code,2026-10-07,37172309,37172309,,research,yes
+attributed,c38b17dd-0916-4fdf-a07a-af5a3ec7ed14,mini,claude-code,2026-10-07,265446936,265446936,,research,yes
+attributed,codex-01a1181e-7adc-7dd1-8f2b-bf759e6f2021,mini,codex,2026-10-07,48867000,48867000,,research,yes
+added (MCP),codex-01a1191a-f9b1-7a51-983a-feb840117a72,macbook,codex,2026-10-07,,1032875,,research,yes
+attributed,codex-01a119eb-c3d8-73f1-a0b6-6f618d4fa499,mini,codex,2026-10-07,28010278,28010278,,research,yes
+attributed,b95b77ec-59e3-4545-9522-51c563e23de1,mini,claude-code,2026-10-08,81074569,81074569,,research,yes
+attributed,codex-01a11c6d-b0cf-7202-ada8-be554a3e73ca,mini,codex,2026-10-08,16506733,16506733,,research,yes
+attributed,codex-01a11cf2-8b93-7551-9d9f-f01ae97f9193,mini,codex,2026-10-08,33502201,33502201,,research,yes
+attributed,codex-01a11d7d-88ee-7672-b1b1-a19bd20bcdd1,mini,codex,2026-10-08,82389548,82389548,,research,yes
+attributed,ed826f2a-b3b0-41f9-ae74-d47e4dc83bca,mini,claude-code,2026-10-08,267053235,267053235,,research,yes
+attributed,60e6616b-604b-44f0-a709-eee8ecf086c7,mini,claude-code,2026-10-09,134651391,134651391,,research,yes
+attributed,codex-01a12346-e4c7-75e0-a240-b7033e3bbcd6,mini,codex,2026-10-09,33085555,33085555,,personal,no
+attributed,37e76977-9e10-45ca-a532-285caafa7a80,mini,claude-code,2026-10-10,337222195,337222195,,research,yes
+attributed,744815d8-7f17-4589-96e5-920f97e886da,mini,claude-code,2026-10-10,216828122,216828122,,research,yes
+attributed,codex-01a12943-13ef-78e2-9b72-8b4e5dfb0a96,mini,codex,2026-10-10,104906594,104906594,,research,yes
+attributed,38e3c284-5131-4040-9d83-c4573e42622b,mini,claude-code,2026-10-11,333340,333340,,research,yes
+attributed,3f2e14a7-3cd2-4696-88d8-bb37f08756ec,mini,claude-code,2026-10-11,332962,332962,,research,yes
+attributed,4008f033-05dd-44d8-a53b-22785ee4c1d5,mini,claude-code,2026-10-11,259385,259385,,research,yes
+attributed,5a2f1f74-8624-4962-a3a9-b36afc10b706,mini,claude-code,2026-10-11,0,0,,research,yes
+attributed,5d4ccb59-0450-4744-8c38-c672cd5e7df3,mini,claude-code,2026-10-11,211022,211022,,research,yes
+attributed,7b35cc43-fb72-42b1-ab24-938337d7a924,mini,claude-code,2026-10-11,166126659,166126659,,research,yes
+attributed,b3de1880-a4a5-4bb1-bd8f-e087c0daf555,mini,claude-code,2026-10-11,148704,148704,,research,yes
+attributed,codex-01a12d79-cdfd-7b31-a466-93df629d6264,mini,codex,2026-10-11,182978974,182978974,,research,yes
+attributed,e11adba4-0cf7-44cb-bfb3-38143695b36d,mini,claude-code,2026-10-11,358140,358140,,research,yes
+attributed,288d1aba-90db-4f01-a960-fdfb63b1621c,mini,claude-code,2026-10-12,260162359,260162359,,research,yes
+attributed,46dc2e09-dd78-4e3d-a796-48f0ef9a1bdf,mini,claude-code,2026-10-12,461257678,461257678,,research,yes
+attributed,7f939a64-b78e-4073-8aab-d659ec75f903,mini,claude-code,2026-10-12,328377047,328377047,,research,yes
+attributed,agent-a6fff01f945189ae5,mini,claude-code,2026-10-12,10873536,10873536,,research,yes
+attributed,agent-a7eaa442d573d6267,mini,claude-code,2026-10-12,18205044,18205044,,research,yes
+attributed,agent-a9dbe925201744d75,mini,claude-code,2026-10-12,850200,850200,,research,yes
+attributed,agent-aa70f8393ee0d90e2,mini,claude-code,2026-10-12,168549104,168549104,,research,yes
+attributed,bda3830a-b450-4e76-9e6a-0503470355a7,mini,claude-code,2026-10-12,844126218,844126218,,research,yes
+attributed,c7e6fbe9-9d5c-407e-b525-d2a1a7f94197,mini,claude-code,2026-10-12,1203209096,1203209096,,research,yes
+attributed,30453a1d-e5df-4f51-a81d-347c6745615a,mini,claude-code,2026-10-13,250895153,250895153,,research,yes
+attributed,694d05aa-6492-40c3-9837-62dacd1af8df,mini,claude-code,2026-10-13,565208535,565208535,,research,yes
+attributed,85e01b3e-b506-4923-9ee5-178d452de692,mini,claude-code,2026-10-13,6976518,6976518,,research,yes
+attributed,agent-a7622f18207780fe3,mini,claude-code,2026-10-13,3847562,3847562,,research,yes
+attributed,agent-aa0f30551500ee160,mini,claude-code,2026-10-13,21259161,21259161,,research,yes
+attributed,agent-ab595d8699155a624,mini,claude-code,2026-10-13,19040508,19040508,,research,yes
+attributed,agent-ac36974587f869a80,mini,claude-code,2026-10-13,14016400,14016400,,research,yes
+attributed,agent-acac9a2c2dcd8c428,mini,claude-code,2026-10-13,1578006,1578006,,research,yes
+attributed,b1e34550-1dc5-4029-849b-18673fd3d8bd,mini,claude-code,2026-10-13,601202039,601202039,,research,yes
+attributed,10e393de-5b81-484a-a2c2-3345cdb58a64,mini,claude-code,2026-10-14,33894110,33894110,,research,yes
+added (MCP),72576b5c-5db1-4d4d-b581-1a01e42f1874,macbook,claude-code,2026-10-14,,91584157,,infrastructure,uncertain
+added (MCP),974d9a31-e1cc-43cd-ab7c-a777abf0970e,macbook,claude-code,2026-10-14,,16324396,,research,yes
+attributed,agent-a400df3ff753acb6a,mini,claude-code,2026-10-14,3872214,3872214,,research,yes
+attributed,agent-a810406835c331797,mini,claude-code,2026-10-14,42273438,42273438,,research,yes
+attributed,agent-a99baec6709cca1f0,mini,claude-code,2026-10-14,3642766,3642766,,research,yes
+attributed,agent-ab1129b77b8e43a39,mini,claude-code,2026-10-14,1991182,1991182,,research,yes
+attributed,agent-abfcc880ff8e21513,mini,claude-code,2026-10-14,1463828,1463828,,research,yes
+attributed,agent-ad76f498146a14958,mini,claude-code,2026-10-14,6617596,6617596,,research,yes
+attributed,b0265538-206c-476e-a641-09b167d8f194,mini,claude-code,2026-10-14,384799624,384799624,,research,yes
+attributed,138676ec-d748-43db-b819-a3cb422400a3,mini,claude-code,2026-10-15,6260333,6260333,,research,yes
+attributed,24ac9be4-8fb4-4bb6-869b-9cfb64f272b1,mini,claude-code,2026-10-15,38735803,38735803,,research,yes
+attributed,32bc9875-e4c6-49c7-b9bd-d4020ae9faae,mini,claude-code,2026-10-15,68165819,68165819,,research,yes
+attributed,7970d1e9-ba55-41c1-8fc9-b9c4b77cc5fa,mini,claude-code,2026-10-15,431857793,431857793,,research,yes
+attributed,894e7c37-93c5-4520-8b1e-6ccea8d3a7d0,mini,claude-code,2026-10-15,746478143,746478143,,research,yes
+attributed,agent-a143ab929c7da1f67,mini,claude-code,2026-10-15,10918940,10918940,,research,yes
+attributed,agent-a20d6a5e620f41640,mini,claude-code,2026-10-15,8288976,8288976,,research,yes
+attributed,agent-a2e23918fd53e2329,mini,claude-code,2026-10-15,11279098,11279098,,research,yes
+attributed,agent-a334861bc7419c0ce,mini,claude-code,2026-10-15,15530179,15530179,,research,yes
+attributed,agent-a4450da8dbae1b7f8,mini,claude-code,2026-10-15,19357897,19357897,,research,yes
+attributed,agent-a6d03da20b3b60454,mini,claude-code,2026-10-15,8181530,8181530,,research,yes
+attributed,agent-a6ea7f197b52c7afb,mini,claude-code,2026-10-15,32208926,32208926,,research,yes
+attributed,agent-a76e927c11cdf9c4e,mini,claude-code,2026-10-15,12677634,12677634,,research,yes
+attributed,agent-a8d025f5630f692d4,mini,claude-code,2026-10-15,11184507,11184507,,research,yes
+attributed,agent-a93174c2c077115e9,mini,claude-code,2026-10-15,2396377,2396377,,research,yes
+attributed,cd5cb3b9-a34a-4c49-978c-6c49805fe88a,mini,claude-code,2026-10-15,405744026,405744026,,research,yes
+attributed,cfd7d6b3-bac1-43ad-b2fe-e95ac3235c93,mini,claude-code,2026-10-15,935085287,935085287,,research,yes
+attributed,da4db80d-2e35-42d7-8a09-0972912854b3,mini,claude-code,2026-10-15,231192006,231192006,,research,yes
+attributed,agent-a20ad743920b32608,mini,claude-code,2026-10-16,5574736,5574736,,research,yes
+attributed,agent-a27a75b561799f61c,mini,claude-code,2026-10-16,4406854,4406854,,research,yes
+attributed,agent-a29cbe9c73697eb55,mini,claude-code,2026-10-16,4287503,4287503,,research,yes
+attributed,agent-a4c147c5d5073e29e,mini,claude-code,2026-10-16,16624310,16624310,,research,yes
+attributed,agent-a813911095f8862bd,mini,claude-code,2026-10-16,45196436,45196436,,research,yes
+attributed,agent-a8eb86017a85212c3,mini,claude-code,2026-10-16,22231365,22231365,,research,yes
+attributed,agent-addd3517fe30a0551,mini,claude-code,2026-10-16,10478630,10478630,,research,yes
+attributed,agent-ae05c26fd0a8e63f8,mini,claude-code,2026-10-16,1497716,1497716,,research,yes
+attributed,agent-af155a219b83b3aa3,mini,claude-code,2026-10-16,1928194,1928194,,research,yes
+attributed,agent-af212fbbc86ef0370,mini,claude-code,2026-10-16,11877555,11877555,,research,yes
+attributed,agent-afafc49f84eca4102,mini,claude-code,2026-10-16,10640460,10640460,,research,yes
+attributed,038148d7-1849-474f-b89f-b51679db3ba0,mini,claude-code,2026-10-17,189356515,189356515,,research,yes
+attributed,9fd12ca8-5c42-48ad-a49b-9e57b5567cfa,mini,claude-code,2026-10-17,123857893,123857893,,research,yes
+attributed,a32ebdea-cbb2-449f-a52d-c81a8c8d243f,mini,claude-code,2026-10-17,285507763,285507763,,research,yes
+attributed,agent-a1097333ba64a5cc8,mini,claude-code,2026-10-17,2454485,2454485,,research,yes
+attributed,agent-a1140b57dbdb413bc,mini,claude-code,2026-10-17,542454,542454,,research,yes
+attributed,agent-a16bb9ed7c70f1da9,mini,claude-code,2026-10-17,2870873,2870873,,research,yes
+attributed,agent-a27d52812213355f9,mini,claude-code,2026-10-17,14436915,14436915,,research,yes
+attributed,agent-a2d6768a96896f4df,mini,claude-code,2026-10-17,654979,654979,,research,yes
+attributed,agent-a37fb27efd86f9b51,mini,claude-code,2026-10-17,938701,938701,,research,yes
+attributed,agent-a3aaa7d9ccc2fbbf2,mini,claude-code,2026-10-17,14935855,14935855,,research,yes
+attributed,agent-a6c7bf0fd60c18b7e,mini,claude-code,2026-10-17,74884315,74884315,,research,yes
+attributed,agent-a77870e2e1ca1e3c8,mini,claude-code,2026-10-17,648928,648928,,research,yes
+attributed,agent-a7893b195f15fdcb1,mini,claude-code,2026-10-17,6066444,6066444,,research,yes
+attributed,agent-a8677b489daf5d8ff,mini,claude-code,2026-10-17,1858597,1858597,,research,yes
+attributed,agent-ad26996f7e3ea4063,mini,claude-code,2026-10-17,348474,348474,,research,yes
+attributed,agent-adf741444b8bd81bb,mini,claude-code,2026-10-17,87188661,87188661,,research,yes
+attributed,agent-ae6250fc9da7655b2,mini,claude-code,2026-10-17,10109447,10109447,,research,yes
+attributed,17bb1a7d-70cd-4ae5-b9eb-43aaf319e1ed,mini,claude-code,2026-10-18,303970620,303970620,,research,yes
+attributed,2f0ca626-3b4e-445b-a11d-975f8204824a,mini,claude-code,2026-10-18,23318481,23318481,,research,yes
+updated (collector) + attributed,9c5352cb-44bd-4073-8dfb-b70663cbe470,mini,claude-code,2026-10-18,403721495,663145594,,research,yes
+attributed,agent-a0fba94e61d9852d5,mini,claude-code,2026-10-18,7117947,7117947,,research,yes
+attributed,agent-a507e71ef784672c2,mini,claude-code,2026-10-18,2708792,2708792,,research,yes
+attributed,agent-a76a73935cb1fce04,mini,claude-code,2026-10-18,12483481,12483481,,research,yes
+attributed,agent-a992e9346ce4df94a,mini,claude-code,2026-10-18,9805324,9805324,,research,yes
+attributed,agent-acae78bf03635eff0,mini,claude-code,2026-10-18,6572965,6572965,,research,yes
+attributed,19dcec21-d660-4cf0-b0b5-24caa4958894,mini,claude-code,2026-10-19,530486,530486,,research,yes
+updated (collector) + attributed,31819fe1-c37a-404c-ac5f-28af0b9ec59a,mini,claude-code,2026-10-19,465414605,482325592,,research,yes
+attributed,4ed38378-9ea2-4e6a-844a-ac31f5145888,mini,claude-code,2026-10-19,5342918,5342918,,research,yes
+attributed,9d9ee00a-8e37-4417-ab1c-2938b4d7f339,mini,claude-code,2026-10-19,2971796,2971796,,infrastructure,no
+attributed,agent-a246082eaa16366bb,mini,claude-code,2026-10-19,2998723,2998723,,research,yes
+attributed,agent-a7449b80f3ae2027b,mini,claude-code,2026-10-19,948277,948277,,research,yes
+attributed,agent-a8f772d064dbac339,mini,claude-code,2026-10-19,4556160,4556160,,infrastructure,uncertain
+attributed,agent-ab4a9c445c101171a,mini,claude-code,2026-10-19,18674387,18674387,,research,yes
+attributed,agent-ae8724263c36cb475,mini,claude-code,2026-10-19,5271113,5271113,,research,yes
+added (collector),01e9f587-5dc6-45ec-9679-ed67fd1f8dc8,mini,claude-code,2026-10-20,,241690590,,research,yes
+added (collector),8d56e7dc-94bc-45a3-9808-94376d6ae077,mini,claude-code,2026-10-20,,298550002,,research,yes
+added (collector),agent-a0e4730ba2a621a37,mini,claude-code,2026-10-20,,46409133,,research,yes
+attributed,agent-a0e90ff3d068eb3c2,mini,claude-code,2026-10-20,96093573,96093573,,research,yes
+attributed,agent-a2d7c3d007e09ee3a,mini,claude-code,2026-10-20,14695062,14695062,,research,yes
+added (collector),agent-a31e8a8807eb3b5de,mini,claude-code,2026-10-20,,4245119,,research,yes
+added (collector),agent-a33cd6db87cabaec6,mini,claude-code,2026-10-20,,36039341,,research,yes
+added (collector),agent-a361c56a379eb83a4,mini,claude-code,2026-10-20,,23279803,,research,yes
+attributed,agent-a3fbac041b326f0cc,mini,claude-code,2026-10-20,5190078,5190078,,research,yes
+added (collector),agent-a490fffd55812fb2a,mini,claude-code,2026-10-20,,13408936,,research,yes
+attributed,agent-a49d9e444ca584bd0,mini,claude-code,2026-10-20,1301378,1301378,,research,yes
+added (collector),agent-a6215488ebb32bfd7,mini,claude-code,2026-10-20,,12359592,,research,yes
+added (collector),agent-a697bde9e961b0df8,mini,claude-code,2026-10-20,,25378981,,research,yes
+added (collector),agent-a743610925849cf2c,mini,claude-code,2026-10-20,,21027688,,research,yes
+attributed,agent-a7aad5d328af126e7,mini,claude-code,2026-10-20,15353678,15353678,,research,yes
+added (collector),agent-a995c3810b8d4a71a,mini,claude-code,2026-10-20,,7344190,,research,yes
+attributed,agent-aa21e96a3e7a198be,mini,claude-code,2026-10-20,88760799,88760799,,research,yes
+added (collector),agent-aa6b508be77f1c09c,mini,claude-code,2026-10-20,,8958611,,research,yes
+added (collector),agent-aaae3ce8a69045bf9,mini,claude-code,2026-10-20,,5239492,,research,yes
+attributed,agent-ab0a6c69140c6a640,mini,claude-code,2026-10-20,3906436,3906436,,research,yes
+attributed,agent-ad7a6608d0976b97d,mini,claude-code,2026-10-20,14936295,14936295,,research,yes
+attributed,agent-ae573dba4ead5902a,mini,claude-code,2026-10-20,5838926,5838926,,research,yes
+updated (collector) + attributed,bd8ba7c2-b7c4-47e1-a44f-4dd75e4dec7a,mini,claude-code,2026-10-20,2706972,355293041,,research,yes
+added (collector),agent-a21f5bc560d5c6b13,mini,claude-code,2026-10-21,,121517453,,research,yes
+added (collector),agent-a31a1823b219e8b56,mini,claude-code,2026-10-21,,16382216,,research,yes
+added (collector),agent-a3e3ed2766dc09d85,mini,claude-code,2026-10-21,,10233270,,research,yes
+added (collector),agent-a3f68b929f9d1c94a,mini,claude-code,2026-10-21,,5590839,,research,yes
+added (collector),agent-a4e362bd108e1e46b,mini,claude-code,2026-10-21,,24571152,,research,yes
+added (collector),agent-a4f8f62ef07720f81,mini,claude-code,2026-10-21,,16264940,,research,yes
+added (collector),agent-a594eeac337e4b9fa,mini,claude-code,2026-10-21,,27253089,,research,yes
+added (collector),agent-a5fb928a1d6daf5e5,mini,claude-code,2026-10-21,,24401027,,research,yes
+added (collector),agent-a70df620eee49dbff,mini,claude-code,2026-10-21,,10140161,,research,yes
+added (collector),agent-a84c7ec22f9083daa,mini,claude-code,2026-10-21,,8795894,,research,yes
+added (collector),agent-a9c0b7df04becdbb5,mini,claude-code,2026-10-21,,20013883,,research,yes
+added (collector),agent-ab56d32cac7a587fb,mini,claude-code,2026-10-21,,27480904,,research,yes
+added (collector),agent-ab5aed944a93a1485,mini,claude-code,2026-10-21,,9759051,,research,yes
+added (collector),agent-abbd1134b440d6891,mini,claude-code,2026-10-21,,60126877,,research,yes
+added (collector),agent-ae2b2bcda4bc045a0,mini,claude-code,2026-10-21,,10305946,,research,yes
+added (collector),agent-ae9651576bfee013d,mini,claude-code,2026-10-21,,15644276,,research,yes
+added (collector),cd03cd53-b477-49cc-bd7e-0d0b4f704fc4,mini,claude-code,2026-10-21,,189265021,,research,yes
+added (collector),16be21af-b0d4-40a9-94f9-21123f8194f3,mini,claude-code,2026-10-22,,238670162,,research,yes
+added (MCP),98721819-25e9-4e6f-8737-b3555aeead38,macbook,claude-code,2026-10-22,,27578231,,research,yes
+added (collector),agent-a0319ae38535501fc,mini,claude-code,2026-10-22,,19296695,,research,yes
+added (collector),agent-a0f959c049e2509c5,mini,claude-code,2026-10-22,,13807156,,research,yes
+added (collector),agent-a10fcd87de864d1c7,mini,claude-code,2026-10-22,,119802315,,research,yes
+added (collector),agent-a1365b4039665db87,mini,claude-code,2026-10-22,,35082068,,research,yes
+added (collector),agent-a184953bf25ae9d08,mini,claude-code,2026-10-22,,15484068,,research,yes
+added (collector),agent-a46e0014a71f68942,mini,claude-code,2026-10-22,,5344446,,research,yes
+added (collector),agent-a4b85471c62d6d3e9,mini,claude-code,2026-10-22,,66692754,,research,yes
+added (collector),agent-a561ecabcb12e614e,mini,claude-code,2026-10-22,,754916,,research,yes
+added (collector),agent-a5b90099945f7645f,mini,claude-code,2026-10-22,,8453325,,research,yes
+added (collector),agent-a94472ca2bb88aa31,mini,claude-code,2026-10-22,,13295554,,research,yes
+added (collector),agent-a9f201e88f04d1a3e,mini,claude-code,2026-10-22,,16837390,,research,yes
+added (collector),agent-aa4cfde5d294047c1,mini,claude-code,2026-10-22,,19128034,,research,yes
+added (collector),agent-aaf26d6883e19b541,mini,claude-code,2026-10-22,,582719,,research,yes
+added (collector),agent-aaf6217dded164fe4,mini,claude-code,2026-10-22,,149115936,,research,yes
+added (collector),agent-aca58023941223de3,mini,claude-code,2026-10-22,,4371651,,research,yes
+added (collector),agent-acd046ab6739d9ace,mini,claude-code,2026-10-22,,30213254,,research,yes
+updated (collector) + attributed,agent-ace413ba09b9ccaa3,mini,claude-code,2026-10-22,41882742,719373,,research,yes
+added (collector),agent-ad9ed47ef7a870a04,mini,claude-code,2026-10-22,,328420,,research,yes
+added (collector),agent-adc58cd286ce3aa39,mini,claude-code,2026-10-22,,48509054,,research,yes
+added (collector),agent-ae5df991fa1a6acc8,mini,claude-code,2026-10-22,,54629302,,research,yes
+added (collector),agent-af08c8a1bf4959a45,mini,claude-code,2026-10-22,,6122551,,research,yes
+added (collector),agent-af16cca99f4f3e834,mini,claude-code,2026-10-22,,19101474,,research,yes
+added (collector),agent-af5ab0c7d1c370a05,mini,claude-code,2026-10-22,,3930604,,research,yes
+added (collector),agent-af5ce4270ae30b473,mini,claude-code,2026-10-22,,11091594,,research,yes
+added (collector),agent-afdc691a8d68698ab,mini,claude-code,2026-10-22,,5728842,,research,yes
+added (collector),e84895c1-8161-4f4a-95ed-9a7bb5ad603c,mini,claude-code,2026-10-22,,247918354,,research,yes
+added (collector),f6d69a16-1da5-4ab5-913a-2b4f03f75172,mini,claude-code,2026-10-22,,176695656,,research,yes
