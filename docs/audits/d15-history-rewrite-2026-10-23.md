@@ -49,3 +49,12 @@ Recounted rows are 11,170.8M. Scaling the uncorrected 1,540.1M by the audit's 1.
 `make audit-token-accounting` (run outside the sandbox: the sandbox blocks the read-only open of the Codex
 state DB): 0 dangerous findings (was 9), 4 findings. The remaining findings are this live MacBook session being
 unannotated, and the three idle days. The audit compares local telemetry for the MacBook only.
+
+## Addendum: scaled estimates (2026-10-23, later the same day)
+
+The 159 uncorrected rows were then stored as labelled scaled estimates (D5 addendum):
+`fidelity='estimated'`, counts divided by 1.873 (pooled recorded/recounted ratio over 253 recounted
+rows), recorded counts kept in `pre_scale_counts`. 5,978.8M recorded became 3,192.1M estimated.
+After this, Claude Code measured is 14,083.7M (337 rows) and scaled estimate is 3,192.1M (159 rows).
+ACUTE Claude Code: 11,212.0M measured + 822.2M scaled estimate = 12,034.3M. The dashboard shows
+the scaled figure separately (`total_scaled`) and never inside measured totals.

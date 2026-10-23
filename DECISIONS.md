@@ -81,8 +81,8 @@ convention they run about 1.87× high. They are now stored as `fidelity='estimat
 `agent='claude-code'` rows, scaled by 1.873 (the pooled recorded-to-recounted ratio over 253
 rows recounted in D15; monthly ratios 1.81–1.93), and are never counted as measured.
 - **Originals preserved:** `token_sessions.pre_scale_counts` (jsonb) holds the counts as
-  recorded, the factor, the method and the date. Dividing the factor back out is not needed;
-  restore from the jsonb.
+  recorded, the factor, the method and the date. To undo, restore the counts from it and set
+  `fidelity='exact'`.
 - **Three separate numbers:** `get_daily_summary` returns `total_exact` (measured),
   `total_est` (Claude Chat estimates, unchanged meaning) and `total_scaled` (scaled Claude Code
   estimates). `total_scaled` is never added into `total_exact` or `total_est`.
