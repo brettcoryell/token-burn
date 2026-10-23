@@ -204,9 +204,11 @@ def desktop_titles(root: Path) -> dict[str, str]:
     app, not the transcript, and cliSessionId links it to the transcript's session id.
     """
     titles: dict[str, str] = {}
-    if not root.exists():
+    try:
+        paths = sorted(root.glob("**/local_*.json")) if root.exists() else []
+    except OSError:  # e.g. macOS refuses another app's data to an unattended job
         return titles
-    for path in root.glob("**/local_*.json"):
+    for path in paths:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):

@@ -1,4 +1,4 @@
-.PHONY: collect collect-dry collect-reconcile collect-reconcile-dry collect-codex collect-codex-dry collect-codex-reconcile collect-codex-reconcile-dry token-accounting-closeout audit-token-accounting audit-token-accounting-strict suggest-annotations apply-high-confidence-annotations normalize-machine-labels-dry normalize-machine-labels migrate dev build test test-collector test-ui install
+.PHONY: install-scheduled-closeout uninstall-scheduled-closeout scheduled-closeout-status collect collect-dry collect-reconcile collect-reconcile-dry collect-codex collect-codex-dry collect-codex-reconcile collect-codex-reconcile-dry token-accounting-closeout audit-token-accounting audit-token-accounting-strict suggest-annotations apply-high-confidence-annotations normalize-machine-labels-dry normalize-machine-labels migrate dev build test test-collector test-ui install
 
 SESSIONS_ROOT ?= $(HOME)/.claude/projects/
 MACHINE       ?= $(shell hostname | tr '[:upper:]' '[:lower:]' | awk '/mini/ {print "mini"; found=1} /macbook|book/ {print "macbook"; found=1} /imac/ {print "imac"; found=1} END {if (!found) print "unknown"}')
@@ -99,6 +99,15 @@ suggest-annotations:  ## Suggest high-value driver annotations without writing
 
 apply-high-confidence-annotations:  ## Apply high-confidence high-value driver annotations
 	.venv/bin/python scripts/suggest_annotations.py --days 60 --min-tokens 1000000 --output data/annotation-suggestions.json --apply
+
+install-scheduled-closeout:  ## Install the launchd job that runs token-accounting-closeout every 4 hours (D16)
+	scripts/install_scheduled_closeout.sh install
+
+uninstall-scheduled-closeout:  ## Remove the scheduled closeout launchd job
+	scripts/install_scheduled_closeout.sh uninstall
+
+scheduled-closeout-status:  ## Show whether the scheduled closeout job is loaded
+	scripts/install_scheduled_closeout.sh status
 
 normalize-machine-labels-dry:  ## Dry-run legacy machine label cleanup
 	.venv/bin/python scripts/normalize_machine_labels.py

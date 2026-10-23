@@ -358,3 +358,32 @@ is a nullable `text` column, added by `open_brain/supabase/migrations/2026102300
 remote, so `db push` was not used). `scripts/collect.py` sends it only for subagent rows. It
 is not part of the upsert key, the driver taxonomy, or any API response. Older collectors that
 omit it keep working; their subagent rows simply have NULL parent until recollected.
+
+---
+
+## D16: Token-accounting closeout also runs on a schedule, on every machine
+
+**Decision (2026-10-23):** Each Mac runs `make token-accounting-closeout` unattended every
+4 hours through a launchd user agent (`com.brettcoryell.token-burn-closeout`), installed with
+`make install-scheduled-closeout`. Brett: "Scheduled token accounting is good. Do it on each
+machine."
+
+**Why:** Closeout depended on remembering to run it at the end of every session, and often
+was not run. Sessions went uncollected for days, and Claude Code deletes old transcripts, so
+a late collection can be a lost one: 159 rows had to be left uncorrected in D15 for exactly
+that reason. Moving the real database `.env` onto each machine (it had been an iCloud symlink
+that non-interactive shells cannot read) is what makes an unattended run possible.
+
+**Constraints:**
+- The job runs the D13 wrapper and nothing else; collection logic is not duplicated. The
+  manual end-of-session closeout stays in force. The schedule is a safety net.
+- `scripts/scheduled_closeout.sh` fast-forwards `master` before running, but only when the
+  checkout is on clean `master`; it never touches a dirty or working branch.
+- A failed run (including a dangerous strict-audit finding) exits non-zero, posts a macOS
+  notification and logs to `~/Library/Logs/token-burn-closeout.log`.
+- The job needs the machine's own readable `.env`. Do not point it at an iCloud symlink, and
+  do not copy the key into the repo or the plist.
+- Deleting or disabling the job on one machine reopens the gap for that machine's sessions.
+
+**Violation looks like:** A second scheduled job that calls `make collect` directly. A plist
+or script that embeds the Supabase key. Running the job from a worktree or feature branch.
