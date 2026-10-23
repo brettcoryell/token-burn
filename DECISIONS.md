@@ -74,6 +74,27 @@ undifferentiated total. The dashboard shows them separately with MEASURED/EST ba
 **Why:** Mixing signals of different reliability misleads the user about their true
 AI spend. Exact data from JSONL files is exact; chat estimates are educated guesses.
 
+**Addendum (2026-10-23): labelled scaled estimates.** Brett: "I think scaling the 159
+uncorrected rows is fine." D15 left 159 Claude Code rows (5,978.8M tokens) as recorded because
+their transcripts no longer exist and a recount is impossible; recorded under the old per-line
+convention they run about 1.87× high. They are now stored as `fidelity='estimated'`,
+`agent='claude-code'` rows, scaled by 1.873 (the pooled recorded-to-recounted ratio over 253
+rows recounted in D15; monthly ratios 1.81–1.93), and are never counted as measured.
+- **Originals preserved:** `token_sessions.pre_scale_counts` (jsonb) holds the counts as
+  recorded, the factor, the method and the date. Dividing the factor back out is not needed;
+  restore from the jsonb.
+- **Three separate numbers:** `get_daily_summary` returns `total_exact` (measured),
+  `total_est` (Claude Chat estimates, unchanged meaning) and `total_scaled` (scaled Claude Code
+  estimates). `total_scaled` is never added into `total_exact` or `total_est`.
+- **Always labelled:** wherever the dashboard shows or sums scaled tokens it says "scaled
+  estimate" and uses the estimated chip and `--tb-yellow`, never measured styling.
+- **Scope:** only rows D15 could not recount. New Claude Code rows stay `exact` because the
+  collector counts them from transcripts. D8's "total_exact includes all exact rows" still
+  holds; these rows are simply no longer exact.
+
+**Violation looks like:** Summing `total_scaled` into a "measured" or "exact" figure. Scaling a
+row that has a surviving transcript instead of recounting it. Dropping `pre_scale_counts`.
+
 ---
 
 ## D7: Python environment standard

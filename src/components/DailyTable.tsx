@@ -71,6 +71,12 @@ export function DailyTable({ records }: Props) {
                 className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
                 style={{ color: 'var(--tb-txt-faint)' }}
               >
+                Code Scaled Est
+              </th>
+              <th
+                className="text-right py-2 px-3 text-xs font-medium uppercase tracking-wide whitespace-nowrap"
+                style={{ color: 'var(--tb-txt-faint)' }}
+              >
                 Claude Chat Est
               </th>
               <th
@@ -83,7 +89,7 @@ export function DailyTable({ records }: Props) {
           </thead>
           <tbody>
             {sorted.map((r, idx) => {
-              const isEstOnly = r.total_exact === 0 && r.total_est > 0
+              const isEstOnly = r.total_exact === 0 && (r.total_est > 0 || r.total_scaled > 0)
               const isLast = idx === sorted.length - 1
               return (
                 <tr
@@ -130,6 +136,16 @@ export function DailyTable({ records }: Props) {
                     style={{ color: (r.codex_api_requests ?? 0) > 0 ? 'var(--tb-data-secondary)' : 'var(--tb-data-empty)' }}
                   >
                     {(r.codex_api_requests ?? 0) > 0 ? r.codex_api_requests : '—'}
+                  </td>
+                  <td className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap">
+                    {r.total_scaled > 0 ? (
+                      <span className="inline-flex items-center gap-1">
+                        <span style={{ color: 'var(--tb-yellow)' }}>~{formatTokens(r.total_scaled)}</span>
+                        <FidelityBadge type="estimated" />
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--tb-data-empty)' }}>—</span>
+                    )}
                   </td>
                   <td className="py-2 px-3 text-right text-xs tabular-nums whitespace-nowrap">
                     {r.total_est > 0 ? (

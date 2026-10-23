@@ -47,14 +47,15 @@ export function weekStart(dateStr: string): string {
   return d.toISOString().slice(0, 10)
 }
 
-// Aggregate records into weekly buckets (Sunday-start), returning [{weekStart, total_exact, total_est}]
-export function aggregateWeekly(records: DayRecord[]): { weekStart: string; total_exact: number; total_est: number }[] {
-  const buckets = new Map<string, { total_exact: number; total_est: number }>()
+// Aggregate records into weekly buckets (Sunday-start), returning [{weekStart, total_exact, total_est, total_scaled}]
+export function aggregateWeekly(records: DayRecord[]): { weekStart: string; total_exact: number; total_est: number; total_scaled: number }[] {
+  const buckets = new Map<string, { total_exact: number; total_est: number; total_scaled: number }>()
   for (const r of records) {
     const ws = weekStart(r.date)
-    const existing = buckets.get(ws) ?? { total_exact: 0, total_est: 0 }
+    const existing = buckets.get(ws) ?? { total_exact: 0, total_est: 0, total_scaled: 0 }
     existing.total_exact += r.total_exact
     existing.total_est += r.total_est
+    existing.total_scaled += r.total_scaled
     buckets.set(ws, existing)
   }
   return Array.from(buckets.entries())

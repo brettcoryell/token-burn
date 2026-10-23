@@ -22,6 +22,7 @@ const RANGE_LABELS: Record<TimeRange, string> = {
 export function Header({ records, range, onRangeChange, lastUpdated, theme, onThemeChange }: Props) {
   const totalExact = records.reduce((s, r) => s + r.total_exact, 0)
   const totalEst = records.reduce((s, r) => s + r.total_est, 0)
+  const totalScaled = records.reduce((s, r) => s + r.total_scaled, 0)
   const totalSessions = records.reduce(
     (s, r) => s + r.claude_code_sessions + (r.codex_sessions ?? 0),
     0
@@ -106,9 +107,19 @@ export function Header({ records, range, onRangeChange, lastUpdated, theme, onTh
           <div className="text-2xl font-semibold tabular-nums mb-1" style={{ color: 'var(--tb-txt)' }}>
             {formatTokens(totalExact)}
           </div>
-          <div className="text-xs mb-3" style={{ color: 'var(--tb-txt-faint)' }}>
+          <div className={`text-xs ${totalScaled > 0 ? 'mb-1' : 'mb-3'}`} style={{ color: 'var(--tb-txt-faint)' }}>
             Claude Code + Codex tokens
           </div>
+          {totalScaled > 0 && (
+            <div
+              data-scaled-total
+              className="text-xs mb-3 flex items-center gap-1"
+              style={{ color: 'var(--tb-yellow)' }}
+            >
+              <span>+ ~{formatTokens(totalScaled)} scaled estimate, not counted above</span>
+              <FidelityBadge type="estimated" />
+            </div>
+          )}
           <div
             className="mt-auto -mx-4 -mb-4 px-4 pt-3 pb-3 rounded-b-lg"
             style={{ backgroundColor: 'var(--tb-sparkline-bg)' }}

@@ -16,7 +16,7 @@ export function TrendLine({ records, theme }: Props) {
   const C = getChartColors(theme)
 
   const weeks = useMemo(
-    () => aggregateWeekly(records).filter(w => w.total_exact > 0),
+    () => aggregateWeekly(records).filter(w => w.total_exact > 0 || w.total_scaled > 0),
     [records]
   )
 
@@ -28,6 +28,7 @@ export function TrendLine({ records, theme }: Props) {
   if (weeks.length === 0) return null
 
   const hasEst = weeks.some(w => w.total_est > 0)
+  const hasScaled = weeks.some(w => w.total_scaled > 0)
 
   return (
     <section className="mb-10">
@@ -39,7 +40,7 @@ export function TrendLine({ records, theme }: Props) {
           Weekly total
         </h2>
         <span className="text-xs" style={{ color: 'var(--tb-txt-muted)' }}>
-          exact tokens
+          exact tokens{hasScaled || hasEst ? ' · dashed = estimated' : ''}
         </span>
       </div>
 
@@ -80,7 +81,9 @@ export function TrendLine({ records, theme }: Props) {
               labelStyle={{ color: C.txtMuted, fontSize: 11 }}
               formatter={(val: number, name: string) => [
                 formatTokens(val),
-                name === 'total_exact' ? 'Exact (measured)' : 'Chat (estimated)',
+                name === 'total_exact'
+                  ? 'Exact (measured)'
+                  : name === 'total_scaled' ? 'Claude Code (scaled estimate)' : 'Chat (estimated)',
               ]}
               labelFormatter={formatDateShort}
             />
@@ -114,6 +117,17 @@ export function TrendLine({ records, theme }: Props) {
               dot={false}
               activeDot={{ r: 3, fill: C.accent }}
             />
+            {hasScaled && (
+              <Area
+                type="monotone"
+                dataKey="total_scaled"
+                stroke={C.yellow}
+                strokeWidth={1}
+                strokeDasharray="1 3"
+                fill="url(#tbYellowGrad)"
+                dot={false}
+              />
+            )}
             {hasEst && (
               <Area
                 type="monotone"

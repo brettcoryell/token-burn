@@ -33,7 +33,7 @@ export function useTokenData(range: TimeRange): TokenDataState {
     ])
       .then(([daily, sess]) => {
         if (!controller.signal.aborted) {
-          setAll(Array.isArray(daily) ? daily : [])
+          setAll(Array.isArray(daily) ? daily.map(r => ({ ...r, total_scaled: r.total_scaled ?? 0 })) : [])
           setSessions(Array.isArray(sess) ? sess : [])
           setLoading(false)
         }

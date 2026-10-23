@@ -3,6 +3,7 @@ export interface DayRecord {
   date: string                        // "YYYY-MM-DD"
   total_exact: number                 // sum of exact (Claude Code + Codex) tokens
   total_est: number                   // sum of estimated (Claude Chat) tokens
+  total_scaled: number                // scaled estimates of Claude Code days that cannot be recounted (D5 addendum)
   claude_code_sessions: number        // count of Code sessions
   claude_chat_sessions: number        // count of Chat sessions
   claude_code_api_requests: number    // sum of API requests from Code sessions

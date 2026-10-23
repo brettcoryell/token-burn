@@ -37,7 +37,7 @@ export function Heatmap({ records }: Props) {
   }, [records])
 
   const maxTokens = useMemo(
-    () => records.reduce((max, r) => Math.max(max, r.total_exact), 1),
+    () => records.reduce((max, r) => Math.max(max, r.total_exact + r.total_scaled), 1),
     [records]
   )
 
@@ -142,8 +142,9 @@ export function Heatmap({ records }: Props) {
 
           {/* Cells */}
           {cells.map(({ date, col, row, record }) => {
-            const bin = record ? logColorBin(record.total_exact, maxTokens) : 0
-            const isEstOnly = record && record.total_exact === 0 && record.total_est > 0
+            const bin = record ? logColorBin(record.total_exact + record.total_scaled, maxTokens) : 0
+            const isScaled = !!record && record.total_scaled > 0
+            const isEstOnly = !!record && record.total_exact === 0 && record.total_scaled === 0 && record.total_est > 0
             const x = LABEL_W + col * STEP
             const y = MONTH_H + row * STEP
 
@@ -157,12 +158,21 @@ export function Heatmap({ records }: Props) {
                   rx={2}
                   data-date={date}
                   data-estimated={isEstOnly ? 'true' : undefined}
+                  data-scaled={isScaled ? 'true' : undefined}
                   style={{ fill: BIN_FILLS[bin], cursor: 'default' }}
                   onMouseEnter={e => {
                     const rect = (e.target as SVGElement).getBoundingClientRect()
                     setTooltip({ x: rect.left + rect.width / 2, y: rect.top, record: record ?? null, date })
                   }}
                 />
+                {isScaled && (
+                  <circle
+                    cx={x + CELL_SIZE / 2}
+                    cy={y + CELL_SIZE / 2}
+                    r={2}
+                    style={{ fill: 'var(--tb-yellow)', pointerEvents: 'none' }}
+                  />
+                )}
                 {isEstOnly && (
                   <circle
                     cx={x + CELL_SIZE / 2}
@@ -192,6 +202,11 @@ export function Heatmap({ records }: Props) {
           <circle cx={6.5} cy={6.5} r={2} style={{ fill: 'var(--tb-accent)' }} />
         </svg>
         <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-muted)' }}>Chat-only day</span>
+        <svg width={13} height={13} className="ml-4">
+          <rect width={13} height={13} rx={2} style={{ fill: 'var(--tb-bin-3)' }} />
+          <circle cx={6.5} cy={6.5} r={2} style={{ fill: 'var(--tb-yellow)' }} />
+        </svg>
+        <span className="text-xs ml-1" style={{ color: 'var(--tb-txt-muted)' }}>Scaled estimate (Code, not recountable)</span>
       </div>
 
       {/* Tooltip */}
@@ -220,6 +235,12 @@ export function Heatmap({ records }: Props) {
                 <div style={{ color: 'var(--tb-accent)' }}>
                   {tooltip.record.total_exact.toLocaleString()}{' '}
                   <span style={{ color: 'var(--tb-txt-muted)' }}>measured</span>
+                </div>
+              )}
+              {tooltip.record.total_scaled > 0 && (
+                <div style={{ color: 'var(--tb-yellow)' }}>
+                  ~{tooltip.record.total_scaled.toLocaleString()}{' '}
+                  <span style={{ color: 'var(--tb-txt-muted)' }}>scaled estimate (Claude Code)</span>
                 </div>
               )}
               {tooltip.record.total_est > 0 && (

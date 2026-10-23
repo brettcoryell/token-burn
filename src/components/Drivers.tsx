@@ -35,7 +35,8 @@ export function Drivers({ records, sessions, theme }: Props) {
         date: record.date,
         exactTokens: record.total_exact,
         estTokens: record.total_est,
-        tokens: record.total_exact + record.total_est,
+        scaledTokens: record.total_scaled,
+        tokens: record.total_exact + record.total_est + record.total_scaled,
         fallbackDriver: record.driver || null,
       }))
       .filter(day => day.tokens > 0)
@@ -55,6 +56,7 @@ export function Drivers({ records, sessions, theme }: Props) {
           driver: pluralityDriver,
           exactTokens: day.exactTokens,
           estTokens: day.estTokens,
+          scaledTokens: day.scaledTokens,
           tokens: day.tokens,
         }
       })
@@ -86,7 +88,7 @@ export function Drivers({ records, sessions, theme }: Props) {
           Drivers on busy days
         </h2>
         <span className="text-xs" style={{ color: 'var(--tb-txt-muted)' }}>
-          top {TOP_DAY_COUNT} days · measured + est
+          top {TOP_DAY_COUNT} days · measured + est + scaled est
         </span>
       </div>
 
@@ -128,7 +130,9 @@ export function Drivers({ records, sessions, theme }: Props) {
                   ? 'Measured'
                   : name === 'estTokens'
                     ? 'Estimated'
-                    : 'Day total'
+                    : name === 'scaledTokens'
+                      ? 'Scaled estimate'
+                      : 'Day total'
                 return [formatTokens(val), label]
               }}
               cursor={{ fill: C.cardHover }}
@@ -143,6 +147,13 @@ export function Drivers({ records, sessions, theme }: Props) {
                 <Cell key={i} fill={i === 0 ? C.peakBar : C.secondaryBar} />
               ))}
             </Bar>
+            <Bar
+              dataKey="scaledTokens"
+              stackId="tokens"
+              fill={C.yellow}
+              fillOpacity={0.55}
+              maxBarSize={20}
+            />
             <Bar
               dataKey="estTokens"
               stackId="tokens"
